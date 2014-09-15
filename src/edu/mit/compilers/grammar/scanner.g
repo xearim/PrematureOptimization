@@ -18,8 +18,19 @@ options
 tokens 
 {
   "class";
-  TRUE="true";
+  BOOLEAN="boolean";
+  BREAK="break";
+  CALLOUT="callout";
+  CONTINUE="continue";
+  ELSE="else";
   FALSE="false";
+  FOR="for";
+  WHILE="while";
+  IF="if";
+  INT="int";
+  RETURN="return";
+  TRUE="true";
+  VOID="void";
 }
 
 // Selectively turns on debug tracing mode.
