@@ -18,6 +18,8 @@ options
 tokens 
 {
   "class";
+  TRUE="true";
+  FALSE="false";
 }
 
 // Selectively turns on debug tracing mode.
@@ -46,6 +48,12 @@ tokens
 LCURLY options { paraphrase = "{"; } : "{";
 RCURLY options { paraphrase = "}"; } : "}";
 
+protected
+ALPHA : ('a'..'z' | 'A'..'Z');
+
+protected
+DIGIT : ('0' .. '9');
+
 ID options { paraphrase = "an identifier"; } : 
   ('a'..'z' | 'A'..'Z')+;
 
@@ -55,16 +63,16 @@ ID options { paraphrase = "an identifier"; } :
 WS_ : (' ' | '\n' {newline();}) {_ttype = Token.SKIP; };
 SL_COMMENT : "//" (~'\n')* '\n' {_ttype = Token.SKIP; newline (); };
 
-CHAR : '\'' (ESC | SPACE | NOESCAPE_PUNCTUATION | DIGIT | LETTER) '\'';
-STRING : '"' (ESC| SPACE | NOESCAPE_PUNCTUATION | DIGIT | LETTER)* '"';
+CHAR : '\'' CHAR_NAME '\'';
+STRING : '"' (CHAR_NAME)* '"';
+
+protected
+SPACE : ' ';
 
 protected
 // Note that the backslashes are to escape characters for ANTLR.
 // Each single-quote-enclosed string is a single character.
 ESC :  '\\' ('"'|'\''|'\\'|'t'|'n');
-
-protected
-SPACE : ' ';
 
 protected
 // Punctuation that doesn't ever need escaping.
@@ -82,7 +90,4 @@ NOESCAPE_PUNCTUATION :
 	);
 
 protected
-DIGIT : ('0' .. '9');
-
-protected
-LETTER : ('a'..'z' | 'A'..'Z');
+CHAR_NAME : (ESC | SPACE | NOESCAPE_PUNCTUATION | DIGIT | ALPHA);
