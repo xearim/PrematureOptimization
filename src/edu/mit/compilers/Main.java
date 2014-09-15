@@ -62,7 +62,7 @@ class Main {
            case DecafScannerTokenTypes.STRING:
              type = " STRINGLITERAL";
              break;
-           case DecafScannerTokenTypes.TRUE:
+           case DecafScannerTokenTypes.TRUE:  /* fall-through */
            case DecafScannerTokenTypes.FALSE:
              type = " BOOLEANLITERAL";
              break;
