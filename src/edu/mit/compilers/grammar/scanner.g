@@ -63,6 +63,22 @@ ID options { paraphrase = "an identifier"; } :
 WS_ : (' ' | '\n' {newline();}) {_ttype = Token.SKIP; };
 SL_COMMENT : "//" (~'\n')* '\n' {_ttype = Token.SKIP; newline (); };
 
+protected
+HEX_DIGIT :
+	(
+		DIGIT
+		| 'a'..'f'
+		| 'A'..'F'
+	);
+
+protected
+HEX_LITERAL : "0x" (HEX_DIGIT)+;
+
+protected
+DECIMAL_LITERAL : (DIGIT)+;
+
+INT_LITERAL: DECIMAL_LITERAL | HEX_LITERAL;
+
 CHAR : '\'' CHAR_NAME '\'';
 STRING : '"' (CHAR_NAME)* '"';
 

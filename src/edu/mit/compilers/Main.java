@@ -66,6 +66,9 @@ class Main {
            case DecafScannerTokenTypes.FALSE:
              type = " BOOLEANLITERAL";
              break;
+           case DecafScannerTokenTypes.INT_LITERAL:
+             type = " INTLITERAL";
+             break;
           }
           outputStream.println(token.getLine() + type + " " + text);
         }
