@@ -55,10 +55,34 @@ ID options { paraphrase = "an identifier"; } :
 WS_ : (' ' | '\n' {newline();}) {_ttype = Token.SKIP; };
 SL_COMMENT : "//" (~'\n')* '\n' {_ttype = Token.SKIP; newline (); };
 
-CHAR : '\'' (ESC|~'\'') '\'';
-STRING : '"' (ESC|~'"')* '"';
+CHAR : '\'' (ESC | SPACE | NOESCAPE_PUNCTUATION | DIGIT | LETTER) '\'';
+STRING : '"' (ESC| SPACE | NOESCAPE_PUNCTUATION | DIGIT | LETTER)* '"';
 
 protected
 // Note that the backslashes are to escape characters for ANTLR.
 // Each single-quote-enclosed string is a single character.
 ESC :  '\\' ('"'|'\''|'\\'|'t'|'n');
+
+protected
+SPACE : ' ';
+
+protected
+// Punctuation that doesn't ever need escaping.
+// That is, ASCII punctuation that is not a single quote,
+// double quote, or backslash.
+NOESCAPE_PUNCTUATION :
+	(
+		'!'
+		| '#'..'&'
+		| '('..'/'
+		| ':'..'@'
+		| '['
+		| ']'..'`'
+		| '{'..'~'
+	);
+
+protected
+DIGIT : ('0' .. '9');
+
+protected
+LETTER : ('a'..'z' | 'A'..'Z');
