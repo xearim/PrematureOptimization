@@ -59,8 +59,14 @@ tokens
 LCURLY options { paraphrase = "{"; } : "{";
 RCURLY options { paraphrase = "}"; } : "}";
 
+ASSIGN_OP : '=' | "+=" | "-=";
+
 ARITH_OP : '+' | '-' | '*' | '/' | '%';
-REL_OP : '<' | '>' | "<=" | "=>";
+REL_OP : '<' | '>' | "<=" | ">=";
+
+EQ_OP : "==" | "!=";
+
+COND_OP : "&&" | "||";
 
 protected
 ALPHA : ('a'..'z' | 'A'..'Z' | '_');
