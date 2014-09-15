@@ -54,8 +54,14 @@ class Main {
           switch (token.getType()) {
            // TODO: add strings for the other types here...
            case DecafScannerTokenTypes.ID:
-            type = " IDENTIFIER";
-            break;
+             type = " IDENTIFIER";
+             break;
+           case DecafScannerTokenTypes.CHAR:
+             type = " CHARLITERAL";
+             break;
+           case DecafScannerTokenTypes.STRING:
+             type = " STRINGLITERAL";
+             break;
           }
           outputStream.println(token.getLine() + type + " " + text);
         }
