@@ -49,13 +49,17 @@ LCURLY options { paraphrase = "{"; } : "{";
 RCURLY options { paraphrase = "}"; } : "}";
 
 protected
-ALPHA : ('a'..'z' | 'A'..'Z');
+ALPHA : ('a'..'z' | 'A'..'Z' | '_');
 
 protected
 DIGIT : ('0' .. '9');
 
+protected
+ALPHA_NUM : (ALPHA | DIGIT);
+
+// TODO(jasonpr): Add test that fails on "1badname".
 ID options { paraphrase = "an identifier"; } : 
-  ('a'..'z' | 'A'..'Z')+;
+  ALPHA (ALPHA_NUM)+;
 
 // Note that here, the {} syntax allows you to literally command the lexer
 // to skip mark this token as skipped, or to advance to the next line
@@ -94,6 +98,7 @@ protected
 // Punctuation that doesn't ever need escaping.
 // That is, ASCII punctuation that is not a single quote,
 // double quote, or backslash.
+// Note that an underscore is considered ALPHA, not punctuation!
 NOESCAPE_PUNCTUATION :
 	(
 		'!'
@@ -101,7 +106,9 @@ NOESCAPE_PUNCTUATION :
 		| '('..'/'
 		| ':'..'@'
 		| '['
-		| ']'..'`'
+		| ']'
+		| '^'
+		| '`'
 		| '{'..'~'
 	);
 
