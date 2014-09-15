@@ -59,4 +59,6 @@ CHAR : '\'' (ESC|~'\'') '\'';
 STRING : '"' (ESC|~'"')* '"';
 
 protected
-ESC :  '\\' ('n'|'"');
+// Note that the backslashes are to escape characters for ANTLR.
+// Each single-quote-enclosed string is a single character.
+ESC :  '\\' ('"'|'\''|'\\'|'t'|'n');
