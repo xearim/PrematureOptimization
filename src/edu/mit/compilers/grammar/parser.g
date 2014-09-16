@@ -182,7 +182,16 @@ assign_op : (EQ_OP | PLUS_EQ_OP | MINUS_EQ_OP);
 protected
 expr :
 	(
+		// TODO(jasonpr): Rename all *_expr to better indicate that it's either
+		// an expression of that type, or an expression containing operations
+		// that bind at higher precedence.
+		ternary_expr
+	);
+
+ternary_expr :
+	(
 		cond_or_expr
+		(options {greedy=true;} : QUESTION ternary_expr COLON ternary_expr)?
 	);
 
 protected
