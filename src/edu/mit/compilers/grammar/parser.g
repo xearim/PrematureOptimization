@@ -93,7 +93,7 @@ block :
 		(statement)*
 		R_CURLY_BRACKET
 	);
-	
+
 protected
 statement :
 	(
@@ -117,14 +117,7 @@ assignment :
 	);
 
 protected
-method_call :
-	(
-		method_name
-		L_PAREN
-		(method_call_arg (COMMA method_call_arg)*)?
-		R_PAREN
-		SEMICOLON
-	);
+method_call_statement : method_call SEMICOLON;
 
 protected
 if_statement :
@@ -166,6 +159,15 @@ protected
 continue_statement : CONTINUE SEMICOLON;
 
 protected
+method_call :
+	(
+		method_name
+		L_PAREN
+		(method_call_arg (COMMA method_call_arg)*)?
+		R_PAREN
+	);
+
+protected
 method_name : ID;
 
 protected
@@ -178,5 +180,52 @@ protected
 assign_op : (EQ_OP | PLUS_EQ_OP | MINUS_EQ_OP);
 
 protected
-// TODO(jasonpr): Fix me!
-expr : ID;
+expr :
+	(
+		location
+		| method_call
+		| literal
+		| array_length
+		| math_expr
+		| inverted_expr
+		| parenthesized_expr
+//		| ternary_condition_expr
+	);
+
+protected
+literal : (INT_LITERAL | CHAR | boolean_literal);
+
+protected
+boolean_literal : (TRUE | FALSE);
+
+protected
+array_length : AT_SIGN ID;
+
+protected
+math_expr :
+	(
+		additive_inverse_expr
+		// TODO(jasonpr): Implement.
+		//| binary_operation_expr
+	);
+
+protected
+additive_inverse_expr :	MINUS expr;
+
+protected
+inverted_expr : NOT_OP expr;
+
+protected
+parenthesized_expr : L_PAREN expr R_PAREN;
+
+
+// TODO(jasonpr): Enable ternary!
+//protected
+//ternary_condition_expr :
+//	(
+//		expr
+//		QUESTION
+//		expr
+//		COLON
+//		expr
+//	);
