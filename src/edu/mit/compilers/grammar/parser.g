@@ -182,7 +182,15 @@ assign_op : (EQ_OP | PLUS_EQ_OP | MINUS_EQ_OP);
 protected
 expr :
 	(
+		added_expr
+	);
+
+protected
+added_expr :
+	(
 		multiplied_expr
+		// Greedily tack on additive binary ops.
+		(options {greedy=true;} : (PLUS | MINUS)  added_expr)*
 	);
 
 protected
@@ -190,7 +198,7 @@ multiplied_expr :
 	(
 		strongest_binding_expr
 		// Greedily tack on multiplicative binary ops.
-		(options {greedy=true;} : (TIMES | DIVIDED | MODULO) multiplied_expr)*;
+		(options {greedy=true;} : (TIMES | DIVIDED | MODULO) multiplied_expr)*
 	);
 
 protected
