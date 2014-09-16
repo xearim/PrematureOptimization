@@ -118,10 +118,10 @@ assignment :
 
 protected
 method_call :
-	// TODO(jasonpr): Fix!
 	(
-		ID
+		method_name
 		L_PAREN
+		(method_call_arg (COMMA method_call_arg)*)?
 		R_PAREN
 		SEMICOLON
 	);
@@ -165,6 +165,12 @@ break_statement : BREAK SEMICOLON;
 
 protected
 continue_statement : CONTINUE SEMICOLON;
+
+protected
+method_name : ID;
+
+protected
+method_call_arg : (expr | STRING);
 
 protected
 location : ID (L_SQ_BRACKET expr R_SQ_BRACKET)?;
