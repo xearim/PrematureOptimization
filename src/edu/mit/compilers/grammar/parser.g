@@ -98,7 +98,7 @@ protected
 statement :
 	(
 		assignment
-		| method_call
+		| method_call_statement
 		| if_statement
 		| for_loop
 		| while_loop
