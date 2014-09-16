@@ -60,7 +60,16 @@ options
   }
 }
 
-program : (callout_decl)* EOF;
+program : (callout_decl)* (field_decl)* EOF;
 
 protected
 callout_decl : CALLOUT ID SEMICOLON;
+
+protected
+field_decl : type single_field_name (COMMA single_field_name)* SEMICOLON;
+
+protected
+single_field_name : (ID (L_SQ_BRACKET INT_LITERAL R_SQ_BRACKET)?);
+
+protected
+type : INT | BOOLEAN;
