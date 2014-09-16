@@ -190,16 +190,22 @@ added_expr :
 	(
 		multiplied_expr
 		// Greedily tack on additive binary ops.
-		(options {greedy=true;} : (PLUS | MINUS)  added_expr)*
+		(options {greedy=true;} : additive_op  added_expr)*
 	);
+
+protected
+additive_op : PLUS | MINUS;
 
 protected
 multiplied_expr :
 	(
 		strongest_binding_expr
 		// Greedily tack on multiplicative binary ops.
-		(options {greedy=true;} : (TIMES | DIVIDED | MODULO) multiplied_expr)*
+		(options {greedy=true;} : multiplicative_op multiplied_expr)*
 	);
+
+protected
+multiplicative_op : TIMES | DIVIDED | MODULO;
 
 protected
 strongest_binding_expr :
