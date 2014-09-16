@@ -60,4 +60,4 @@ options
   }
 }
 
-program: TK_class ID LCURLY RCURLY EOF;
+program: INT ID SEMICOLON EOF;
