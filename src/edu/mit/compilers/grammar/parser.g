@@ -182,14 +182,26 @@ assign_op : (EQ_OP | PLUS_EQ_OP | MINUS_EQ_OP);
 protected
 expr :
 	(
+		multiplied_expr
+	);
+
+protected
+multiplied_expr :
+	(
+		strongest_binding_expr
+		// Greedily tack on multiplicative binary ops.
+		(options {greedy=true;} : (TIMES | DIVIDED | MODULO) multiplied_expr)*;
+	);
+
+protected
+strongest_binding_expr :
+	(
 		location
 		| method_call
 		| literal
 		| array_length
-		| math_expr
 		| inverted_expr
 		| parenthesized_expr
-//		| ternary_condition_expr
 	);
 
 protected
