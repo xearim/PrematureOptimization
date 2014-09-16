@@ -201,6 +201,7 @@ strongest_binding_expr :
 		| literal
 		| array_length
 		| inverted_expr
+		| additive_inverse_expr
 		| parenthesized_expr
 	);
 
