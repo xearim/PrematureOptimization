@@ -70,40 +70,28 @@ R_CURLY_BRACKET options { paraphrase = "}"; } : "}";
 // operators.
 // TODO(jasonpr): Make ANTLR switch up the type, depending upon which
 // one matches.
-OPERATOR :
-	(
-		// ASSIGN_OP
-		'='
-		| "+="
-		| "-="
-		// ARITH_OP
-		| '+'
-		| '-'
-		| '*'
-		| '/'
-		| '%'
-		// REL_OP
-		| '<'
-		| '>'
-		| "<="
-		| ">="
-		// EQ_OP
-		| "=="
-		| "!="
-		// NOT_OP
-		| '!'
-	);
 
+EQ_OP : "=";
+PLUS_EQ_OP : "+=";
+MINUS_EQ_OP : "-=";
+PLUS : "+";
+MINUS : "-";
+TIMES : "*";
+DIVIDED : "/";
+MODULO : "%";
+LT : "<";
+GT : ">";
+LTE : "<=";
+GTE : ">=";
+NE : "!=";
+DOUBLE_EQUAL : "==";
+NOT_OP : '!';
 COND_OP : "&&" | "||";
 
 SEMICOLON : ';';
-
 COLON : ':';
-
 COMMA : ',';
-
 QUESTION : '?';
-
 AT_SIGN : '@';
 
 protected
