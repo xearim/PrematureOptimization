@@ -56,17 +56,55 @@ tokens
   }
 }
 
-LCURLY options { paraphrase = "{"; } : "{";
-RCURLY options { paraphrase = "}"; } : "}";
 
-ASSIGN_OP : '=' | "+=" | "-=";
+L_PAREN options { paraphrase = "("; } : "(";
+R_PAREN options { paraphrase = ")"; } : ")";
 
-ARITH_OP : '+' | '-' | '*' | '/' | '%';
-REL_OP : '<' | '>' | "<=" | ">=";
+L_SQ_BRACKET options { paraphrase = "["; } : "[";
+R_SQ_BRACKET options { paraphrase = "]"; } : "]";
 
-EQ_OP : "==" | "!=";
+L_CURLY_BRACKET options { paraphrase = "{"; } : "{";
+R_CURLY_BRACKET options { paraphrase = "}"; } : "}";
+
+// Operators that introduce lookahead issues, or that are related to those
+// operators.
+// TODO(jasonpr): Make ANTLR switch up the type, depending upon which
+// one matches.
+OPERATOR :
+	(
+		// ASSIGN_OP
+		'='
+		| "+="
+		| "-="
+		// ARITH_OP
+		| '+'
+		| '-'
+		| '*'
+		| '/'
+		| '%'
+		// REL_OP
+		| '<'
+		| '>'
+		| "<="
+		| ">="
+		// EQ_OP
+		| "=="
+		| "!="
+		// NOT_OP
+		| '!'
+	);
 
 COND_OP : "&&" | "||";
+
+SEMICOLON : ';';
+
+COLON : ':';
+
+COMMA : ',';
+
+QUESTION : '?';
+
+AT_SIGN : '@';
 
 protected
 ALPHA : ('a'..'z' | 'A'..'Z' | '_');
