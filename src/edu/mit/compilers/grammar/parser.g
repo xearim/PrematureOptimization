@@ -60,4 +60,7 @@ options
   }
 }
 
-program: INT ID SEMICOLON EOF;
+program : (callout_decl)* EOF;
+
+protected
+callout_decl : CALLOUT ID SEMICOLON;
