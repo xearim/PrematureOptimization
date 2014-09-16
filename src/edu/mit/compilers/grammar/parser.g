@@ -182,8 +182,20 @@ assign_op : (EQ_OP | PLUS_EQ_OP | MINUS_EQ_OP);
 protected
 expr :
 	(
-		added_expr
+		relative_expr
 	);
+
+protected
+relative_expr :
+	(
+		added_expr
+		// Greedily tack on relative ops.  Note that "a < b < c" is
+		// syntactically valid (albeit not semantically valid).
+		(options {greedy=true;} : relative_op relative_expr)*
+	);
+
+protected
+relative_op : LT | GT | LTE | GTE;
 
 protected
 added_expr :
