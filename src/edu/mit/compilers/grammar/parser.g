@@ -148,7 +148,6 @@ for_loop :
 	);
 
 protected
-// TODO(jasonpr): Finish.
 while_loop :
 	(
 		WHILE
