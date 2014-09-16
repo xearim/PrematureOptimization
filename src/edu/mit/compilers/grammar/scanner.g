@@ -89,13 +89,9 @@ NOT_OP : '!';
 COND_OP : "&&" | "||";
 
 SEMICOLON : ';';
-
 COLON : ':';
-
 COMMA : ',';
-
 QUESTION : '?';
-
 AT_SIGN : '@';
 
 protected
