@@ -182,8 +182,36 @@ assign_op : (EQ_OP | PLUS_EQ_OP | MINUS_EQ_OP);
 protected
 expr :
 	(
-		relative_expr
+		cond_or_expr
 	);
+
+protected
+cond_or_expr :
+	(
+		cond_and_expr
+		// Greedily tack on conditional "or" operations.
+		(options {greedy=true;} : COND_OR cond_or_expr)*
+	);
+
+protected
+cond_and_expr :
+	(
+		equality_expr
+		// Greedily tack on conditional "and" operations.
+		(options {greedy=true;} : COND_AND cond_and_expr)*
+	);
+
+protected
+equality_expr :
+	(
+		relative_expr
+		// Greedily tack on equality ops.  Note that "a == b == c" is
+		// syntactically valid (albeit not semantically valid).
+		(options {greedy=true;} : equality_op equality_expr)*
+	);
+
+protected
+equality_op : DOUBLE_EQUAL | NE;
 
 protected
 relative_expr :
