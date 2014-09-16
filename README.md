@@ -1,4 +1,5 @@
-java-skeleton
-=============
+Optimizing Decaf Complier
+=========================
 
-Java Skeleton Code for 6.035
+An optimizing Decaf-to-x86 compiler for 6.035.
+
