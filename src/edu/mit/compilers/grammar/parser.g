@@ -60,7 +60,7 @@ options
   }
 }
 
-program : (callout_decl)* (field_decl)* EOF;
+program : (callout_decl)* (field_decl)* (method_decl)* EOF;
 
 protected
 callout_decl : CALLOUT ID SEMICOLON;
@@ -73,3 +73,105 @@ single_field_name : (ID (L_SQ_BRACKET INT_LITERAL R_SQ_BRACKET)?);
 
 protected
 type : INT | BOOLEAN;
+
+protected
+method_decl :
+	(
+		(type | VOID)
+		ID
+		L_PAREN
+		((type ID) (COMMA type ID)*)?
+		R_PAREN
+		block
+	);
+
+protected
+block :
+	(
+		L_CURLY_BRACKET
+		(field_decl)*
+		(statement)*
+		R_CURLY_BRACKET
+	);
+	
+protected
+statement :
+	(
+		assignment
+		| method_call
+		| if_statement
+		| for_loop
+		| while_loop
+		| return_statement
+		| break_statement
+		| continue_statement
+	);
+
+protected
+assignment :
+	(
+		location
+		assign_op
+		expr
+		SEMICOLON
+	);
+
+protected
+method_call :
+	// TODO(jasonpr): Fix!
+	(
+		ID
+		L_PAREN
+		R_PAREN
+		SEMICOLON
+	);
+
+protected
+if_statement :
+	(
+		IF
+		L_PAREN expr R_PAREN
+		block
+		(ELSE block)?
+	);
+
+protected
+for_loop :
+	(
+		FOR
+		L_PAREN
+		ID
+		EQ_OP
+		expr COMMA expr
+		R_PAREN
+		block
+	);
+
+protected
+// TODO(jasonpr): Finish.
+while_loop :
+	(
+		WHILE
+		L_PAREN expr R_PAREN
+		(COLON INT_LITERAL)?
+		block
+	);
+
+protected
+return_statement : RETURN (expr)? SEMICOLON;
+
+protected
+break_statement : BREAK SEMICOLON;
+
+protected
+continue_statement : CONTINUE SEMICOLON;
+
+protected
+location : ID (L_SQ_BRACKET expr R_SQ_BRACKET)?;
+
+protected
+assign_op : (EQ_OP | PLUS_EQ_OP | MINUS_EQ_OP);
+
+protected
+// TODO(jasonpr): Fix me!
+expr : ID;
