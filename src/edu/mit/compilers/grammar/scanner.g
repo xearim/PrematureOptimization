@@ -86,7 +86,8 @@ GTE : ">=";
 NE : "!=";
 DOUBLE_EQUAL : "==";
 NOT_OP : '!';
-COND_OP : "&&" | "||";
+COND_AND : "&&";
+COND_OR : "||";
 
 SEMICOLON : ';';
 COLON : ':';
