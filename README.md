@@ -16,6 +16,6 @@ Testing
 -------
 
 The code currently passes all scanner and parser tests that the course
-staff have made public.
+staff have made public, including the "hidden" tests.
 
 Additional tests are forthcoming.
