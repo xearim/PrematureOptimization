@@ -20,6 +20,7 @@ tokens {
 	PROGRAM;
 	CALLOUTS;
 	FIELD_DECLS;
+	METHOD_DECLS;
 }
 
 // Java glue code that makes error reporting easier.
@@ -67,7 +68,7 @@ tokens {
 }
 
 program :
-	(callouts field_decls (method_decl)* EOF!)
+	(callouts field_decls method_decls EOF!)
 	{ #program = #([PROGRAM, "program"], #program ); };
 
 protected
@@ -92,13 +93,18 @@ protected
 type : INT | BOOLEAN;
 
 protected
+method_decls :
+	(method_decl)*
+	{ #method_decls = #([METHOD_DECLS, "method_decls"], #method_decls ); };
+
+protected
 method_decl :
 	(
 		(type | VOID)
-		ID
-		L_PAREN
-		((type ID) (COMMA type ID)*)?
-		R_PAREN
+		ID^
+		L_PAREN!
+		((type ID) (COMMA! type ID)*)?
+		R_PAREN!
 		block
 	);
 
