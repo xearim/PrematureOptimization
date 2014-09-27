@@ -158,17 +158,17 @@ assignment :
 		location
 		assign_op
 		expr
-		SEMICOLON
+		SEMICOLON!
 	);
 
 protected
-method_call_statement : method_call SEMICOLON;
+method_call_statement : method_call SEMICOLON!;
 
 protected
 if_statement :
 	(
 		IF
-		L_PAREN expr R_PAREN
+		L_PAREN! expr R_PAREN!
 		block
 		(ELSE block)?
 	);
@@ -177,11 +177,11 @@ protected
 for_loop :
 	(
 		FOR
-		L_PAREN
+		L_PAREN!
 		ID
 		EQ_OP
-		expr COMMA expr
-		R_PAREN
+		expr COMMA! expr
+		R_PAREN!
 		block
 	);
 
@@ -189,27 +189,27 @@ protected
 while_loop :
 	(
 		WHILE
-		L_PAREN expr R_PAREN
+		L_PAREN! expr R_PAREN!
 		(COLON INT_LITERAL)?
 		block
 	);
 
 protected
-return_statement : RETURN (expr)? SEMICOLON;
+return_statement : RETURN (expr)? SEMICOLON!;
 
 protected
-break_statement : BREAK SEMICOLON;
+break_statement : BREAK SEMICOLON!;
 
 protected
-continue_statement : CONTINUE SEMICOLON;
+continue_statement : CONTINUE SEMICOLON!;
 
 protected
 method_call :
 	(
 		method_name
-		L_PAREN
-		(method_call_arg (COMMA method_call_arg)*)?
-		R_PAREN
+		L_PAREN!
+		(method_call_arg (COMMA! method_call_arg)*)?
+		R_PAREN!
 	);
 
 protected
@@ -219,7 +219,7 @@ protected
 method_call_arg : (expr | STRING);
 
 protected
-location : ID (L_SQ_BRACKET expr R_SQ_BRACKET)?;
+location : ID (L_SQ_BRACKET! expr R_SQ_BRACKET!)?;
 
 protected
 assign_op : (EQ_OP | PLUS_EQ_OP | MINUS_EQ_OP);
@@ -236,7 +236,7 @@ expr :
 ternary_expr :
 	(
 		cond_or_expr
-		(options {greedy=true;} : QUESTION ternary_expr COLON ternary_expr)?
+		(options {greedy=true;} : QUESTION! ternary_expr COLON! ternary_expr)?
 	);
 
 protected
@@ -337,7 +337,7 @@ protected
 inverted_expr : NOT_OP expr;
 
 protected
-parenthesized_expr : L_PAREN expr R_PAREN;
+parenthesized_expr : L_PAREN! expr R_PAREN!;
 
 
 // TODO(jasonpr): Enable ternary!
