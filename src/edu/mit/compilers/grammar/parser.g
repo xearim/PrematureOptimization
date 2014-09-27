@@ -24,6 +24,7 @@ tokens {
 	SIGNATURE_ARGS;
 	SIGNATURE_ARG;
 	BLOCK;
+	STATEMENTS;
 }
 
 // Java glue code that makes error reporting easier.
@@ -128,10 +129,15 @@ block :
 	(
 		L_CURLY_BRACKET!
 		field_decls
-		(statement)*
+		statements
 		R_CURLY_BRACKET!
 	)
 	{ #block = #([BLOCK, "block"], #block ); };
+
+protected
+statements :
+	(statement)*
+	{ #statements = #([STATEMENTS, "statements"], #statements); };
 
 protected
 statement :
