@@ -21,6 +21,8 @@ tokens {
 	CALLOUTS;
 	FIELD_DECLS;
 	METHOD_DECLS;
+	SIGNATURE_ARGS;
+	SIGNATURE_ARG;
 }
 
 // Java glue code that makes error reporting easier.
@@ -103,10 +105,22 @@ method_decl :
 		(type | VOID)
 		ID^
 		L_PAREN!
-		((type ID) (COMMA! type ID)*)?
+		signature_args
 		R_PAREN!
 		block
 	);
+
+protected
+signature_args :
+	(signature_arg (COMMA! signature_arg)*)?
+	{ #signature_args = #([SIGNATURE_ARGS, "signature_args"], #signature_args ); };
+
+// TODO(jasonpr): Resolve difference between the ID -> type edges here, and
+// the type -> ID edges in field_decl.
+protected
+signature_arg:
+	(type ID^)
+	{ #signature_arg = #([SIGNATURE_ARG, "signature_arg"], #signature_arg ); };
 
 protected
 block :
