@@ -23,6 +23,7 @@ tokens {
 	METHOD_DECLS;
 	SIGNATURE_ARGS;
 	SIGNATURE_ARG;
+	BLOCK;
 }
 
 // Java glue code that makes error reporting easier.
@@ -125,11 +126,12 @@ signature_arg:
 protected
 block :
 	(
-		L_CURLY_BRACKET
+		L_CURLY_BRACKET!
 		(field_decl)*
 		(statement)*
-		R_CURLY_BRACKET
-	);
+		R_CURLY_BRACKET!
+	)
+	{ #block = #([BLOCK, "block"], #block ); };
 
 protected
 statement :
