@@ -81,7 +81,7 @@ callouts :
 
 protected
 field_decls :
-	(field_decl)*
+	(options {greedy=true;} : field_decl)*
 	{ #field_decls = #([FIELD_DECLS, "field_decls"], #field_decls ); };
 
 
@@ -127,7 +127,7 @@ protected
 block :
 	(
 		L_CURLY_BRACKET!
-		(field_decl)*
+		field_decls
 		(statement)*
 		R_CURLY_BRACKET!
 	)
