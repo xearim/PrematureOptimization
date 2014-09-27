@@ -16,6 +16,12 @@ options
   buildAST = true;
 }
 
+tokens {
+	PROGRAM;
+	CALLOUTS;
+	FIELD_DECLS;
+}
+
 // Java glue code that makes error reporting easier.
 // You can insert arbitrary Java code into your parser/lexer this way.
 {
@@ -60,13 +66,24 @@ options
   }
 }
 
-program : (callout_decl)* (field_decl)* (method_decl)* EOF;
+program :
+	(callouts field_decls (method_decl)* EOF!)
+	{ #program = #([PROGRAM, "program"], #program ); };
 
 protected
-callout_decl : CALLOUT ID SEMICOLON;
+callouts :
+    (CALLOUT! ID SEMICOLON!)*
+	{ #callouts = #([CALLOUTS, "callouts"], #callouts ); };
 
 protected
-field_decl : type single_field_name (COMMA single_field_name)* SEMICOLON;
+field_decls :
+	(field_decl)*
+	{ #field_decls = #([FIELD_DECLS, "field_decls"], #field_decls ); };
+
+
+// TODO(jasonpr): Determine how to hoist the types without duplicating code from "type".
+protected
+field_decl : ((INT^ | BOOLEAN^) single_field_name (COMMA! single_field_name)* SEMICOLON!);
 
 protected
 single_field_name : (ID (L_SQ_BRACKET INT_LITERAL R_SQ_BRACKET)?);
