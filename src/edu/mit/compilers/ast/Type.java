@@ -1,7 +1,5 @@
 package edu.mit.compilers.ast;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
@@ -22,7 +20,6 @@ public class Type implements Node {
     }
     
     public static Type array(BaseType baseType, int length) {
-        checkArgument(length > 0);
         return new Type(baseType, Optional.of(length));
     }
     
