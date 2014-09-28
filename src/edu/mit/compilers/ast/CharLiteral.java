@@ -2,12 +2,12 @@ package edu.mit.compilers.ast;
 
 import com.google.common.collect.ImmutableList;
 
-public class IntLiteral implements NativeLiteral {
+public class CharLiteral implements NativeLiteral {
     // Yes, a string.  We want the value that the user typed in.  We don't even care how Java
     // would represent it.
     private final String value;
     
-    public IntLiteral(String value) {
+    public CharLiteral(String value) {
         this.value = value;
     }
 
@@ -18,7 +18,7 @@ public class IntLiteral implements NativeLiteral {
 
     @Override
     public String getName() {
-        return value;
+        return "'" + value + "'";
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.
