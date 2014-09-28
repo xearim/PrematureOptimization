@@ -8,10 +8,12 @@ import antlr.CharStreamException;
 import antlr.RecognitionException;
 import antlr.Token;
 import antlr.TokenStreamException;
+import antlr.collections.AST;
 import edu.mit.compilers.grammar.DecafParser;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.grammar.DecafScanner;
 import edu.mit.compilers.grammar.DecafScannerTokenTypes;
+import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
 
@@ -88,6 +90,15 @@ class Main {
     DecafParser parser = new DecafParser(scanner);
     parser.setTrace(CLI.debug);
     parser.program();
+
+    // TODO(jasonpr): Move this flag to CLI.
+    boolean outputParseTree = true;
+    if (outputParseTree) {
+        AST ast = parser.getAST();
+        AstPrinter printer = new AstPrinter(outputStream);
+        printer.print(ast);
+    }
+
     if(parser.getError()) {
       System.exit(1);
     }
