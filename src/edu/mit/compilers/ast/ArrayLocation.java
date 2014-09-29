@@ -1,5 +1,6 @@
 package edu.mit.compilers.ast;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class ArrayLocation implements Location {
