@@ -46,11 +46,12 @@ public class AstPrinter {
     }
 
     private void drawNode(int nodeId, String label) {
-        // Java sees the second argument as \\".
-        // The regex system sees the second argument as \", and
-        // prints it out, so the DOT label is properly escaped.
-        String sanitizedLabel = label.replaceAll("\"","\\\\\"");
-        printStream.println(nodeId + "[label=\"" + sanitizedLabel + "\"];");
+        // We prepend a backslash to any backslash or quote.
+        // We need four backslashes to make it propogate through the Java String literal definition
+        // and through the regex system.
+        String escapedBackslashes = label.replaceAll("(\\\\)", "\\\\$1");
+        String escapedQuotes = escapedBackslashes.replaceAll("(\")","\\\\$1");
+        printStream.println(nodeId + "[label=\"" + escapedQuotes + "\"];");
     }
 
     private void drawEdge(int sourceId, int destinationId) {
