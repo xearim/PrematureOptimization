@@ -46,7 +46,11 @@ public class AstPrinter {
     }
 
     private void drawNode(int nodeId, String label) {
-        printStream.println(nodeId + "[label=\"" + label + "\"];");
+        // Java sees the second argument as \\".
+        // The regex system sees the second argument as \", and
+        // prints it out, so the DOT label is properly escaped.
+        String sanitizedLabel = label.replaceAll("\"","\\\\\"");
+        printStream.println(nodeId + "[label=\"" + sanitizedLabel + "\"];");
     }
 
     private void drawEdge(int sourceId, int destinationId) {
