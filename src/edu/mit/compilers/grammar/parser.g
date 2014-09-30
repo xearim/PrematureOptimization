@@ -156,7 +156,7 @@ protected
 assignment :
 	(
 		location
-		assign_op
+		(EQ_OP^ | PLUS_EQ_OP^ | MINUS_EQ_OP^)
 		expr
 		SEMICOLON!
 	);
@@ -220,9 +220,6 @@ method_call_arg : (expr | STRING);
 
 protected
 location : ID (L_SQ_BRACKET! expr R_SQ_BRACKET!)?;
-
-protected
-assign_op : (EQ_OP | PLUS_EQ_OP | MINUS_EQ_OP);
 
 protected
 expr :
