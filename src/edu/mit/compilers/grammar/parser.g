@@ -202,7 +202,7 @@ protected
 while_bound : (COLON^ INT_LITERAL);
 
 protected
-return_statement : RETURN (expr)? SEMICOLON!;
+return_statement : RETURN^ (expr)? SEMICOLON!;
 
 protected
 break_statement : BREAK SEMICOLON!;
