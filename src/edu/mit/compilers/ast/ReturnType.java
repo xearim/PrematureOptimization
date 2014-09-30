@@ -1,7 +1,5 @@
 package edu.mit.compilers.ast;
 
-import sun.reflect.generics.tree.BaseType;
-
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
