@@ -167,10 +167,10 @@ method_call_statement : method_call SEMICOLON!;
 protected
 if_statement :
 	(
-		IF
+		IF^
 		L_PAREN! expr R_PAREN!
 		block
-		(ELSE block)?
+		(ELSE! block)?
 	);
 
 protected
