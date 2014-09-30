@@ -31,6 +31,16 @@ public class WhileLoop implements Statement {
     public String getName() {
         return "while";
     }
+
+	@Override
+	public boolean canReturn(Optional<BaseType> type) {
+		return body.canReturn(type);
+	}
+
+	@Override
+	public boolean mustReturn(Optional<BaseType> type) {
+		return body.mustReturn(type);
+	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

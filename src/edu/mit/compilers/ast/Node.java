@@ -3,7 +3,7 @@ package edu.mit.compilers.ast;
 import com.google.common.base.Optional;
 
 public interface Node {
-    
+
 	/**
 	 * Return a boolean expressing whether or not the node
 	 * can return a value of type BaseType, an absent optional represents
