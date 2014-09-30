@@ -188,11 +188,18 @@ for_loop :
 protected
 while_loop :
 	(
-		WHILE
+		WHILE^
 		L_PAREN! expr R_PAREN!
-		(COLON INT_LITERAL)?
+	    // The bound is optional, so the while_loop has either three or four children..
+	    // and, perhaps counterintuitively, the optional node is NOT the final node.
+	    // It's not ideal, but I'm having trouble implementing saner plans with ANTLR.
+	    // TODO(jasonpr): Figure out how to implement a saner plan with ANTLR!
+		(while_bound)?
 		block
 	);
+
+protected
+while_bound : (COLON^ INT_LITERAL);
 
 protected
 return_statement : RETURN (expr)? SEMICOLON!;
