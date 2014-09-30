@@ -25,6 +25,8 @@ tokens {
 	SIGNATURE_ARG;
 	BLOCK;
 	STATEMENTS;
+	METHOD_CALL;
+	METHOD_CALL_ARGS;
 }
 
 // Java glue code that makes error reporting easier.
@@ -214,10 +216,15 @@ protected
 method_call :
 	(
 		method_name
-		L_PAREN!
-		(method_call_arg (COMMA! method_call_arg)*)?
-		R_PAREN!
-	);
+		L_PAREN! (method_call_args)? R_PAREN!
+	)
+	{ #method_call = #([METHOD_CALL, "method_call"], #method_call); };
+
+
+protected
+method_call_args :
+	method_call_arg (COMMA! method_call_arg)*
+	{ #method_call_args = #([METHOD_CALL_ARGS, "method_call_args"], #method_call_args ); };
 
 protected
 method_name : ID;
