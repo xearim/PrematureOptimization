@@ -9,24 +9,28 @@ import com.google.common.collect.ImmutableList;
 public class Block implements Node {
     
     private final String name;
-    private final NodeSequence<FieldDeclaration> locals;
+    private final Scope scope;
     private final NodeSequence<Statement> statements;
     
-    public Block(String name, List<FieldDeclaration> locals, List<Statement> statements) {
+    public Block(String name, List<FieldDescriptor> scope, List<Statement> statements) {
         this.name = name;
-        this.locals = new NodeSequence<FieldDeclaration>(locals, "locals");
+        this.scope = new Scope(scope);
         this.statements = new NodeSequence<Statement>(statements, "statements");
     }
     
     
     @Override
     public Iterable<? extends Node> getChildren() {
-        return ImmutableList.of(locals, statements);
+        return ImmutableList.of(statements);
     }
 
     @Override
     public String getName() {
         return name;
+    }
+    
+    public Scope getScope() {
+    	return scope;
     }
 
     // Blocks can only return the same type that they must return
