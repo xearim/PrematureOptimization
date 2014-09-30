@@ -176,10 +176,10 @@ if_statement :
 protected
 for_loop :
 	(
-		FOR
+		FOR^
 		L_PAREN!
 		ID
-		EQ_OP
+		EQ_OP!
 		expr COMMA! expr
 		R_PAREN!
 		block
