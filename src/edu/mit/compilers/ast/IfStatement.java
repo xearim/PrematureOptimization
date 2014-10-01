@@ -40,24 +40,6 @@ public class IfStatement implements Statement {
         return "if" + (elseBlock.isPresent() ? "-else" : "");
     }
 
-    // If statements are the superset of their two contained blocks
-	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		if(elseBlock.isPresent())
-			return elseBlock.get().canReturn(type) || thenBlock.canReturn(type);
-		return thenBlock.canReturn(type);
-	}
-
-	// If statements must return a value iff
-	// A) it has an elseBlock (so it has complete control flow)
-	// B) both blocks return the same value
-	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
-		if(elseBlock.isPresent())
-			return elseBlock.get().mustReturn(type) && thenBlock.mustReturn(type);
-		return false;
-	}
-
 	@Override
 	public Iterable<Block> getBlocks() {
 		if(elseBlock.isPresent())
@@ -65,10 +47,18 @@ public class IfStatement implements Statement {
 		return ImmutableList.of(thenBlock);
 	}
 
-	// If statements don't evaluate to anything
 	@Override
-	public Optional<BaseType> evalType() {
-		return Optional.absent();
+	public boolean canReturn() {
+		for(Statement subStatement: thenBlock.getStatements()){
+			if(subStatement.canReturn())
+				return true;
+		}
+		if(elseBlock.isPresent())
+			for(Statement subStatement: elseBlock.get().getStatements()){
+				if(subStatement.canReturn())
+					return true;
+			}
+		return false;
 	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.

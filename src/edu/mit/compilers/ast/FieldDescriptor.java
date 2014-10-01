@@ -27,5 +27,25 @@ public class FieldDescriptor {
 		this.type = type;
 	}
 	
+	public BaseType getType(){
+		return type;
+	}
+	
+	public String getName(){
+		return name;
+	}
+	
+	public Optional<Integer> getLength(){
+		return length;
+	}
+	
+	public int getLineNumber(){
+		return lineNumber;
+	}
+	
+	public int getColumnNumber(){
+		return columnNumber;
+	}
+	
 	
 }

@@ -1,6 +1,5 @@
 package edu.mit.compilers.ast;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class IntLiteral implements NativeLiteral {
@@ -21,23 +20,6 @@ public class IntLiteral implements NativeLiteral {
     public String getName() {
         return value;
     }
-
-    // Int literals do not explicitly return
-	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		return false;
-	}
-
-	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
-		return false;
-	}
-
-	// Int literals evaluate to Integers
-	@Override
-	public Optional<BaseType> evalType() {
-		return Optional.of(BaseType.INTEGER);
-	}
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

@@ -1,6 +1,5 @@
 package edu.mit.compilers.ast;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class ForLoop implements Statement {
@@ -28,27 +27,18 @@ public class ForLoop implements Statement {
         return "for";
     }
 
-    // A For loop produces returns equivalent to its contained block element
-	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		return body.canReturn(type);
-	}
-
-	// May entirely skip a for block
-	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
-		return false;
-	}
-
 	@Override
 	public Iterable<Block> getBlocks() {
 		return ImmutableList.of(body);
 	}
 
-	// For blocks don't evaluate
 	@Override
-	public Optional<BaseType> evalType() {
-		return Optional.absent();
+	public boolean canReturn() {
+		for(Statement subStatement: body.getStatements()){
+			if(subStatement.canReturn())
+				return true;
+		}
+		return false;
 	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.

@@ -1,6 +1,5 @@
 package edu.mit.compilers.ast;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class Assignment implements Statement {
@@ -26,27 +25,14 @@ public class Assignment implements Statement {
         return operation.getSymbol();
     }
 
-    // Assignments do not produce return values
-	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		return false;
-	}
-
-	// Assignments do not produce return values
-	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
-		return false;
-	}
-
 	@Override
 	public Iterable<Block> getBlocks() {
 		return ImmutableList.of();
 	}
 
-	// Assignments do not evaluate to any value
 	@Override
-	public Optional<BaseType> evalType() {
-		return Optional.absent();
+	public boolean canReturn() {
+		return false;
 	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.

@@ -2,7 +2,6 @@ package edu.mit.compilers.ast;
 
 import java.util.List;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -29,30 +28,4 @@ public class NodeSequence<T extends Node> implements Node {
     public String getName() {
         return name;
     }
-
-    // A node sequence is for all intents and purposes equivalent to a block in terms of return determination
-	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		return mustReturn(type);
-	}
-
-	// A node sequence is for all intents and purposes equivalent to a block in terms of return determination
-	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
-		for(T statement : sequence){
-			if((statement.mustReturn(Optional.of(BaseType.BOOLEAN)) || 
-				statement.mustReturn(Optional.of(BaseType.INTEGER)) ||
-				statement.mustReturn(Optional.<BaseType>absent()) ) && !statement.mustReturn(type))
-				return false;
-			else if(statement.mustReturn(type))
-				return true;
-		}
-		return false;
-	}
-
-	// A node sequence doesn't have a menaingful evaluation type (aka, check its actual statements)
-	@Override
-	public Optional<BaseType> evalType() {
-		return Optional.absent();
-	}
 }
