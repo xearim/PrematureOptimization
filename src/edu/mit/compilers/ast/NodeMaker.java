@@ -256,42 +256,127 @@ public class NodeMaker {
     }
 
     public static Assignment assignment(AST assignment) {
-        // TODO(jasonpr): Implement.
-        return null;
+        AssignmentOperation operation;
+        if (assignment.getType() == EQ_OP) {
+            operation = AssignmentOperation.SET_EQUALS;
+        } else if (assignment.getType() == PLUS_EQ_OP) {
+            operation = AssignmentOperation.PLUS_EQUALS;
+        } else if (assignment.getType() == MINUS_EQ_OP) {
+            operation = AssignmentOperation.MINUS_EQUALS;
+        } else {
+            throw new AssertionError("Unexpected type for assignment " + assignment);
+        }
+
+        checkChildCount(2, assignment);
+        List<AST> children = children(assignment);
+        return new Assignment(location(children.get(0)), operation,
+                nativeExpression(children.get(1)));
     }
 
     public static MethodCall methodCall(AST methodCall) {
-        return null;
+        checkType(methodCall, METHOD_CALL);
+        checkChildCount(1, 2, methodCall);
+
+        List<AST> children = children(methodCall);
+        String methodName = stringFromId(children.get(0));
+        List<GeneralExpression> parameterValues = (children.size() == 1)
+                ? ImmutableList.<GeneralExpression>of()
+                : methodCallArgs(children.get(1));
+
+        return new MethodCall(methodName, parameterValues);
     }
 
     public static IfStatement ifStatement(AST ifStatement) {
-        // TODO(jasonpr): Implement.
-        return null;
+        checkChildCount(2, 3, ifStatement);
+        List<AST> children = children(ifStatement);
+        NativeExpression condition = nativeExpression(children.get(0));
+        Block thenBlock = block(children.get(1));
+        if (children.size() == 2) {
+            // It's just the condition and the then block.
+            return IfStatement.ifThen(condition, thenBlock);
+        } else {
+            // There's an else block, too!
+            Block elseBlock = block(children.get(2));
+            return IfStatement.ifThenElse(condition, thenBlock, elseBlock);
+        }
     }
 
     public static ForLoop forLoop(AST forLoop) {
-        // TODO(jasonpr): Implement.
-        return null;
+        checkChildCount(4, forLoop);
+
+        List<AST> children = children(forLoop);
+        ScalarLocation loopVariable = scalarLocation(children.get(0));
+        NativeExpression rangeStart = nativeExpression(children.get(1));
+        NativeExpression rangeEnd = nativeExpression(children.get(2));
+        Block body = block(children.get(3));
+
+        return new ForLoop(loopVariable, rangeStart, rangeEnd, body);
     }
 
     public static WhileLoop whileLoop(AST whileLoop) {
-        // TODO(jasonpr): Implement.
-        return null;
+        checkChildCount(2, 3, whileLoop);
+
+        List<AST> children = children(whileLoop);
+        NativeExpression condition = nativeExpression(children.get(0));
+
+        if (children.size() == 2) {
+            // There is no bound on the while loop.
+            return WhileLoop.simple(condition, block(children.get(1)));
+        } else {
+            // There is a bound on the while loop.
+            IntLiteral maxRepetitions = intLiteral(children.get(1));
+            Block body = block(children.get(2));
+            return WhileLoop.limited(condition, maxRepetitions, body);
+        }
     }
 
     public static ReturnStatement returnStatement(AST returnStatement) {
+        checkType(returnStatement, RETURN);
+        checkChildCount(0, 1, returnStatement);
+
+        List<AST> children = children(returnStatement);
+        if (children.size() == 0) {
+            return ReturnStatement.ofVoid();
+        } else {
+            return ReturnStatement.of(nativeExpression(children.get(1)));
+        }
+    }
+
+    public static NativeExpression nativeExpression(AST nativeExpression) {
         // TODO(jasonpr): Implement.
-        return null;
+        throw new RuntimeException("Not yet implemented.");
+    }
+
+    public static Location location(AST location) {
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented.");
+    }
+
+    public static ScalarLocation scalarLocation(AST scalarLocation) {
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented.");
+    }
+
+    public static IntLiteral intLiteral(AST intLiteral) {
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented.");
+    }
+
+    public static List<GeneralExpression> methodCallArgs(AST methodCallArgs) {
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented.");
     }
 
     public static BreakStatement breakStatement(AST breakStatement) {
-        // TODO(jasonpr): Implement.
-        return null;
+        checkType(breakStatement, BREAK);
+        checkChildCount(0, breakStatement);
+        return new BreakStatement();
     }
 
     public static ContinueStatement continueStatement(AST continueStatement) {
-        // TODO(jasonpr): Implement.
-        return null;
+        checkType(continueStatement, CONTINUE);
+        checkChildCount(0, continueStatement);
+        return new ContinueStatement();
     }
 
     private static void checkChildCount(int min, int max, AST astNode) {
