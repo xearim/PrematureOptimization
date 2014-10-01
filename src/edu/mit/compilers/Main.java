@@ -97,12 +97,20 @@ class Main {
   private static void printAst(InputStream inputStream, PrintStream outputStream)
           throws RecognitionException, TokenStreamException {
       DecafParser parser = programmedParser(inputStream, outputStream);
+      if (parser.getError()) {
+          System.exit(1);
+      }
       AST ast = parser.getAST();
       AstPrinter printer = new AstPrinter(outputStream);
       printer.print(ast);
   }
 
-  /** Make a DecafParser, use it to parse the program from inputStream, and return that it. */
+  /**
+   * Make a DecafParser, use it to parse the program from inputStream, and return that it.
+   *
+   * <p>The returned parser might be in an error state.  This function does not react to any
+   * parser errors.
+   */
   private static DecafParser programmedParser(InputStream inputStream, PrintStream outputStream)
           throws RecognitionException, TokenStreamException {
       DecafScanner scanner =
