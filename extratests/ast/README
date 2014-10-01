@@ -1,0 +1,7 @@
+This directory contains some test files for AST generation.
+
+There is no "runner" for these tests.  They simply exist so that a
+human can feed them to the parser, and inspect the AST manually.
+
+One day, hopefully, automated tests will be developed to check that
+the compiler produces the correct ASTs for these tests.

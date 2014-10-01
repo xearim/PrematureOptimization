@@ -1,0 +1,7 @@
+// Contains a while loop with a bound.
+void main() {
+     i = 0;
+     while (true) :100 {
+     	   i += 1;
+     }
+}

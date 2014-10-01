@@ -1,0 +1,4 @@
+// Demonstrates the associativity of the OR operator.
+boolean main() {
+     return x || y || z;
+}
