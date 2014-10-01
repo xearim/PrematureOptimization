@@ -1,4 +1,4 @@
-package edu.mit.compilers;
+package edu.mit.compilers.ast;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -8,15 +8,10 @@ import antlr.collections.AST;
 
 import com.google.common.collect.ImmutableList;
 
-import edu.mit.compilers.ast.Callout;
-import edu.mit.compilers.ast.FieldDescriptor;
-import edu.mit.compilers.ast.Method;
-import edu.mit.compilers.ast.Program;
-
 /** Utility class for dealing with ANTLR's ASTs. */
-public class AntlrAstUtils {
+public class NodeMaker {
     // Prohibit instantiation.
-    private AntlrAstUtils() {}
+    private NodeMaker() {}
 
     /** Make a Program from a "program" ANTLR AST. */
     public static Program program(AST program) {
