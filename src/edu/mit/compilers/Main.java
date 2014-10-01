@@ -29,6 +29,8 @@ class Main {
       // Parse or scan.
       if (CLI.target == Action.SCAN) {
         scan(inputStream, outputStream);
+      } else if (CLI.target == Action.AST) {
+        printAst(inputStream, outputStream);
       } else if (CLI.target == Action.PARSE ||
                  CLI.target == Action.DEFAULT) {
         parse(inputStream, outputStream);
@@ -86,18 +88,18 @@ class Main {
   // TODO(jasonpr): Javadoc.
   private static void parse(InputStream inputStream, PrintStream outputStream) throws RecognitionException, TokenStreamException {
     DecafParser parser = programmedParser(inputStream, outputStream);
-
-    // TODO(jasonpr): Move this flag to CLI.
-    boolean outputParseTree = true;
-    if (outputParseTree) {
-        AST ast = parser.getAST();
-        AstPrinter printer = new AstPrinter(outputStream);
-        printer.print(ast);
-    }
-
     if(parser.getError()) {
       System.exit(1);
     }
+  }
+
+  /** Print the AST that ANTLR generated for the program, in DOT format. */
+  private static void printAst(InputStream inputStream, PrintStream outputStream)
+          throws RecognitionException, TokenStreamException {
+      DecafParser parser = programmedParser(inputStream, outputStream);
+      AST ast = parser.getAST();
+      AstPrinter printer = new AstPrinter(outputStream);
+      printer.print(ast);
   }
 
   /** Make a DecafParser, use it to parse the program from inputStream, and return that it. */
