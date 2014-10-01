@@ -27,5 +27,15 @@ public class BreakStatement implements Statement {
 		return false;
 	}
 
+	@Override
+	public Iterable<Block> getBlocks() {
+		return ImmutableList.of();
+	}
+
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
+	}
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
 }

@@ -22,20 +22,21 @@ public class IntLiteral implements NativeLiteral {
         return value;
     }
 
-    // Int literals can only return integers
+    // Int literals do not explicitly return
 	@Override
 	public boolean canReturn(Optional<BaseType> type) {
-		if(type.isPresent() && type.get() == BaseType.INTEGER)
-			return true;
 		return false;
 	}
 
-	// Int literals can only return integers
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
-		if(type.isPresent() && type.get() == BaseType.INTEGER)
-			return true;
 		return false;
+	}
+
+	// Int literals evaluate to Integers
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.of(BaseType.INTEGER);
 	}
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

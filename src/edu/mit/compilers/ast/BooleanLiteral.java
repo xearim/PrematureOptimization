@@ -25,20 +25,21 @@ public class BooleanLiteral implements NativeLiteral {
         return value;
     }
 
-    // booleans can only return booleans
+    // booleans don't return by default
 	@Override
 	public boolean canReturn(Optional<BaseType> type) {
-		if(type.isPresent() && type.get() == BaseType.BOOLEAN)
-			return true;
 		return false;
 	}
 
-	// booleans must only return booleans
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
-		if(type.isPresent() && type.get() == BaseType.BOOLEAN)
-			return true;
 		return false;
+	}
+
+	// Booleans evaluate to booleans
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.of(BaseType.BOOLEAN);
 	}
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

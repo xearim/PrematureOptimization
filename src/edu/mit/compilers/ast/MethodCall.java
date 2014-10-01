@@ -25,16 +25,27 @@ public class MethodCall implements Statement {
         return "call " + methodName;
     }
 
-    // A method must be looked up to know its return type
+    // a method call evaluates to something {int, bool, void} but for
+    // all intents and purposes is a variable, thus it doesn't have a return value
 	@Override
 	public boolean canReturn(Optional<BaseType> type) {
 		return false;
 	}
 
-	// A method must be looked up to know its return type
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
 		return false;
+	}
+
+	@Override
+	public Iterable<Block> getBlocks() {
+		return ImmutableList.of();
+	}
+
+	// A method must be looked up to know its evaluation type
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
 	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.

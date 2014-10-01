@@ -25,41 +25,25 @@ public class UnaryOperation implements NativeExpression {
 
 	@Override
 	public boolean canReturn(Optional<BaseType> type) {
-		switch(operator){
-		case ARRAY_LENGTH:
-			if(type.isPresent() && type.get() == BaseType.INTEGER)
-				return true;
-			return false;
-		case NEGATIVE:
-			if(type.isPresent() && type.get() == BaseType.INTEGER)
-				return true;
-			return false;
-		case NOT:
-			if(type.isPresent() && type.get() == BaseType.BOOLEAN)
-				return true;
-			return false;
-		default:
-			return false;
-		}
+		return false;
 	}
 
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
+		return false;
+	}
+
+	@Override
+	public Optional<BaseType> evalType() {
 		switch(operator){
 		case ARRAY_LENGTH:
-			if(type.isPresent() && type.get() == BaseType.INTEGER)
-				return true;
-			return false;
+			return Optional.of(BaseType.INTEGER);
 		case NEGATIVE:
-			if(type.isPresent() && type.get() == BaseType.INTEGER)
-				return true;
-			return false;
+			return Optional.of(BaseType.INTEGER);
 		case NOT:
-			if(type.isPresent() && type.get() == BaseType.BOOLEAN)
-				return true;
-			return false;
+			return Optional.of(BaseType.BOOLEAN);
 		default:
-			return false;
+			return Optional.absent();
 		}
 	}
 

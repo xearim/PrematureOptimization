@@ -37,24 +37,22 @@ public class Type implements Node {
         return base + reach;
     }
 
+    // Types do not return anything
 	@Override
 	public boolean canReturn(Optional<BaseType> type) {
-		if(!length.isPresent()){
-			if(!type.isPresent())
-				return false;
-			return type.get() == baseType;
-		}
 		return false;
 	}
 
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
-		if(!length.isPresent()){
-			if(!type.isPresent())
-				return false;
-			return type.get() == baseType;
-		}
 		return false;
+	}
+
+	@Override
+	public Optional<BaseType> evalType() {
+		if(!length.isPresent())
+			return Optional.of(baseType);
+		return Optional.absent();
 	}
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.
