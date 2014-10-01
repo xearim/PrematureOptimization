@@ -1,0 +1,4 @@
+// Contains multiplicative operations whose result depends on left-associativity.
+void main() {
+     return 24 / 12 / 2;
+}

@@ -1,0 +1,9 @@
+// Contains a ternary operator whose true branch contains another ternary
+// operator.
+void main() {
+     return outer_cond
+		? inner_cond
+		  ? inner_true
+		  : inner_false
+     	    	: outer_false;
+}
