@@ -27,6 +27,7 @@ tokens {
 	STATEMENTS;
 	METHOD_CALL;
 	METHOD_CALL_ARGS;
+	ARRAY_LOCATION;
 }
 
 // Java glue code that makes error reporting easier.
@@ -233,7 +234,15 @@ protected
 method_call_arg : (expr | STRING);
 
 protected
-location : ID (L_SQ_BRACKET! expr R_SQ_BRACKET!)?;
+location : (scalar_location | array_location);
+
+protected
+scalar_location : ID;
+
+protected
+array_location :
+	(ID L_SQ_BRACKET! expr R_SQ_BRACKET!)
+	{ #array_location = #([ARRAY_LOCATION, "array_location"], #array_location ); };
 
 protected
 expr :
