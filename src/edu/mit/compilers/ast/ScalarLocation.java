@@ -21,18 +21,21 @@ public class ScalarLocation implements Location {
         return variableName;
     }
 
-    // Scalars can be either Integers or Booleans
+    // Scalars dont return on their own
 	@Override
 	public boolean canReturn(Optional<BaseType> type) {
-		if(type.isPresent())
-			return true;
 		return false;
 	}
 
-	// Scalars must be looked up in scope to have a meaningful return value
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
 		return false;
+	}
+
+	// Scalars must be looked up in scope to have a meaningful evaluation type
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
 	}
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

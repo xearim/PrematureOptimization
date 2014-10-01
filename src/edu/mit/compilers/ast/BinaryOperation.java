@@ -26,38 +26,22 @@ public class BinaryOperation implements NativeExpression {
         return operator.getSymbol();
     }
 
-    // Possible return types are limited by the operator type
+    // Binary ops on their own do not produce re
 	@Override
 	public boolean canReturn(Optional<BaseType> type) {
-		switch(operator){
-		case AND:
-		case OR:
-		case DOUBLE_EQUALS:
-		case NOT_EQUALS:
-		case GREATER_THAN_OR_EQUAL:
-		case GREATER_THAN:
-		case LESS_THAN_OR_EQUAL:
-		case LESS_THAN:
-			if(type.isPresent() && type.get() == BaseType.BOOLEAN)
-				return true;
-			return false;
-		case DIVIDED_BY:
-		case MINUS:
-		case MODULO:
-		case PLUS:
-		case TIMES:
-			if(type.isPresent() && type.get() == BaseType.INTEGER)
-				return true;
-			return false;
-		// Should never reach here
-		default:
-			return false;
-		}
+		return false;
 	}
 
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
+		return false;
+	}
+
+	// Possible return types are limited by the operator type
+	@Override
+	public Optional<BaseType> evalType() {
 		switch(operator){
+		/* fall-through */
 		case AND:
 		case OR:
 		case DOUBLE_EQUALS:
@@ -66,20 +50,17 @@ public class BinaryOperation implements NativeExpression {
 		case GREATER_THAN:
 		case LESS_THAN_OR_EQUAL:
 		case LESS_THAN:
-			if(type.isPresent() && type.get() == BaseType.BOOLEAN)
-				return true;
-			return false;
+			return Optional.of(BaseType.BOOLEAN);
+		/* fall-through */
 		case DIVIDED_BY:
 		case MINUS:
 		case MODULO:
 		case PLUS:
 		case TIMES:
-			if(type.isPresent() && type.get() == BaseType.INTEGER)
-				return true;
-			return false;
+			return Optional.of(BaseType.INTEGER);
 		// Should never reach here
 		default:
-			return false;
+			throw new AssertionError("Binary Operations are not valid for operator " + operator);
 		}
 	}
 

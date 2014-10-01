@@ -37,6 +37,17 @@ public class Assignment implements Statement {
 	public boolean mustReturn(Optional<BaseType> type) {
 		return false;
 	}
+
+	@Override
+	public Iterable<Block> getBlocks() {
+		return ImmutableList.of();
+	}
+
+	// Assignments do not evaluate to any value
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
+	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

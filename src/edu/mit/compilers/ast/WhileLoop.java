@@ -37,9 +37,20 @@ public class WhileLoop implements Statement {
 		return body.canReturn(type);
 	}
 
+	// May completely skip a while loop
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
-		return body.mustReturn(type);
+		return false;
+	}
+
+	@Override
+	public Iterable<Block> getBlocks() {
+		return ImmutableList.of(body);
+	}
+
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
 	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.

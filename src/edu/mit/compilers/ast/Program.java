@@ -39,8 +39,13 @@ public class Program implements Node {
 	// The program root doesn't have a meaningful return value
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
-		// TODO Auto-generated method stub
 		return false;
+	}
+
+	// Nor a meaningful evaluation type
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
 	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
