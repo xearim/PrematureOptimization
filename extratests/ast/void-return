@@ -1,0 +1,4 @@
+// Contains a return statement without a return value.
+void main() {
+     return;
+}

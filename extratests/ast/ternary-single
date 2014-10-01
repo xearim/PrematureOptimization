@@ -1,0 +1,4 @@
+// Contains a single ternary operator.
+void main() {
+     return true ? true : false;
+}
