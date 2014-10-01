@@ -11,7 +11,7 @@ public class EvaluateCheck {
 	}
 	
 	public static Optional<BaseType> evaluatesTo(BinaryOperation expression, Scope scope){
-		switch(expression.getOperation()){
+		switch(expression.getOperator()){
 		/* fall-through */
 		case AND:
 		case OR:
@@ -31,12 +31,12 @@ public class EvaluateCheck {
 			return Optional.of(BaseType.INTEGER);
 		// Should never reach here
 		default:
-			throw new AssertionError("Binary Operations are not valid for operator " + expression.getOperation());
+			throw new AssertionError("Binary Operations are not valid for operator " + expression.getOperator());
 		}
 	}
 	
 	public static Optional<BaseType> evaluatesTo(UnaryOperation expression, Scope scope){
-		switch(expression.getOperation()){
+		switch(expression.getOperator()){
 		case ARRAY_LENGTH:
 			return Optional.of(BaseType.INTEGER);
 		case NEGATIVE:
@@ -44,7 +44,7 @@ public class EvaluateCheck {
 		case NOT:
 			return Optional.of(BaseType.BOOLEAN);
 		default:
-			throw new AssertionError("Binary Operations are not valid for operator " + expression.getOperation());
+			throw new AssertionError("Binary Operations are not valid for operator " + expression.getOperator());
 		}
 	}
 	
@@ -64,6 +64,7 @@ public class EvaluateCheck {
 		return Optional.of(BaseType.VOID);
 	}
 	
+	// TODO: Gotta figure out some good way to check methods without needing to screw with a bunch of things
 	public static Optional<BaseType> evaluatesTo(MethodCall expression, Scope scope){
 		return Optional.of(BaseType.VOID);
 	}

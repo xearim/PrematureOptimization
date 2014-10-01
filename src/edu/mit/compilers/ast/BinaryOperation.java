@@ -25,7 +25,7 @@ public class BinaryOperation implements NativeExpression {
         return operator.getSymbol();
     }
     
-    public BinaryOperator getOperation() {
+    public BinaryOperator getOperator() {
     	return operator;
     }
 
