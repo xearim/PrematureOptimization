@@ -33,6 +33,21 @@ public class ReturnStatement implements Statement {
         return "return";
     }
 
+    // A return statement always gives a single, definitive return type equal to that of its value
+	@Override
+	public boolean canReturn(Optional<BaseType> type) {
+		if(!type.isPresent() && !value.isPresent())
+			return true;
+		return value.get().canReturn(type);
+	}
+
+	@Override
+	public boolean mustReturn(Optional<BaseType> type) {
+		if(!type.isPresent() && !value.isPresent())
+			return true;
+		return value.get().mustReturn(type);
+	}
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

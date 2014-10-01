@@ -1,5 +1,6 @@
 package edu.mit.compilers.ast;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class ForLoop implements Statement {
@@ -26,6 +27,17 @@ public class ForLoop implements Statement {
     public String getName() {
         return "for";
     }
+
+    // A For loop produces returns equivalent to its contained block element
+	@Override
+	public boolean canReturn(Optional<BaseType> type) {
+		return body.canReturn(type);
+	}
+
+	@Override
+	public boolean mustReturn(Optional<BaseType> type) {
+		return body.mustReturn(type);
+	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

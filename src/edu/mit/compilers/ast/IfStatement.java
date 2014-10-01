@@ -39,6 +39,24 @@ public class IfStatement implements Statement {
     public String getName() {
         return "if" + (elseBlock.isPresent() ? "-else" : "");
     }
+
+    // If statements are the superset of their two contained blocks
+	@Override
+	public boolean canReturn(Optional<BaseType> type) {
+		if(elseBlock.isPresent())
+			return elseBlock.get().canReturn(type) || thenBlock.canReturn(type);
+		return thenBlock.canReturn(type);
+	}
+
+	// If statements must return a value iff
+	// A) it has an elseBlock (so it has complete control flow)
+	// B) both blocks return the same value
+	@Override
+	public boolean mustReturn(Optional<BaseType> type) {
+		if(elseBlock.isPresent())
+			return elseBlock.get().mustReturn(type) && thenBlock.mustReturn(type);
+		return false;
+	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
