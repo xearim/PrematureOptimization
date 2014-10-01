@@ -25,16 +25,26 @@ public class MethodCall implements Statement {
         return "call " + methodName;
     }
 
-    // A method must be looked up to know its return type
+    // a method call does not implicitly return anything
 	@Override
 	public boolean canReturn(Optional<BaseType> type) {
 		return false;
 	}
 
-	// A method must be looked up to know its return type
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
 		return false;
+	}
+
+	@Override
+	public Iterable<Block> getBlocks() {
+		return ImmutableList.of();
+	}
+
+	// A method must be looked up to know its evalutation type
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
 	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.

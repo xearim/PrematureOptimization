@@ -57,6 +57,19 @@ public class IfStatement implements Statement {
 			return elseBlock.get().mustReturn(type) && thenBlock.mustReturn(type);
 		return false;
 	}
+
+	@Override
+	public Iterable<Block> getBlocks() {
+		if(!elseBlock.isPresent())
+			return ImmutableList.of(thenBlock);
+		return ImmutableList.of(thenBlock, elseBlock.get());
+	}
+
+	// If statements don't evaluate to anything
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
+	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

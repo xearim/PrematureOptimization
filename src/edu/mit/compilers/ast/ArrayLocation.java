@@ -23,7 +23,7 @@ public class ArrayLocation implements Location {
         return variableName + "[" + index +"]";
     }
 
-    // ArrayLocations are effectively integers only
+    // ArrayLocations do not return
 	@Override
 	public boolean canReturn(Optional<BaseType> type) {
 		if(type.isPresent() && type.get() == BaseType.INTEGER)
@@ -31,12 +31,17 @@ public class ArrayLocation implements Location {
 		return false;
 	}
 
-	// ArrayLocations must return integers 
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
 		if(type.isPresent() && type.get() == BaseType.INTEGER)
 			return true;
 		return false;
+	}
+
+	// Array locations evaluate to Integers
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.of(BaseType.INTEGER);
 	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.

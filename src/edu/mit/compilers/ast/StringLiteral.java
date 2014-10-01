@@ -33,6 +33,12 @@ public class StringLiteral implements GeneralExpression {
 		return false;
 	}
 
+	// Neither do they evalutate to anything
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
+	}
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

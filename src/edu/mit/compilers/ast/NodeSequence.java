@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.UnmodifiableIterator;
 
 /**
  * A "dummy node" that exists only to group its children.
@@ -40,8 +39,7 @@ public class NodeSequence<T extends Node> implements Node {
 	// A node sequence is for all intents and purposes equivalent to a block in terms of return determination
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
-		UnmodifiableIterator<? extends T> sequenceItr = sequence.iterator();
-		for(T t = sequenceItr.next(); sequenceItr.hasNext();){
+		for(T t : sequence){
 			if((t.mustReturn(Optional.of(BaseType.BOOLEAN)) || 
 				t.mustReturn(Optional.of(BaseType.INTEGER)) ||
 				t.mustReturn(Optional.<BaseType>absent()) ) && !t.mustReturn(type))
@@ -49,8 +47,12 @@ public class NodeSequence<T extends Node> implements Node {
 			else if(t.mustReturn(type))
 				return true;
 		}
-		if(!type.isPresent())
-			return true;
 		return false;
+	}
+
+	// A node sequence doesn't have a menaingful evaluation type (aka, check its actual statements)
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
 	}
 }

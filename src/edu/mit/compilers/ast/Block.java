@@ -32,6 +32,14 @@ public class Block implements Node {
     public Scope getScope() {
     	return scope;
     }
+    
+    public Iterable<Statement> getStatements(){
+    	ImmutableList.Builder<Statement> builder = ImmutableList.builder();
+    	for(Node n : statements.getChildren())
+    		// The only nodes inside of a block should be statements, so this cast should be safe
+    		builder.add((Statement) n);
+    	return builder.build();
+    }
 
     // Blocks can only return the same type that they must return
 	@Override
@@ -39,7 +47,7 @@ public class Block implements Node {
 		return mustReturn(type);
 	}
 
-	// A block must return a value of a specifc type iff:
+	// A block must return a value of a specific type iff:
 	// a) said block has a return statement for that type
 	// b) said block has no return statement for any other type encountered before the target type
 	@Override
@@ -53,9 +61,13 @@ public class Block implements Node {
 			else if(block.mustReturn(type))
 				return true;
 		}
-		if(!type.isPresent())
-			return true;
 		return false;
+	}
+
+
+	@Override
+	public Optional<BaseType> evalType() {
+		return Optional.absent();
 	}
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

@@ -3,6 +3,13 @@ package edu.mit.compilers.ast;
 import com.google.common.base.Optional;
 
 public interface Node {
+	
+	
+	/**
+	 * Returns the BaseType that this node returns when evaluated
+	 * as an expression
+	 */
+	public Optional<BaseType> evalType();
 
 	/**
 	 * Return a boolean expressing whether or not the node
