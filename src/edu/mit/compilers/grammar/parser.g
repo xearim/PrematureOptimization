@@ -337,7 +337,7 @@ protected
 boolean_literal : (TRUE | FALSE);
 
 protected
-array_length : AT_SIGN ID;
+array_length : AT_SIGN^ ID;
 
 protected
 math_expr :
@@ -348,10 +348,10 @@ math_expr :
 	);
 
 protected
-additive_inverse_expr :	MINUS expr;
+additive_inverse_expr :	MINUS^ expr;
 
 protected
-inverted_expr : NOT_OP expr;
+inverted_expr : NOT_OP^ expr;
 
 protected
 parenthesized_expr : L_PAREN! expr R_PAREN!;
