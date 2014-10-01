@@ -106,8 +106,73 @@ public class NodeMaker {
     }
 
     public static Method method(AST method) {
-        // TODO(jasonpr): Implement.
-        return null;
+        checkType(method, DecafParserTokenTypes.ID);
+        checkChildCount(3, method);
+
+        List<AST> children = children(method);
+        ReturnType returnType = returnType(children.get(0));
+        List<FieldDescriptor> parameters = parameterDescriptors(children.get(1));
+        Block body = block(children.get(2));
+        String name = method.getText();
+
+        return new Method(name, returnType, parameters, body);
+    }
+
+    public static ReturnType returnType(AST returnType) {
+        checkChildCount(0, returnType);
+        if (returnType.getType() == DecafParserTokenTypes.INT) {
+            return ReturnType.fromBaseType(BaseType.INTEGER);
+        } else if (returnType.getType() == DecafParserTokenTypes.BOOLEAN) {
+            return ReturnType.fromBaseType(BaseType.BOOLEAN);
+        } else if (returnType.getType() == DecafParserTokenTypes.VOID) {
+            return ReturnType.fromVoid();
+        } else {
+            throw new AssertionError("Got unexpected return type node " + returnType);
+        }
+    }
+
+    public static List<FieldDescriptor> parameterDescriptors(AST signatureArgs) {
+        checkType(signatureArgs, DecafParserTokenTypes.SIGNATURE_ARGS);
+        ImmutableList.Builder<FieldDescriptor> builder = ImmutableList.builder();
+        for (AST signatureArg : children(signatureArgs)) {
+            builder.add(parameterDescriptor(signatureArg));
+        }
+        return builder.build();
+    }
+
+    public static FieldDescriptor parameterDescriptor(AST signatureArg) {
+        checkType(signatureArg, DecafParserTokenTypes.SIGNATURE_ARG);
+
+        int line = signatureArg.getLine();
+        int column = signatureArg.getColumn();
+
+        checkChildCount(1, signatureArg);
+        AST nameNode = signatureArg.getFirstChild();
+
+        checkType(nameNode, DecafParserTokenTypes.ID);
+        String name = nameNode.getText();
+
+        checkChildCount(1, nameNode);
+        BaseType type = baseType(nameNode.getFirstChild());
+
+        return new FieldDescriptor(name, line, column, type);
+    }
+
+    public static Block block(AST block) {
+        checkType(block, DecafParserTokenTypes.BLOCK);
+        checkChildCount(2, block);
+
+        List<AST> children = children(block);
+        List<FieldDescriptor> locals = fieldDescriptors(children.get(0));
+        List<Statement> statements = statements(children.get(1));
+
+        // TODO(jasonpr): Remove the name parameter of Block!
+        return new Block(null, locals, statements);
+    }
+
+    public static List<Statement> statements(AST statements) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented.");
     }
 
     private static void checkChildCount(int min, int max, AST astNode) {
@@ -135,5 +200,4 @@ public class NodeMaker {
         }
         return builder.build();
     }
-
 }
