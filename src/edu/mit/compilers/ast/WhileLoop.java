@@ -54,7 +54,7 @@ public class WhileLoop implements Statement {
 	}
 
     public static WhileLoop simple(NativeExpression condition, Block body) {
-        return new WhileLoop(condition, Optional.absent(), body);
+        return new WhileLoop(condition, Optional.<IntLiteral> absent(), body);
     }
     
     public static WhileLoop limited(
