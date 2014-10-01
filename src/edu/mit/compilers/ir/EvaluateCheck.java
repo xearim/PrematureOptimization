@@ -19,22 +19,20 @@ public class EvaluateCheck {
 	
 	public static Optional<BaseType> evaluatesTo(BinaryOperation expression, Scope scope){
 		switch(expression.getOperator()){
-		/* fall-through */
-		case AND:
-		case OR:
-		case DOUBLE_EQUALS:
-		case NOT_EQUALS:
-		case GREATER_THAN_OR_EQUAL:
-		case GREATER_THAN:
-		case LESS_THAN_OR_EQUAL:
-		case LESS_THAN:
+		case AND: /* fall-through */
+		case OR: /* fall-through */
+		case DOUBLE_EQUALS: /* fall-through */
+		case NOT_EQUALS: /* fall-through */
+		case GREATER_THAN_OR_EQUAL: /* fall-through */
+		case GREATER_THAN: /* fall-through */
+		case LESS_THAN_OR_EQUAL: /* fall-through */
+		case LESS_THAN: /* fall-through */
 			return Optional.of(BaseType.BOOLEAN);
-		/* fall-through */
-		case DIVIDED_BY:
-		case MINUS:
-		case MODULO:
-		case PLUS:
-		case TIMES:
+		case DIVIDED_BY: /* fall-through */
+		case MINUS: /* fall-through */
+		case MODULO: /* fall-through */
+		case PLUS: /* fall-through */
+		case TIMES: /* fall-through */
 			return Optional.of(BaseType.INTEGER);
 		// Should never reach here
 		default:
