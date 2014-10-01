@@ -370,10 +370,7 @@ public class NodeMaker {
             case LOCATION:
                 return location(nativeExpression);
             case METHOD_CALL:
-                // TODO(jasonpr): Add this once MethodCall implements
-                // NativeExpressions.
-                // return methodCall(nativeExpression);
-                throw new RuntimeException("Not yet implemented!");
+                return methodCall(nativeExpression);
             case LITERAL:
                 return literal(nativeExpression);
             case UNARY_OPERATION:
