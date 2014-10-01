@@ -339,6 +339,7 @@ boolean_literal : (TRUE | FALSE);
 protected
 array_length : AT_SIGN^ ID;
 
+// TODO(jasonpr): Get rid of this unused code.
 protected
 math_expr :
 	(
@@ -357,6 +358,7 @@ protected
 parenthesized_expr : L_PAREN! expr R_PAREN!;
 
 
+// TODO(jasonpr): Remove this unused code.  (Ternary statements are implemented elsewhere.)
 // TODO(jasonpr): Enable ternary!
 //protected
 //ternary_condition_expr :
