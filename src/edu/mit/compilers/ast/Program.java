@@ -45,7 +45,7 @@ public class Program implements Node {
 	// Nor a meaningful evaluation type
 	@Override
 	public Optional<BaseType> evalType() {
-		return null;
+		return Optional.absent();
 	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.

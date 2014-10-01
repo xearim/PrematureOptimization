@@ -25,7 +25,8 @@ public class MethodCall implements Statement {
         return "call " + methodName;
     }
 
-    // a method call does not implicitly return anything
+    // a method call evaluates to something {int, bool, void} but for
+    // all intents and purposes is a variable, thus it doesn't have a return value
 	@Override
 	public boolean canReturn(Optional<BaseType> type) {
 		return false;
@@ -41,7 +42,7 @@ public class MethodCall implements Statement {
 		return ImmutableList.of();
 	}
 
-	// A method must be looked up to know its evalutation type
+	// A method must be looked up to know its evaluation type
 	@Override
 	public Optional<BaseType> evalType() {
 		return Optional.absent();

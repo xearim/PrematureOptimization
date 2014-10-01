@@ -39,12 +39,12 @@ public class NodeSequence<T extends Node> implements Node {
 	// A node sequence is for all intents and purposes equivalent to a block in terms of return determination
 	@Override
 	public boolean mustReturn(Optional<BaseType> type) {
-		for(T t : sequence){
-			if((t.mustReturn(Optional.of(BaseType.BOOLEAN)) || 
-				t.mustReturn(Optional.of(BaseType.INTEGER)) ||
-				t.mustReturn(Optional.<BaseType>absent()) ) && !t.mustReturn(type))
+		for(T statement : sequence){
+			if((statement.mustReturn(Optional.of(BaseType.BOOLEAN)) || 
+				statement.mustReturn(Optional.of(BaseType.INTEGER)) ||
+				statement.mustReturn(Optional.<BaseType>absent()) ) && !statement.mustReturn(type))
 				return false;
-			else if(t.mustReturn(type))
+			else if(statement.mustReturn(type))
 				return true;
 		}
 		return false;

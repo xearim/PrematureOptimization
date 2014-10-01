@@ -41,6 +41,7 @@ public class BinaryOperation implements NativeExpression {
 	@Override
 	public Optional<BaseType> evalType() {
 		switch(operator){
+		/* fall-through */
 		case AND:
 		case OR:
 		case DOUBLE_EQUALS:
@@ -50,6 +51,7 @@ public class BinaryOperation implements NativeExpression {
 		case LESS_THAN_OR_EQUAL:
 		case LESS_THAN:
 			return Optional.of(BaseType.BOOLEAN);
+		/* fall-through */
 		case DIVIDED_BY:
 		case MINUS:
 		case MODULO:
@@ -58,7 +60,7 @@ public class BinaryOperation implements NativeExpression {
 			return Optional.of(BaseType.INTEGER);
 		// Should never reach here
 		default:
-			return Optional.absent();
+			throw new AssertionError("Binary Operations are not valid for operator " + operator);
 		}
 	}
 

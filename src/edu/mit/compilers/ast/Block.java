@@ -33,6 +33,7 @@ public class Block implements Node {
     	return scope;
     }
     
+    // TODO: (jasonpr) update this when getChildren of nodeSequence has a more specific return type
     public Iterable<Statement> getStatements(){
     	ImmutableList.Builder<Statement> builder = ImmutableList.builder();
     	for(Node n : statements.getChildren())

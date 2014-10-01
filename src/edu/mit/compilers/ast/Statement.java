@@ -10,8 +10,6 @@ public interface Statement extends Node {
 	 * 
 	 * Essentially allows one to recurse through the depth of blocks using only this
 	 * method and a Block's getStatements method.
-	 * 
-	 * @return
 	 */
 	public Iterable<Block> getBlocks();
 }

@@ -60,9 +60,9 @@ public class IfStatement implements Statement {
 
 	@Override
 	public Iterable<Block> getBlocks() {
-		if(!elseBlock.isPresent())
-			return ImmutableList.of(thenBlock);
-		return ImmutableList.of(thenBlock, elseBlock.get());
+		if(elseBlock.isPresent())
+			return ImmutableList.of(thenBlock, elseBlock.get());
+		return ImmutableList.of(thenBlock);
 	}
 
 	// If statements don't evaluate to anything
