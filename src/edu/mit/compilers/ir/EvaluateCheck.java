@@ -5,7 +5,14 @@ import com.google.common.base.Optional;
 import edu.mit.compilers.ast.*;
 
 public class EvaluateCheck {
-
+	/**
+	 * A purely static class that allows one to check a NativeExpression for
+	 * its plausible return type given a scope, an absent type means the expression
+	 * does not actually evaluate to anything and should prompt a semantic error
+	 */
+	
+	private EvaluateCheck(){};
+	
 	public static Optional<BaseType> evaluatesTo(NativeExpression expression, Scope scope){
 		return Optional.absent();
 	}

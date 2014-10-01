@@ -9,7 +9,6 @@ public class WhileLoop implements Statement {
     private final Optional<IntLiteral> maxRepetitions;
     private final Block body;
 
-    // TODO: (jasonpr) I dont think there needs to be an elseBlock in while?
     private WhileLoop(NativeExpression condition, Optional<IntLiteral> maxRepetitions, Block body, Optional<Block> elseBlock) {
         this.condition = condition;
         this.maxRepetitions = maxRepetitions;
