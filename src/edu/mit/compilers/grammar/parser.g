@@ -28,6 +28,7 @@ tokens {
 	METHOD_CALL;
 	METHOD_CALL_ARGS;
 	ARRAY_LOCATION;
+	ARRAY_FIELD_DECL;
 }
 
 // Java glue code that makes error reporting easier.
@@ -91,10 +92,18 @@ field_decls :
 
 // TODO(jasonpr): Determine how to hoist the types without duplicating code from "type".
 protected
-field_decl : ((INT^ | BOOLEAN^) single_field_name (COMMA! single_field_name)* SEMICOLON!);
+field_decl : ((INT^ | BOOLEAN^) single_field_decl (COMMA! single_field_decl)* SEMICOLON!);
 
 protected
-single_field_name : (ID (L_SQ_BRACKET INT_LITERAL R_SQ_BRACKET)?);
+single_field_decl : (scalar_field_decl | array_field_decl);
+
+protected
+scalar_field_decl : ID;
+
+protected
+array_field_decl :
+	(ID L_SQ_BRACKET! INT_LITERAL R_SQ_BRACKET!)
+	{ #array_field_decl = #([ARRAY_FIELD_DECL, "array_field_decl"], #array_field_decl ); };
 
 protected
 type : INT | BOOLEAN;
