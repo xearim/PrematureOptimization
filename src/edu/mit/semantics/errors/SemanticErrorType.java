@@ -1,4 +1,4 @@
-package edu.mit.semantics;
+package edu.mit.semantics.errors;
 
 public enum SemanticErrorType {
 	/*

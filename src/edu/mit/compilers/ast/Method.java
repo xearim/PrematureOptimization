@@ -33,6 +33,10 @@ public class Method implements Node {
     	return parameters;
     }
     
+    public Scope getLocals() {
+    	return body.getScope();
+    }
+    
     public ImmutableList<BaseType> getSignature() {
     	return parameters.getSignature();
     }

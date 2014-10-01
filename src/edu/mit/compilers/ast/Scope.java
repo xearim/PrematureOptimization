@@ -24,6 +24,9 @@ public class Scope {
 		this.parent = Optional.of(parent);
 	}
 	
+	public ImmutableList<FieldDescriptor> getVariables() {
+		return variables;
+	}
 	/**
 	 * Checks to see if a given identifier corresponds to an actually initialized variable
 	 * visible from this scope looking upwards

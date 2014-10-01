@@ -24,6 +24,10 @@ public class Block implements Node {
         return ImmutableList.of(statements);
     }
 
+    public NodeSequence<Statement> getStatements() {
+    	return this.statements;
+    }
+    
     @Override
     public String getName() {
         return name;
