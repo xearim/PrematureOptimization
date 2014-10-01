@@ -2,26 +2,48 @@ package edu.mit.compilers.ast;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.ARRAY_FIELD_DECL;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.ARRAY_LOCATION;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.AT_SIGN;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.BLOCK;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.BOOLEAN;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.BREAK;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.CALLOUTS;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.CHAR;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.COND_AND;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.COND_OR;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.CONTINUE;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.DIVIDED;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.DOUBLE_EQUAL;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.EQ_OP;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.FALSE;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.FIELD_DECLS;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.FOR;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.GT;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.GTE;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.ID;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.IF;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.INT;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.INT_LITERAL;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.LT;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.LTE;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.METHOD_CALL;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.METHOD_CALL_ARGS;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.METHOD_DECLS;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.MINUS;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.MINUS_EQ_OP;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.MODULO;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.NE;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.NOT_OP;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.PLUS;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.PLUS_EQ_OP;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.QUESTION;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.RETURN;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.SIGNATURE_ARG;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.SIGNATURE_ARGS;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.STATEMENTS;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.STRING;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.TIMES;
+import static edu.mit.compilers.grammar.DecafParserTokenTypes.TRUE;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.VOID;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.WHILE;
 
@@ -343,28 +365,182 @@ public class NodeMaker {
     }
 
     public static NativeExpression nativeExpression(AST nativeExpression) {
+        NativeExpressionType type = nativeExpressionType(nativeExpression);
+        switch (type) {
+            case LOCATION:
+                return location(nativeExpression);
+            case METHOD_CALL:
+                // TODO(jasonpr): Add this once MethodCall implements
+                // NativeExpressions.
+                // return methodCall(nativeExpression);
+                throw new RuntimeException("Not yet implemented!");
+            case LITERAL:
+                return literal(nativeExpression);
+            case UNARY_OPERATION:
+                return unaryOperation(nativeExpression);
+            case BINARY_OPERATION:
+                return binaryOperation(nativeExpression);
+            case TERNARY_OPERATION:
+                // TODO(jasonpr): Implement, once TernaryOperation is
+                // implemented.
+                // return ternaryOperation(nativeExpression);
+                throw new RuntimeException("Not yet implemented!");
+            case UNARY_MINUS:
+                return unaryMinus(nativeExpression);
+            default:
+                throw new AssertionError("Unexpected StatementType " + type);
+        }
+    }
+
+    private enum NativeExpressionType {
+        LOCATION,
+        METHOD_CALL,
+        LITERAL,
+        UNARY_OPERATION,
+        BINARY_OPERATION,
+        TERNARY_OPERATION,
+        UNARY_MINUS,
+    }
+
+    private static NativeExpressionType nativeExpressionType(AST expr) {
+        switch (expr.getType()) {
+            case METHOD_CALL:
+                return NativeExpressionType.METHOD_CALL;
+            case CHAR:  /* fall-through */
+            case INT_LITERAL:  /* fall-through */
+            case TRUE:  /* fall-through */
+            case FALSE:
+                return NativeExpressionType.LITERAL;
+            case AT_SIGN:  /* fall-through */
+            case NOT_OP:
+                return NativeExpressionType.UNARY_OPERATION;
+            case TIMES:  /* fall-through */
+            case DIVIDED:  /* fall-through */
+            case MODULO:  /* fall-through */
+            case PLUS:  /* fall-through */
+            case LT:  /* fall-through */
+            case GT:  /* fall-through */
+            case LTE:  /* fall-through */
+            case GTE:  /* fall-through */
+            case DOUBLE_EQUAL:  /* fall-through */
+            case NE:  /* fall-through */
+            case COND_AND:  /* fall-through */
+            case COND_OR:
+                return NativeExpressionType.BINARY_OPERATION;
+            case QUESTION:
+                return NativeExpressionType.TERNARY_OPERATION;
+            default:
+                // We must handle two special cases outside the switch
+                // statement.
+                break;
+        }
+        if (isLocation(expr)) {
+            return NativeExpressionType.LOCATION;
+        }
+        if (expr.getType() == MINUS) {
+            int childCount = expr.getNumberOfChildren();
+            if (childCount == 1) {
+                return NativeExpressionType.UNARY_MINUS;
+            } else if (childCount == 2) {
+                return NativeExpressionType.BINARY_OPERATION;
+            } else {
+                throw new AssertionError("Wrong number of children for node MINUS: " + childCount);
+            }
+        }
+        throw new AssertionError("Non-expression AST: " + expr);
+    }
+
+    private static boolean isLocation(AST unknown) {
+        if (unknown.getType() == ID && unknown.getNumberOfChildren() == 0) {
+            // It could be a scalar location.
+            return true;
+        }
+        // The only other possibility is ARRAY_LOCATION.
+        return unknown.getType() == ARRAY_LOCATION;
+    }
+
+    public static NativeLiteral literal(AST nativeLiteral) {
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented.");
+    }
+
+    public static UnaryOperation unaryOperation(AST unaryOperation) {
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented.");
+    }
+
+    public static BinaryOperation binaryOperation(AST binaryOperation) {
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented.");
+    }
+
+    public static NativeExpression unaryMinus(AST nativeLiteral) {
         // TODO(jasonpr): Implement.
         throw new RuntimeException("Not yet implemented.");
     }
 
     public static Location location(AST location) {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        if (location.getType() == ID) {
+            return scalarLocation(location);
+        } else if (location.getType() == ARRAY_LOCATION) {
+            return arrayLocation(location);
+        } else {
+            throw new AssertionError("AST " + location + " is not a location.");
+        }
     }
 
     public static ScalarLocation scalarLocation(AST scalarLocation) {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        // All sanity checks are performed in stringFromId.
+        return new ScalarLocation(stringFromId(scalarLocation));
+    }
+
+    public static ArrayLocation arrayLocation(AST arrayLocation) {
+        checkType(arrayLocation, ARRAY_LOCATION);
+        checkChildCount(2, arrayLocation);
+        List<AST> children = children(arrayLocation);
+        // TODO(jasonpr): Do not convert to int yet! Keep it as a literal.
+        return new ArrayLocation(stringFromId(children.get(0)), intFromLiteral(children.get(1)));
     }
 
     public static IntLiteral intLiteral(AST intLiteral) {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        checkType(intLiteral, INT_LITERAL);
+        checkChildCount(0, intLiteral);
+        return new IntLiteral(intLiteral.getText());
     }
 
     public static List<GeneralExpression> methodCallArgs(AST methodCallArgs) {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        checkType(methodCallArgs, METHOD_CALL_ARGS);
+        ImmutableList.Builder<GeneralExpression> builder = ImmutableList.builder();
+        for (AST argument : children(methodCallArgs)) {
+            builder.add(generalExpression(argument));
+        }
+        return builder.build();
+    }
+
+    /**
+     * Make a GeneralExpression from an ANTLR method_call_arg.
+     *
+     * <p>
+     * We would have used the name general_expression in the ANTLR grammar, but
+     * general expressions are only used for method_call_arg, so we used the
+     * specific name there.
+     */
+    public static GeneralExpression generalExpression(AST methodCallArg) {
+        if (methodCallArg.getType() == STRING) {
+            return stringLiteral(methodCallArg);
+        } else {
+            // Just delegate to the NativeExpression generator. If it's an
+            // error, it will be reported there.
+            return nativeExpression(methodCallArg);
+        }
+    }
+
+    public static StringLiteral stringLiteral(AST stringLiteral) {
+        checkType(stringLiteral, STRING);
+        checkChildCount(0, stringLiteral);
+        // TODO(jasonpr): Check that this works as expected.  How are the leading and trailing
+        // quotes handled?
+        return new StringLiteral(stringLiteral.getText());
     }
 
     public static BreakStatement breakStatement(AST breakStatement) {
