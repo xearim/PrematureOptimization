@@ -50,8 +50,9 @@ public class CLI {
    *        and stop. This is not one of the segment targets for Fall 2006,
    *        but you may wish to use it for your own purposes.
    * ASSEMBLY: produce assembly from the input.
+   * AST: produce the AST that ANTLR generated.
    */
-    public enum Action {DEFAULT, ABOUT, SCAN, PARSE, INTER, ASSEMBLY};
+    public enum Action {DEFAULT, ABOUT, SCAN, PARSE, INTER, ASSEMBLY, AST};
 
   /**
    * Array indicating which optimizations should be performed.  If
@@ -190,6 +191,7 @@ public class CLI {
       else if (targetStr.equals("parse")) target = Action.PARSE;
       else if (targetStr.equals("inter")) target = Action.INTER;
       else if (targetStr.equals("assembly")) target = Action.ASSEMBLY;
+      else if (targetStr.equals("ast")) target = Action.ASSEMBLY;
       else if (targetStr.equals("about")) {
 	  printUsage("Test run successful. Command line parameters: ");
 	  System.exit(0);
