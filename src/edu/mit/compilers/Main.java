@@ -85,11 +85,7 @@ class Main {
 
   // TODO(jasonpr): Javadoc.
   private static void parse(InputStream inputStream, PrintStream outputStream) throws RecognitionException, TokenStreamException {
-    DecafScanner scanner =
-        new DecafScanner(new DataInputStream(inputStream));
-    DecafParser parser = new DecafParser(scanner);
-    parser.setTrace(CLI.debug);
-    parser.program();
+    DecafParser parser = programmedParser(inputStream, outputStream);
 
     // TODO(jasonpr): Move this flag to CLI.
     boolean outputParseTree = true;
@@ -102,6 +98,17 @@ class Main {
     if(parser.getError()) {
       System.exit(1);
     }
+  }
+
+  /** Make a DecafParser, use it to parse the program from inputStream, and return that it. */
+  private static DecafParser programmedParser(InputStream inputStream, PrintStream outputStream)
+          throws RecognitionException, TokenStreamException {
+      DecafScanner scanner =
+              new DecafScanner(new DataInputStream(inputStream));
+          DecafParser parser = new DecafParser(scanner);
+          parser.setTrace(CLI.debug);
+          parser.program();
+          return parser;
   }
 
 }
