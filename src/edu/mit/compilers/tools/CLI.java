@@ -23,7 +23,8 @@ public class CLI {
 "  -d                      --debug                    print debugging information\n" +
 "\n" +
 "Long description of options:\n" +
-"  -t <stage>          <stage> is one of \"scan\", \"parse\", \"inter\", or \"assembly\".\n" +
+"  -t <stage>          <stage> is one of \"scan\", \"parse\", \"inter\", \"ast\"," + 
+"                      or \"assembly\".\n" +
 "  --target=<stage>    Compilation will proceed to the given stage and halt there.\n" +
 "\n" +
 "  -d                  Print debugging information.  If this option is not given,\n" +
@@ -191,7 +192,7 @@ public class CLI {
       else if (targetStr.equals("parse")) target = Action.PARSE;
       else if (targetStr.equals("inter")) target = Action.INTER;
       else if (targetStr.equals("assembly")) target = Action.ASSEMBLY;
-      else if (targetStr.equals("ast")) target = Action.ASSEMBLY;
+      else if (targetStr.equals("ast")) target = Action.AST;
       else if (targetStr.equals("about")) {
 	  printUsage("Test run successful. Command line parameters: ");
 	  System.exit(0);
