@@ -265,7 +265,7 @@ expr :
 ternary_expr :
 	(
 		cond_or_expr
-		(options {greedy=true;} : QUESTION! ternary_expr COLON! ternary_expr)?
+		(options {greedy=true;} : QUESTION^ ternary_expr COLON! ternary_expr)?
 	);
 
 protected
