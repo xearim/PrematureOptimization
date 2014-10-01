@@ -273,7 +273,7 @@ cond_or_expr :
 	(
 		cond_and_expr
 		// Greedily tack on conditional "or" operations.
-		(options {greedy=true;} : COND_OR cond_or_expr)*
+		(options {greedy=true;} : COND_OR^ cond_and_expr)*
 	);
 
 protected
@@ -281,7 +281,7 @@ cond_and_expr :
 	(
 		equality_expr
 		// Greedily tack on conditional "and" operations.
-		(options {greedy=true;} : COND_AND cond_and_expr)*
+		(options {greedy=true;} : COND_AND^ equality_expr)*
 	);
 
 protected
@@ -290,11 +290,8 @@ equality_expr :
 		relative_expr
 		// Greedily tack on equality ops.  Note that "a == b == c" is
 		// syntactically valid (albeit not semantically valid).
-		(options {greedy=true;} : equality_op equality_expr)*
+		(options {greedy=true;} : (DOUBLE_EQUAL^ | NE^) relative_expr)*
 	);
-
-protected
-equality_op : DOUBLE_EQUAL | NE;
 
 protected
 relative_expr :
@@ -302,33 +299,24 @@ relative_expr :
 		added_expr
 		// Greedily tack on relative ops.  Note that "a < b < c" is
 		// syntactically valid (albeit not semantically valid).
-		(options {greedy=true;} : relative_op relative_expr)*
+		(options {greedy=true;} : (LT^ | GT^ | LTE^ | GTE^) added_expr)*
 	);
-
-protected
-relative_op : LT | GT | LTE | GTE;
 
 protected
 added_expr :
 	(
 		multiplied_expr
 		// Greedily tack on additive binary ops.
-		(options {greedy=true;} : additive_op  added_expr)*
+		(options {greedy=true;} : (PLUS^ | MINUS^)  multiplied_expr)*
 	);
-
-protected
-additive_op : PLUS | MINUS;
 
 protected
 multiplied_expr :
 	(
 		strongest_binding_expr
 		// Greedily tack on multiplicative binary ops.
-		(options {greedy=true;} : multiplicative_op multiplied_expr)*
+		(options {greedy=true;} : (TIMES^ | DIVIDED^ | MODULO^) strongest_binding_expr)*
 	);
-
-protected
-multiplicative_op : TIMES | DIVIDED | MODULO;
 
 protected
 strongest_binding_expr :
