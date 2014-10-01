@@ -31,23 +31,6 @@ public class ReturnType implements Node {
                 : "void";
     }
 
-    // Return types are special nodes belonging just to a method explaining their return type
-	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		return this.type.equals(type);
-	}
-	
-	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
-		return this.type.equals(type);
-	}
-
-	// Evaluation of a returnType is meaningless
-	@Override
-	public Optional<BaseType> evalType() {
-		return Optional.absent();
-	}
-
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

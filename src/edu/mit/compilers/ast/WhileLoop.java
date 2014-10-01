@@ -9,7 +9,7 @@ public class WhileLoop implements Statement {
     private final Optional<IntLiteral> maxRepetitions;
     private final Block body;
 
-    
+    // TODO: (jasonpr) I dont think there needs to be an elseBlock in while?
     private WhileLoop(NativeExpression condition, Optional<IntLiteral> maxRepetitions, Block body, Optional<Block> elseBlock) {
         this.condition = condition;
         this.maxRepetitions = maxRepetitions;
@@ -33,24 +33,17 @@ public class WhileLoop implements Statement {
     }
 
 	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		return body.canReturn(type);
-	}
-
-	// May completely skip a while loop
-	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
-		return false;
-	}
-
-	@Override
 	public Iterable<Block> getBlocks() {
 		return ImmutableList.of(body);
 	}
 
 	@Override
-	public Optional<BaseType> evalType() {
-		return Optional.absent();
+	public boolean canReturn() {
+		for(Statement subStatement: body.getStatements()){
+			if(subStatement.canReturn())
+				return true;
+		}
+		return false;
 	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
