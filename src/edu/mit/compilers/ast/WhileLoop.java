@@ -9,7 +9,7 @@ public class WhileLoop implements Statement {
     private final Optional<IntLiteral> maxRepetitions;
     private final Block body;
 
-    private WhileLoop(NativeExpression condition, Optional<IntLiteral> maxRepetitions, Block body, Optional<Block> elseBlock) {
+    private WhileLoop(NativeExpression condition, Optional<IntLiteral> maxRepetitions, Block body) {
         this.condition = condition;
         this.maxRepetitions = maxRepetitions;
         this.body = body;
@@ -44,7 +44,16 @@ public class WhileLoop implements Statement {
 		}
 		return false;
 	}
+
+    public static WhileLoop simple(NativeExpression condition, Block body) {
+        return new WhileLoop(condition, Optional.<IntLiteral> absent(), body);
+    }
     
+    public static WhileLoop limited(
+            NativeExpression condition, IntLiteral maxRepetitions, Block body) {
+        return new WhileLoop(condition, Optional.of(maxRepetitions), body);
+    }
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

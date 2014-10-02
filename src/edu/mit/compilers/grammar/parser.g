@@ -349,10 +349,10 @@ math_expr :
 	);
 
 protected
-additive_inverse_expr :	MINUS^ expr;
+additive_inverse_expr :	MINUS^ strongest_binding_expr;
 
 protected
-inverted_expr : NOT_OP^ expr;
+inverted_expr : NOT_OP^ strongest_binding_expr;
 
 protected
 parenthesized_expr : L_PAREN! expr R_PAREN!;
