@@ -53,6 +53,13 @@ public class EvaluateCheck {
 		}
 	}
 	
+	// Ternaray Ops need to be checked on both children and equating them
+	// So just recurse, attempting to return the eval of a ternary would require
+	// A lot of method exposure or a dirty hack
+	public static Optional<BaseType> evaluatesTo(TernaryOperation expression, Scope scope){
+		return Optional.absent();
+	}
+	
 	public static Optional<BaseType> evaluatesTo(BooleanLiteral expression, Scope scope){
 		return Optional.of(BaseType.BOOLEAN);
 	}
