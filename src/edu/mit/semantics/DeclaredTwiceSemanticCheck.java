@@ -15,6 +15,7 @@ import edu.mit.compilers.ast.Node;
 import edu.mit.compilers.ast.NodeSequence;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.ast.Statement;
 import edu.mit.semantics.errors.DeclaredTwiceSemanticError;
 import edu.mit.semantics.errors.LocationType;
 import edu.mit.semantics.errors.SemanticError;
@@ -26,7 +27,6 @@ import edu.mit.semantics.errors.SemanticError;
  * This includes 'callout' identifiers, which exist in the global scope.
  */
 public class DeclaredTwiceSemanticCheck implements SemanticCheck {
-	// TODO(jasonpr) USE GUAVA
 	private List<SemanticError> errors = new ArrayList<SemanticError>();
 	Program prog;
 	
@@ -116,7 +116,15 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
 				block.getScope(), methodName);
 		
 		// Check potential scopes within statements
-		/* TODO(Manny) recurse through statements */
+		Iterable<Statement> statements = block.getStatements();
+		
+		for (Statement statement : statements) {
+			Iterable<Block> subblocks = statement.getBlocks();
+			
+			for (Block subblock : subblocks) {
+				checkBlock(subblock, methodName);
+			}
+		}
 	}
 	
 	/**

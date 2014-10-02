@@ -21,10 +21,6 @@ public class Block implements Node {
     public Iterable<? extends Node> getChildren() {
         return ImmutableList.of(statements);
     }
-
-    public NodeSequence<Statement> getStatements() {
-    	return this.statements;
-    }
     
     @Override
     public String getName() {

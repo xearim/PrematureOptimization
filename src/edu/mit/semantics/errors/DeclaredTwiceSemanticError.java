@@ -20,7 +20,7 @@ public class DeclaredTwiceSemanticError implements SemanticError {
 	 * Callout needs locations(1), program name, and name of callout
 	 * Global needs locations, program name, and name of variable
 	 * Parameter and Local need locations, program name, name of variable and method name
-	 * 
+	 *
 	 * (1) Currently callouts don't have locations in the standard way, so they
 	 * aren't being used.
 	 * TODO(Manny) add locations to callouts
@@ -57,19 +57,19 @@ public class DeclaredTwiceSemanticError implements SemanticError {
 				returnString = String.format("%s in %s: %s variable \"%s\" used multiple times in method \"%s\".", 
 						this.programName, getLocationsString(), PARAMSCOPE, this.name, this.methodName);
 				break;
-			default: // Should never hit this
+			default: // Should never hit this, might want to through exception instead
 				returnString = "";
 				break;
 		}
 		return returnString;
 	}
-//	
-//	/**
-//	 * If locations recorded are (3,15) and (5,2),
-//	 * returns "3:15; 5:2; "
-//	 * 
-//	 * (A,B), A is the line number, B is the column
-//	 */
+	
+	/**
+	 * If locations recorded are (3,15) and (5,2),
+	 * returns "3:15; 5:2; "
+	 *
+	 * (A,B), A is the line number, B is the column
+	 */
 	private String getLocationsString() {
 		String locationsString = "";
 		for (LocationDescriptor loc : locations) {
