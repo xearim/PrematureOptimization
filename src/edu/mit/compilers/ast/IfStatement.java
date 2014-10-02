@@ -8,20 +8,25 @@ public class IfStatement implements Statement {
     private final NativeExpression condition;
     private final Block thenBlock;
     private final Optional<Block> elseBlock;
-    
-    private IfStatement(NativeExpression condition, Block thenBlock, Optional<Block> elseBlock) {
+    private final LocationDescriptor locationDescriptor;
+
+    private IfStatement(NativeExpression condition, Block thenBlock,
+	    Optional<Block> elseBlock, LocationDescriptor locationDescriptor) {
         this.condition = condition;
         this.thenBlock = thenBlock;
         this.elseBlock = elseBlock;
+	this.locationDescriptor = locationDescriptor;
     }
     
-    public static IfStatement ifThen(NativeExpression condition, Block thenBlock) {
-        return new IfStatement(condition, thenBlock, Optional.<Block>absent());
+    public static IfStatement ifThen(NativeExpression condition, Block thenBlock,
+            LocationDescriptor locationDescriptor) {
+        return new IfStatement(
+                condition, thenBlock, Optional.<Block> absent(), locationDescriptor);
     }
     
-    public static IfStatement
-            ifThenElse(NativeExpression condition, Block thenBlock, Block elseBlock) {
-        return new IfStatement(condition, thenBlock, Optional.of(elseBlock));
+    public static IfStatement ifThenElse(NativeExpression condition, Block thenBlock,
+            Block elseBlock, LocationDescriptor locationDescriptor) {
+        return new IfStatement(condition, thenBlock, Optional.of(elseBlock), locationDescriptor);
     }
     
     @Override
@@ -60,6 +65,10 @@ public class IfStatement implements Statement {
 			}
 		return false;
 	}
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
+    }
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

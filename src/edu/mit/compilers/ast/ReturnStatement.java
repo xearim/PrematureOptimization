@@ -6,17 +6,20 @@ import com.google.common.collect.ImmutableList;
 public class ReturnStatement implements Statement {
 
     private final Optional<NativeExpression> value;
-    
-    private ReturnStatement(Optional<NativeExpression> value) {
+    private final LocationDescriptor locationDescriptor;
+
+    private ReturnStatement(Optional<NativeExpression> value, LocationDescriptor locationDescriptor) {
         this.value = value;
+	this.locationDescriptor = locationDescriptor;
     }
     
-    public static ReturnStatement ofVoid() {
-        return new ReturnStatement(Optional.<NativeExpression>absent());
+    public static ReturnStatement ofVoid(LocationDescriptor locationDescriptor) {
+        return new ReturnStatement(Optional.<NativeExpression>absent(), locationDescriptor);
     }
     
-    public static ReturnStatement of(NativeExpression value) {
-        return new ReturnStatement(Optional.of(value));
+    public static ReturnStatement
+            of(NativeExpression value, LocationDescriptor locationDescriptor) {
+        return new ReturnStatement(Optional.of(value), locationDescriptor);
     }
     
     @Override
@@ -42,6 +45,10 @@ public class ReturnStatement implements Statement {
 	public boolean canReturn() {
 		return true;
 	}
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
+    }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

@@ -93,10 +93,10 @@ public class NodeMaker {
         List<AST> children = children(program);
 
         List<Callout> callouts = callouts(children.get(0));
-        List<FieldDescriptor> globals = fieldDescriptors(children.get(1));
-        List<Method> methods = methods(children.get(2));
+        Scope globals = rootScope(children.get(1));
+        List<Method> methods = methods(children.get(2), globals);
 
-        return new Program(callouts, globals, methods);
+        return new Program(callouts, globals, methods, sourceLoc(program));
     }
 
     /** Make some Callouts from a "callouts" ANTLR AST. */
@@ -105,13 +105,21 @@ public class NodeMaker {
         ImmutableList.Builder<Callout> builder = ImmutableList.builder();
         for (AST child : children(callouts)) {
             checkType(child, ID);
-            builder.add(new Callout(child.getText()));
+            builder.add(new Callout(child.getText(), sourceLoc(child)));
         }
         return builder.build();
     }
 
     /** Make some FieldDescriptors from a "field_decls" ANTLR AST. */
-    public static List<FieldDescriptor> fieldDescriptors(AST fieldDecls) {
+    public static Scope scope(AST fieldDecls, Scope parent) {
+        return new Scope(fieldDescriptors(fieldDecls), parent);
+    }
+
+    public static Scope rootScope(AST fieldDecls) {
+        return new Scope(fieldDescriptors(fieldDecls));
+    }
+
+    private static List<FieldDescriptor> fieldDescriptors(AST fieldDecls) {
         checkType(fieldDecls, FIELD_DECLS);
         ImmutableList.Builder<FieldDescriptor> builder = ImmutableList.builder();
         for (AST child : children(fieldDecls)) {
@@ -121,11 +129,11 @@ public class NodeMaker {
     }
 
     /** Make some Methods from a "method_decls" ANTLR AST. */
-    public static List<Method> methods(AST methodDecls) {
+    public static List<Method> methods(AST methodDecls, Scope scope) {
         checkType(methodDecls, METHOD_DECLS);
         ImmutableList.Builder<Method> builder = ImmutableList.builder();
         for (AST child : children(methodDecls)) {
-            builder.add(method(child));
+            builder.add(method(child, scope));
         }
         return builder.build();
     }
@@ -140,13 +148,13 @@ public class NodeMaker {
             int column = namedField.getColumn();
             if (namedField.getType() == ID) {
                 String name = namedField.getText();
-                builder.add(new FieldDescriptor(name, line, column, type));
+                builder.add(new FieldDescriptor(name, type, sourceLoc(namedField)));
             } else if (namedField.getType() == ARRAY_FIELD_DECL) {
                 checkChildCount(2, namedField);
                 List<AST> arrayInfo = children(namedField);
                 String name = stringFromId(arrayInfo.get(0));
                 IntLiteral length = intLiteral(arrayInfo.get(1));
-                builder.add(new FieldDescriptor(name, length, line, column, type));
+                builder.add(new FieldDescriptor(name, length, type, sourceLoc(namedField)));
             } else {
                 throw new AssertionError("AST " + fieldDecl + " is not an ID or an ARRAY_FIELD_DECL.");
             }
@@ -170,46 +178,46 @@ public class NodeMaker {
         }
     }
 
-    public static Method method(AST method) {
+    public static Method method(AST method, Scope scope) {
         checkType(method, ID);
         checkChildCount(3, method);
 
         List<AST> children = children(method);
         ReturnType returnType = returnType(children.get(0));
-        List<FieldDescriptor> parameters = parameterDescriptors(children.get(1));
-        Block body = block(children.get(2));
+        ParameterScope parameters = parameterDescriptors(children.get(1), scope);
+        Block body = block(children.get(2), parameters);
         String name = method.getText();
 
-        return new Method(name, returnType, parameters, body);
+        return new Method(name, returnType, parameters, body, sourceLoc(method));
     }
 
     public static ReturnType returnType(AST returnType) {
         checkChildCount(0, returnType);
+
+        LocationDescriptor location = sourceLoc(returnType);
+
         if (returnType.getType() == INT) {
-            return ReturnType.fromBaseType(BaseType.INTEGER);
+            return ReturnType.fromBaseType(BaseType.INTEGER, location);
         } else if (returnType.getType() == BOOLEAN) {
-            return ReturnType.fromBaseType(BaseType.BOOLEAN);
+            return ReturnType.fromBaseType(BaseType.BOOLEAN, location);
         } else if (returnType.getType() == VOID) {
-            return ReturnType.fromVoid();
+            return ReturnType.fromVoid(location);
         } else {
             throw new AssertionError("Got unexpected return type node " + returnType);
         }
     }
 
-    public static List<FieldDescriptor> parameterDescriptors(AST signatureArgs) {
+    public static ParameterScope parameterDescriptors(AST signatureArgs, Scope parent) {
         checkType(signatureArgs, SIGNATURE_ARGS);
         ImmutableList.Builder<FieldDescriptor> builder = ImmutableList.builder();
         for (AST signatureArg : children(signatureArgs)) {
             builder.add(parameterDescriptor(signatureArg));
         }
-        return builder.build();
+        return new ParameterScope(builder.build(), parent, sourceLoc(signatureArgs));
     }
 
     public static FieldDescriptor parameterDescriptor(AST signatureArg) {
         checkType(signatureArg, SIGNATURE_ARG);
-
-        int line = signatureArg.getLine();
-        int column = signatureArg.getColumn();
 
         checkChildCount(1, signatureArg);
         AST nameNode = signatureArg.getFirstChild();
@@ -220,28 +228,28 @@ public class NodeMaker {
         checkChildCount(1, nameNode);
         BaseType type = baseType(nameNode.getFirstChild());
 
-        return new FieldDescriptor(name, line, column, type);
+        return new FieldDescriptor(name, type, sourceLoc(signatureArg));
     }
 
-    public static Block block(AST block) {
+    public static Block block(AST block, Scope scope) {
         checkType(block, BLOCK);
         checkChildCount(2, block);
 
         List<AST> children = children(block);
-        List<FieldDescriptor> locals = fieldDescriptors(children.get(0));
-        List<Statement> statements = statements(children.get(1));
+        Scope locals = scope(children.get(0), scope);
+        List<Statement> statements = statements(children.get(1), locals);
 
         // TODO(jasonpr): Remove the name parameter of Block!
-        return new Block(null, locals, statements);
+        return new Block(null, locals, statements, sourceLoc(block));
     }
 
-    public static List<Statement> statements(AST statements) {
+    public static List<Statement> statements(AST statements, Scope scope) {
         checkType(statements, STATEMENTS);
 
         ImmutableList.Builder<Statement> builder = ImmutableList.builder();
         List<AST> children = children(statements);
         for (AST statement : children) {
-            builder.add(statement(statement));
+            builder.add(statement(statement, scope));
         }
         return builder.build();
     }
@@ -250,7 +258,7 @@ public class NodeMaker {
         ASSIGNMENT, METHOD_CALL, IF, FOR, WHILE, RETURN, BREAK, CONTINUE;
     }
 
-    public static Statement statement(AST statement) {
+    public static Statement statement(AST statement, Scope scope) {
         StatementType type = statementType(statement);
         switch (type) {
         case ASSIGNMENT:
@@ -260,15 +268,15 @@ public class NodeMaker {
         case CONTINUE:
             return continueStatement(statement);
         case FOR:
-            return forLoop(statement);
+                return forLoop(statement, scope);
         case IF:
-            return ifStatement(statement);
+                return ifStatement(statement, scope);
         case METHOD_CALL:
             return methodCall(statement);
         case RETURN:
             return returnStatement(statement);
         case WHILE:
-            return whileLoop(statement);
+                return whileLoop(statement, scope);
         default:
             throw new AssertionError("Unexpected StatementType " + type);
         }
@@ -314,7 +322,7 @@ public class NodeMaker {
         checkChildCount(2, assignment);
         List<AST> children = children(assignment);
         return new Assignment(location(children.get(0)), operation,
-                nativeExpression(children.get(1)));
+                nativeExpression(children.get(1)), sourceLoc(assignment));
     }
 
     public static MethodCall methodCall(AST methodCall) {
@@ -327,50 +335,55 @@ public class NodeMaker {
                 ? ImmutableList.<GeneralExpression>of()
                 : methodCallArgs(children.get(1));
 
-        return new MethodCall(methodName, parameterValues);
+        return new MethodCall(methodName, parameterValues, sourceLoc(methodCall));
     }
 
-    public static IfStatement ifStatement(AST ifStatement) {
+    public static IfStatement ifStatement(AST ifStatement, Scope scope) {
         checkChildCount(2, 3, ifStatement);
+
+        LocationDescriptor location = sourceLoc(ifStatement);
+
         List<AST> children = children(ifStatement);
         NativeExpression condition = nativeExpression(children.get(0));
-        Block thenBlock = block(children.get(1));
+        Block thenBlock = block(children.get(1), scope);
         if (children.size() == 2) {
             // It's just the condition and the then block.
-            return IfStatement.ifThen(condition, thenBlock);
+            return IfStatement.ifThen(condition, thenBlock, location);
         } else {
             // There's an else block, too!
-            Block elseBlock = block(children.get(2));
-            return IfStatement.ifThenElse(condition, thenBlock, elseBlock);
+            Block elseBlock = block(children.get(2), scope);
+            return IfStatement.ifThenElse(condition, thenBlock, elseBlock, location);
         }
     }
 
-    public static ForLoop forLoop(AST forLoop) {
+    public static ForLoop forLoop(AST forLoop, Scope scope) {
         checkChildCount(4, forLoop);
 
         List<AST> children = children(forLoop);
         ScalarLocation loopVariable = scalarLocation(children.get(0));
         NativeExpression rangeStart = nativeExpression(children.get(1));
         NativeExpression rangeEnd = nativeExpression(children.get(2));
-        Block body = block(children.get(3));
+        Block body = block(children.get(3), scope);
 
-        return new ForLoop(loopVariable, rangeStart, rangeEnd, body);
+        return new ForLoop(loopVariable, rangeStart, rangeEnd, body, sourceLoc(forLoop));
     }
 
-    public static WhileLoop whileLoop(AST whileLoop) {
+    public static WhileLoop whileLoop(AST whileLoop, Scope scope) {
         checkChildCount(2, 3, whileLoop);
+
+        LocationDescriptor location = sourceLoc(whileLoop);
 
         List<AST> children = children(whileLoop);
         NativeExpression condition = nativeExpression(children.get(0));
 
         if (children.size() == 2) {
             // There is no bound on the while loop.
-            return WhileLoop.simple(condition, block(children.get(1)));
+            return WhileLoop.simple(condition, block(children.get(1), scope), location);
         } else {
             // There is a bound on the while loop.
             IntLiteral maxRepetitions = intLiteral(children.get(1));
-            Block body = block(children.get(2));
-            return WhileLoop.limited(condition, maxRepetitions, body);
+            Block body = block(children.get(2), scope);
+            return WhileLoop.limited(condition, maxRepetitions, body, location);
         }
     }
 
@@ -378,11 +391,13 @@ public class NodeMaker {
         checkType(returnStatement, RETURN);
         checkChildCount(0, 1, returnStatement);
 
+        LocationDescriptor location = sourceLoc(returnStatement);
+
         List<AST> children = children(returnStatement);
         if (children.size() == 0) {
-            return ReturnStatement.ofVoid();
+            return ReturnStatement.ofVoid(location);
         } else {
-            return ReturnStatement.of(nativeExpression(children.get(0)));
+            return ReturnStatement.of(nativeExpression(children.get(0)), location);
         }
     }
 
@@ -477,17 +492,18 @@ public class NodeMaker {
 
     public static NativeLiteral literal(AST nativeLiteral) {
         checkChildCount(0, nativeLiteral);
+        LocationDescriptor location = sourceLoc(nativeLiteral);
         int type = nativeLiteral.getType();
         if (type == CHAR) {
             // TODO(jasonpr): Check that this is handled properly. Is the text
             // "a" or "'a'"?
-            return new CharLiteral(nativeLiteral.getText());
+            return new CharLiteral(nativeLiteral.getText(), location);
         } else if (type == TRUE || type == FALSE) {
-            return new BooleanLiteral(nativeLiteral.getText());
+            return new BooleanLiteral(nativeLiteral.getText(), location);
         } else if (type == INT_LITERAL) {
             // TODO(jasonpr): Check for non-converted unary minus'd int
             // literals.
-            return new IntLiteral(nativeLiteral.getText());
+            return new IntLiteral(nativeLiteral.getText(), location);
         } else {
             throw new AssertionError("Node is not a native literal: " + nativeLiteral);
         }
@@ -499,7 +515,8 @@ public class NodeMaker {
             throw new AssertionError("Non-unary-operation node: " + unaryOperation);
         }
         checkChildCount(1, unaryOperation);
-        return new UnaryOperation(operator, nativeExpression(unaryOperation.getFirstChild()));
+        return new UnaryOperation(operator, nativeExpression(unaryOperation.getFirstChild()),
+                sourceLoc(unaryOperation));
     }
 
     public static BinaryOperation binaryOperation(AST binaryOperation) {
@@ -510,7 +527,7 @@ public class NodeMaker {
         checkChildCount(2, binaryOperation);
         List<AST> children = children(binaryOperation);
         return new BinaryOperation(operator, nativeExpression(children.get(0)),
-                nativeExpression(children.get(1)));
+                nativeExpression(children.get(1)), sourceLoc(binaryOperation));
     }
 
     public static NativeExpression unaryMinus(AST unaryMinus) {
@@ -522,7 +539,7 @@ public class NodeMaker {
             // Let these two nodes (unary minus, and single positive int literal
             // leaf) with one node (single negative int literal leaf).
             // Replace -(128) with -128, for example.
-            return new IntLiteral("-" + child.getText());
+            return new IntLiteral("-" + child.getText(), sourceLoc(unaryMinus));
         } else {
             // No special behavior is needed for anything that is not an int
             // literal. Treat it normally.
@@ -537,7 +554,8 @@ public class NodeMaker {
         NativeExpression condition = nativeExpression(children.get(0));
         NativeExpression trueResult = nativeExpression(children.get(1));
         NativeExpression falseResult = nativeExpression(children.get(2));
-        return new TernaryOperation(condition, trueResult, falseResult);
+        return new TernaryOperation(condition, trueResult, falseResult,
+                sourceLoc(ternaryOperation));
     }
 
     public static Location location(AST location) {
@@ -552,20 +570,21 @@ public class NodeMaker {
 
     public static ScalarLocation scalarLocation(AST scalarLocation) {
         // All sanity checks are performed in stringFromId.
-        return new ScalarLocation(stringFromId(scalarLocation));
+        return new ScalarLocation(stringFromId(scalarLocation), sourceLoc(scalarLocation));
     }
 
     public static ArrayLocation arrayLocation(AST arrayLocation) {
         checkType(arrayLocation, ARRAY_LOCATION);
         checkChildCount(2, arrayLocation);
         List<AST> children = children(arrayLocation);
-        return new ArrayLocation(stringFromId(children.get(0)), nativeExpression(children.get(1)));
+        return new ArrayLocation(stringFromId(children.get(0)), nativeExpression(children.get(1)),
+                sourceLoc(arrayLocation));
     }
 
     public static IntLiteral intLiteral(AST intLiteral) {
         checkType(intLiteral, INT_LITERAL);
         checkChildCount(0, intLiteral);
-        return new IntLiteral(intLiteral.getText());
+        return new IntLiteral(intLiteral.getText(), sourceLoc(intLiteral));
     }
 
     public static List<GeneralExpression> methodCallArgs(AST methodCallArgs) {
@@ -600,19 +619,19 @@ public class NodeMaker {
         checkChildCount(0, stringLiteral);
         // TODO(jasonpr): Check that this works as expected.  How are the leading and trailing
         // quotes handled?
-        return new StringLiteral(stringLiteral.getText());
+        return new StringLiteral(stringLiteral.getText(), sourceLoc(stringLiteral));
     }
 
     public static BreakStatement breakStatement(AST breakStatement) {
         checkType(breakStatement, BREAK);
         checkChildCount(0, breakStatement);
-        return new BreakStatement();
+        return new BreakStatement(sourceLoc(breakStatement));
     }
 
     public static ContinueStatement continueStatement(AST continueStatement) {
         checkType(continueStatement, CONTINUE);
         checkChildCount(0, continueStatement);
-        return new ContinueStatement();
+        return new ContinueStatement(sourceLoc(continueStatement));
     }
 
     private static void checkChildCount(int min, int max, AST astNode) {
@@ -640,4 +659,9 @@ public class NodeMaker {
         }
         return builder.build();
     }
+
+    private static LocationDescriptor sourceLoc(AST astNode) {
+        return new LocationDescriptor("unknown", astNode.getLine(), astNode.getColumn());
+    }
+
 }

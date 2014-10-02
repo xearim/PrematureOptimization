@@ -7,12 +7,14 @@ public class BinaryOperation implements NativeExpression {
     private final BinaryOperator operator;
     private final NativeExpression leftArgument;
     private final NativeExpression rightArgument;
+    private final LocationDescriptor locationDescriptor;
 
     public BinaryOperation(BinaryOperator operator, NativeExpression leftArgument,
-            NativeExpression rightArgument) {
+            NativeExpression rightArgument, LocationDescriptor locationDescriptor) {
         this.operator = operator;
         this.leftArgument = leftArgument;
         this.rightArgument = rightArgument;
+        this.locationDescriptor = locationDescriptor;
     }
     
     @Override
@@ -27,6 +29,10 @@ public class BinaryOperation implements NativeExpression {
     
     public BinaryOperator getOperator() {
     	return operator;
+    }
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

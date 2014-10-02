@@ -9,6 +9,8 @@ import antlr.RecognitionException;
 import antlr.Token;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
+import edu.mit.compilers.ast.NodeMaker;
+import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.grammar.DecafParser;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.grammar.DecafScanner;
@@ -31,6 +33,8 @@ class Main {
         scan(inputStream, outputStream);
       } else if (CLI.target == Action.AST) {
         printAst(inputStream, outputStream);
+      } else if (CLI.target == Action.INTER) {
+        semanticCheck(inputStream, outputStream);
       } else if (CLI.target == Action.PARSE ||
                  CLI.target == Action.DEFAULT) {
         parse(inputStream, outputStream);
@@ -104,6 +108,37 @@ class Main {
       AstPrinter printer = new AstPrinter(outputStream);
       printer.print(ast);
   }
+
+    // TODO(jasonpr): Fix all the indentation in this file!
+
+    private static void semanticCheck(InputStream inputStream, PrintStream outputStream)
+            throws RecognitionException, TokenStreamException {
+        DecafParser parser = programmedParser(inputStream, outputStream);
+        if (parser.getError()) {
+            // It didn't even parse!
+            System.exit(1);
+        }
+        AST ast = parser.getAST();
+        Program program = NodeMaker.program(ast);
+
+        if (!isSemanticallyValid(program, outputStream)) {
+            // The program is semanitcally invalid.
+            System.exit(1);
+        }
+    }
+
+    /**
+     * Check whether the program is semantically valid.
+     *
+     * @param program The AST-like IR of the program to check.
+     * @param outputStream A PrintStream to which errors should be printed.
+     * @return Whether the program is semantically valid.
+     */
+    private static boolean isSemanticallyValid(Program program, PrintStream outputStream) {
+        // TODO(manny): Implement!
+        throw new RuntimeException("Not yet implemented.");
+    }
+
 
   /**
    * Make a DecafParser, use it to parse the program from inputStream, and return that it.

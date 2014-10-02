@@ -8,13 +8,15 @@ public class ForLoop implements Statement {
     private final NativeExpression rangeStart;
     private final NativeExpression rangeEnd;
     private final Block body;
-    
+    private final LocationDescriptor locationDescriptor;
+
     public ForLoop(ScalarLocation loopVariable, NativeExpression rangeStart,
-            NativeExpression rangeEnd, Block body) {
+		   NativeExpression rangeEnd, Block body, LocationDescriptor locationDescriptor) {
         this.loopVariable = loopVariable;
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;
         this.body = body;
+	this.locationDescriptor = locationDescriptor;
     }
     
     @Override
@@ -40,6 +42,10 @@ public class ForLoop implements Statement {
 		}
 		return false;
 	}
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
+    }
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

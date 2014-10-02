@@ -2,23 +2,22 @@ package edu.mit.compilers.ast;
 
 import java.util.List;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 
 public class Program implements Node { 
-	private final String programName;
+    private final String programName;
     private final NodeSequence<Callout> callouts;
     private final Scope globals;
     private final NodeSequence<Method> methods;
+    private final LocationDescriptor locationDescriptor;
 
-    public Program(List<Callout> callouts, List<FieldDescriptor> globals,
-            List<Method> methods) {
-    	/* TODO: (jasonpr) Get program name */
-    	this.programName = "SHUTUP AND HACK";
+    public Program(List<Callout> callouts, Scope globals,
+		   List<Method> methods, LocationDescriptor locationDescriptor) {
         this.callouts = new NodeSequence<Callout>(callouts, "callouts");
-        this.globals = new Scope(globals);
+        this.globals = globals;
         this.methods = new NodeSequence<Method>(methods, "methods");
+	this.locationDescriptor = locationDescriptor;
     }
     
     @Override
@@ -28,20 +27,23 @@ public class Program implements Node {
 
     @Override
     public String getName() {
-        return this.programName;
+        return "program";
     }
     
     public NodeSequence<Callout> getCallouts() {
     	return callouts;
     }
 
-	public Scope getGlobals() {
-		return globals;
-	}
+    public Scope getGlobals() {
+        return globals;
+    }
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
+    }
     
-	public NodeSequence<Method> getMethods() {
-		return methods;
-	}
+    public NodeSequence<Method> getMethods() {
+        return methods;
+    }
 	
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

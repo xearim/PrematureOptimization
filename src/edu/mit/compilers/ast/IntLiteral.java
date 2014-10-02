@@ -6,9 +6,11 @@ public class IntLiteral implements NativeLiteral {
     // Yes, a string.  We want the value that the user typed in.  We don't even care how Java
     // would represent it.
     private final String value;
-    
-    public IntLiteral(String value) {
+    private final LocationDescriptor locationDescriptor;
+
+    public IntLiteral(String value, LocationDescriptor locationDescriptor) {
         this.value = value;
+	this.locationDescriptor = locationDescriptor;
     }
 
     @Override
@@ -19,6 +21,10 @@ public class IntLiteral implements NativeLiteral {
     @Override
     public String getName() {
         return value;
+    }
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

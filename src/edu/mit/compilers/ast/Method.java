@@ -1,8 +1,5 @@
 package edu.mit.compilers.ast;
 
-import java.util.List;
-
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class Method implements Node {
@@ -11,12 +8,15 @@ public class Method implements Node {
     private final ReturnType returnType;
     private final ParameterScope parameters;
     private final Block body;
+    private final LocationDescriptor locationDescriptor;
 
-    public Method(String name, ReturnType returnType, List<FieldDescriptor> parameters, Block body) {
+    public Method(String name, ReturnType returnType, ParameterScope parameters,
+	    Block body, LocationDescriptor locationDescriptor) {
         this.name = name;
         this.returnType = returnType;
-        this.parameters = new ParameterScope(parameters);
+        this.parameters = parameters;
         this.body = body;
+	this.locationDescriptor = locationDescriptor;
     }
     
     @Override
@@ -39,6 +39,10 @@ public class Method implements Node {
     
     public ImmutableList<BaseType> getSignature() {
     	return parameters.getSignature();
+    }
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
     }
     
     public Block getBlock() {
