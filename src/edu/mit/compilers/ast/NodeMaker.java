@@ -407,10 +407,7 @@ public class NodeMaker {
             case BINARY_OPERATION:
                 return binaryOperation(nativeExpression);
             case TERNARY_OPERATION:
-                // TODO(jasonpr): Implement, once TernaryOperation is
-                // implemented.
-                // return ternaryOperation(nativeExpression);
-                throw new RuntimeException("Not yet implemented!");
+                return ternaryOperation(nativeExpression);
             case UNARY_MINUS:
                 return unaryMinus(nativeExpression);
             default:
@@ -536,6 +533,16 @@ public class NodeMaker {
             // literal. Treat it normally.
             return unaryOperation(unaryMinus);
         }
+    }
+
+    public static TernaryOperation ternaryOperation(AST ternaryOperation) {
+        checkType(ternaryOperation, QUESTION);
+        checkChildCount(3, ternaryOperation);
+        List<AST> children = children(ternaryOperation);
+        NativeExpression condition = nativeExpression(children.get(0));
+        NativeExpression trueResult = nativeExpression(children.get(1));
+        NativeExpression falseResult = nativeExpression(children.get(2));
+        return new TernaryOperation(condition, trueResult, falseResult);
     }
 
     public static Location location(AST location) {
