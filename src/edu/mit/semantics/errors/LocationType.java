@@ -1,8 +1,7 @@
 package edu.mit.semantics.errors;
 
 public enum LocationType {
-	CALLOUT,
-	GLOBAL,
+	GLOBAL, // includes callouts as well as global fields
 	PARAM,
 	LOCAL,
 }

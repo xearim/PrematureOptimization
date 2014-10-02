@@ -37,6 +37,10 @@ public class FieldDescriptor {
 		return length;
 	}
 	
+	public LocationDescriptor getLocationDescriptor() {
+	    return locationDescriptor;
+	}
+	
 	public int getLineNumber(){
         return locationDescriptor.lineNo();
 	}

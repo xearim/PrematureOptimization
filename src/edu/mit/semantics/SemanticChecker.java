@@ -16,7 +16,6 @@ import edu.mit.compilers.ast.NodeSequence;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.semantics.errors.DeclaredTwiceSemanticError;
-import edu.mit.semantics.errors.LocationInFile;
 import edu.mit.semantics.errors.SemanticError;
 
 public class SemanticChecker {
@@ -31,6 +30,7 @@ public class SemanticChecker {
 		/*
 		 * Implement checks
 		 */
+		errors.addAll(new DeclaredTwiceSemanticCheck(this.prog).doCheck());
 		
 		return errors;
 	}
