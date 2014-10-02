@@ -483,7 +483,7 @@ public class NodeMaker {
     }
 
     public static NativeLiteral literal(AST nativeLiteral) {
-        checkChildCount(1, nativeLiteral);
+        checkChildCount(0, nativeLiteral);
         int type = nativeLiteral.getType();
         if (type == CHAR) {
             // TODO(jasonpr): Check that this is handled properly. Is the text
