@@ -5,9 +5,11 @@ import com.google.common.collect.ImmutableList;
 public class StringLiteral implements GeneralExpression {
 
     private final String value;
-    
-    public StringLiteral(String value) {
+    private final LocationDescriptor locationDescriptor;
+
+    public StringLiteral(String value, LocationDescriptor locationDescriptor) {
         this.value = value;
+	this.locationDescriptor = locationDescriptor;
     }
     
     @Override
@@ -18,6 +20,10 @@ public class StringLiteral implements GeneralExpression {
     @Override
     public String getName() {
         return "\"" + value + "\"";
+    }
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

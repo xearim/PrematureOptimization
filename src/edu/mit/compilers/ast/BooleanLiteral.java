@@ -8,10 +8,12 @@ public class BooleanLiteral implements NativeLiteral {
     // Yes, a string.  We want the value that the user typed in.  We don't even care how Java
     // would represent it.
     private final String value;
-    
-    public BooleanLiteral(String value) {
+    private final LocationDescriptor locationDescriptor;
+
+    public BooleanLiteral(String value, LocationDescriptor locationDescriptor) {
         checkArgument(value.equals("true") || value.equals("false"));
         this.value = value;
+	this.locationDescriptor = locationDescriptor;
     }
 
     @Override
@@ -22,6 +24,10 @@ public class BooleanLiteral implements NativeLiteral {
     @Override
     public String getName() {
         return value;
+    }
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

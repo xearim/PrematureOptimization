@@ -8,11 +8,14 @@ public class WhileLoop implements Statement {
     private final NativeExpression condition;
     private final Optional<IntLiteral> maxRepetitions;
     private final Block body;
+    private final LocationDescriptor locationDescriptor;
 
-    private WhileLoop(NativeExpression condition, Optional<IntLiteral> maxRepetitions, Block body) {
+    private WhileLoop(NativeExpression condition, Optional<IntLiteral> maxRepetitions,
+            Block body, LocationDescriptor locationDescriptor) {
         this.condition = condition;
         this.maxRepetitions = maxRepetitions;
         this.body = body;
+	this.locationDescriptor = locationDescriptor;
     }
     
     @Override
@@ -45,13 +48,18 @@ public class WhileLoop implements Statement {
 		return false;
 	}
 
-    public static WhileLoop simple(NativeExpression condition, Block body) {
-        return new WhileLoop(condition, Optional.<IntLiteral> absent(), body);
+    public static WhileLoop
+	simple(NativeExpression condition, Block body, LocationDescriptor locationDescriptor) {
+        return new WhileLoop(condition, Optional.<IntLiteral> absent(), body, locationDescriptor);
     }
     
-    public static WhileLoop limited(
-            NativeExpression condition, IntLiteral maxRepetitions, Block body) {
-        return new WhileLoop(condition, Optional.of(maxRepetitions), body);
+    public static WhileLoop limited(NativeExpression condition, IntLiteral maxRepetitions,
+            Block body, LocationDescriptor locationDescriptor) {
+        return new WhileLoop(condition, Optional.of(maxRepetitions), body, locationDescriptor);
+    }
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.
