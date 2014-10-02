@@ -5,27 +5,24 @@ import com.google.common.base.Optional;
 
 public class FieldDescriptor {
 	
-	final String name;
+    final String name;
     final Optional<IntLiteral> length;
-    final int lineNumber;
-	final int columnNumber;
-	final BaseType type;
-	
-    public FieldDescriptor(String name, int lineNumber, int columnNumber, BaseType type) {
+    final BaseType type;
+    final LocationDescriptor locationDescriptor;
+
+    public FieldDescriptor(String name, BaseType type, LocationDescriptor locationDescriptor) {
 		this.name = name;
         this.length = Optional.<IntLiteral> absent();
-		this.lineNumber = lineNumber;
-		this.columnNumber = columnNumber;
 		this.type = type;
+		this.locationDescriptor = locationDescriptor;
 	}
 	
-    public FieldDescriptor(String name, IntLiteral length, int lineNumber, int columnNumber,
-            BaseType type) {
+    public FieldDescriptor(String name, IntLiteral length,
+            BaseType type, LocationDescriptor locationDescriptor) {
 		this.name = name;
 		this.length = Optional.of(length);
-		this.lineNumber = lineNumber;
-		this.columnNumber = columnNumber;
 		this.type = type;
+        this.locationDescriptor = locationDescriptor;
 	}
 	
 	public BaseType getType(){
@@ -41,11 +38,11 @@ public class FieldDescriptor {
 	}
 	
 	public int getLineNumber(){
-		return lineNumber;
+        return locationDescriptor.lineNo();
 	}
 	
 	public int getColumnNumber(){
-		return columnNumber;
+        return locationDescriptor.colNo();
 	}
 	
 	

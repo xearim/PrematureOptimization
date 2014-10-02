@@ -8,10 +8,13 @@ public class MethodCall implements Statement, NativeExpression {
 
     private final String methodName;
     private final NodeSequence<GeneralExpression> parameterValues;
-    
-    public MethodCall(String methodName, List<GeneralExpression> parameterValues) {
+    private final LocationDescriptor locationDescriptor;
+
+    public MethodCall(String methodName, List<GeneralExpression> parameterValues,
+            LocationDescriptor locationDescriptor) {
         this.methodName = methodName;
         this.parameterValues = new NodeSequence<GeneralExpression>(parameterValues, "parameters");
+	this.locationDescriptor = locationDescriptor;
     }
     
     @Override
@@ -33,6 +36,10 @@ public class MethodCall implements Statement, NativeExpression {
 	public boolean canReturn() {
 		return false;
 	}
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
+    }
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

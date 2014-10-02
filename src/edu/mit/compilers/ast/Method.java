@@ -8,12 +8,15 @@ public class Method implements Node {
     private final ReturnType returnType;
     private final ParameterScope parameters;
     private final Block body;
+    private final LocationDescriptor locationDescriptor;
 
-    public Method(String name, ReturnType returnType, ParameterScope parameters, Block body) {
+    public Method(String name, ReturnType returnType, ParameterScope parameters,
+	    Block body, LocationDescriptor locationDescriptor) {
         this.name = name;
         this.returnType = returnType;
         this.parameters = parameters;
         this.body = body;
+	this.locationDescriptor = locationDescriptor;
     }
     
     @Override
@@ -36,6 +39,10 @@ public class Method implements Node {
     
     public ImmutableList<BaseType> getSignature() {
     	return parameters.getSignature();
+    }
+
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
     }
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.

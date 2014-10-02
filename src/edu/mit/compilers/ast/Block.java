@@ -9,11 +9,13 @@ public class Block implements Node {
     private final String name;
     private final Scope scope;
     private final NodeSequence<Statement> statements;
-    
-    public Block(String name, Scope scope, List<Statement> statements) {
+    private final LocationDescriptor locationDescriptor;
+
+    public Block(String name, Scope scope, List<Statement> statements, LocationDescriptor locationDescriptor) {
         this.name = name;
         this.scope = scope;
         this.statements = new NodeSequence<Statement>(statements, "statements");
+	this.locationDescriptor = locationDescriptor;
     }
     
     
@@ -38,6 +40,10 @@ public class Block implements Node {
     		// The only nodes inside of a block should be statements, so this cast should be safe
     		builder.add((Statement) n);
     	return builder.build();
+    }
+
+    public LocationDescriptor getLocationDescriptor() {
+	return locationDescriptor;
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

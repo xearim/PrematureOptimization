@@ -6,10 +6,13 @@ public class ArrayLocation implements Location {
 
     private final String variableName;
     private final NativeExpression index;
+    private final LocationDescriptor locationDescriptor;
     
-    public ArrayLocation(String variableName, NativeExpression index) {
+    public ArrayLocation(String variableName, NativeExpression index,
+            LocationDescriptor locationDescriptor) {
         this.variableName = variableName;
         this.index = index;
+        this.locationDescriptor = locationDescriptor;
     }
     
     @Override
@@ -22,6 +25,10 @@ public class ArrayLocation implements Location {
         return variableName + "[" + index +"]";
     }
     
+    public LocationDescriptor getLocationDescriptor() {
+        return locationDescriptor;
+    }
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }
