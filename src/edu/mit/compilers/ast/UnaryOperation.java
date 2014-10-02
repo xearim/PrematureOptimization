@@ -22,7 +22,7 @@ public class UnaryOperation implements NativeExpression {
         return operator.getSymbol();
     }
     
-    public UnaryOperator getOperation() {
+    public UnaryOperator getOperator() {
     	return operator;
     }
 

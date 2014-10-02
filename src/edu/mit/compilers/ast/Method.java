@@ -33,6 +33,10 @@ public class Method implements Node {
     	return parameters;
     }
     
+    public ReturnType getReturnType(){
+    	return returnType;
+    }
+    
     public ImmutableList<BaseType> getSignature() {
     	return parameters.getSignature();
     }
