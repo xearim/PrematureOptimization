@@ -2,7 +2,7 @@ package edu.mit.compilers.ast;
 
 import com.google.common.collect.ImmutableList;
 
-public class TernaryOperation implements Statement {
+public class TernaryOperation implements NativeExpression {
 
     private final NativeExpression condition;
     private final NativeExpression trueResult;
@@ -23,15 +23,5 @@ public class TernaryOperation implements Statement {
     @Override
     public String getName() {
         return "ternary";
-    }
-
-    @Override
-    public boolean canReturn() {
-        return false;
-    }
-
-    @Override
-    public Iterable<Block> getBlocks() {
-        return ImmutableList.of();
     }
 }
