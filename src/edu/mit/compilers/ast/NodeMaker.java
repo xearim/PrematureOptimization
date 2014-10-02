@@ -263,19 +263,19 @@ public class NodeMaker {
         case ASSIGNMENT:
             return assignment(statement);
         case BREAK:
-            return methodCall(statement);
+            return breakStatement(statement);
         case CONTINUE:
-            return ifStatement(statement);
+            return continueStatement(statement);
         case FOR:
             return forLoop(statement);
         case IF:
-            return whileLoop(statement);
+            return ifStatement(statement);
         case METHOD_CALL:
-            return returnStatement(statement);
+            return methodCall(statement);
         case RETURN:
-            return breakStatement(statement);
+            return returnStatement(statement);
         case WHILE:
-            return continueStatement(statement);
+            return whileLoop(statement);
         default:
             throw new AssertionError("Unexpected StatementType " + type);
         }
