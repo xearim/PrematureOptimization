@@ -93,7 +93,7 @@ public class NodeMaker {
         List<AST> children = children(program);
 
         List<Callout> callouts = callouts(children.get(0));
-        List<FieldDescriptor> globals = fieldDescriptors(children.get(1));
+        Scope globals = scope(children.get(1));
         List<Method> methods = methods(children.get(2));
 
         return new Program(callouts, globals, methods);
@@ -111,13 +111,13 @@ public class NodeMaker {
     }
 
     /** Make some FieldDescriptors from a "field_decls" ANTLR AST. */
-    public static List<FieldDescriptor> fieldDescriptors(AST fieldDecls) {
+    public static Scope scope(AST fieldDecls) {
         checkType(fieldDecls, FIELD_DECLS);
         ImmutableList.Builder<FieldDescriptor> builder = ImmutableList.builder();
         for (AST child : children(fieldDecls)) {
             builder.addAll(bunchedFieldDescriptors(child));
         }
-        return builder.build();
+        return new Scope(builder.build());
     }
 
     /** Make some Methods from a "method_decls" ANTLR AST. */
@@ -228,7 +228,7 @@ public class NodeMaker {
         checkChildCount(2, block);
 
         List<AST> children = children(block);
-        List<FieldDescriptor> locals = fieldDescriptors(children.get(0));
+        Scope locals = scope(children.get(0));
         List<Statement> statements = statements(children.get(1));
 
         // TODO(jasonpr): Remove the name parameter of Block!
