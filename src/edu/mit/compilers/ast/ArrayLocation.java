@@ -5,9 +5,9 @@ import com.google.common.collect.ImmutableList;
 public class ArrayLocation implements Location {
 
     private final String variableName;
-    private final int index;
+    private final NativeExpression index;
     
-    public ArrayLocation(String variableName, int index) {
+    public ArrayLocation(String variableName, NativeExpression index) {
         this.variableName = variableName;
         this.index = index;
     }

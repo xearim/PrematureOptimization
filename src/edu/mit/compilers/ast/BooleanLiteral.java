@@ -10,7 +10,7 @@ public class BooleanLiteral implements NativeLiteral {
     private final String value;
     
     public BooleanLiteral(String value) {
-        checkArgument(value == "true" || value == "false");
+        checkArgument(value.equals("true") || value.equals("false"));
         this.value = value;
     }
 
