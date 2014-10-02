@@ -145,9 +145,7 @@ public class NodeMaker {
             checkChildCount(2, namedField);
             List<AST> arrayInfo = children(namedField);
             String name = stringFromId(arrayInfo.get(0));
-            // TODO(jasonpr): Decide whether we should store this as a String in
-            // FieldDescriptor.
-            int length = intFromLiteral(arrayInfo.get(1));
+            IntLiteral length = intLiteral(arrayInfo.get(1));
             return new FieldDescriptor(name, length, line, column, type);
         } else {
             throw new AssertionError("AST " + fieldDecl + " is not an ID or an ARRAY_FIELD_DECL.");
@@ -158,13 +156,6 @@ public class NodeMaker {
         checkChildCount(0, id);
         checkType(id, ID);
         return id.getText();
-    }
-
-    public static int intFromLiteral(AST intLiteral) {
-        checkChildCount(0, intLiteral);
-        checkType(intLiteral, INT_LITERAL);
-        // TODO(jasonpr): Do a range check!
-        return Integer.parseInt(intLiteral.getText());
     }
 
     public static BaseType baseType(AST typeNode) {
@@ -492,6 +483,8 @@ public class NodeMaker {
         } else if (type == TRUE || type == FALSE) {
             return new BooleanLiteral(nativeLiteral.getText());
         } else if (type == INT_LITERAL) {
+            // TODO(jasonpr): Check for non-converted unary minus'd int
+            // literals.
             return new IntLiteral(nativeLiteral.getText());
         } else {
             throw new AssertionError("Node is not a native literal: " + nativeLiteral);

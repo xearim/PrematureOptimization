@@ -6,20 +6,21 @@ import com.google.common.base.Optional;
 public class FieldDescriptor {
 	
 	final String name;
-	final Optional<Integer> length;
-	final int lineNumber;
+    final Optional<IntLiteral> length;
+    final int lineNumber;
 	final int columnNumber;
 	final BaseType type;
 	
-	public FieldDescriptor(String name, int lineNumber, int columnNumber, BaseType type){
+    public FieldDescriptor(String name, int lineNumber, int columnNumber, BaseType type) {
 		this.name = name;
-		this.length = Optional.<Integer>absent();
+        this.length = Optional.<IntLiteral> absent();
 		this.lineNumber = lineNumber;
 		this.columnNumber = columnNumber;
 		this.type = type;
 	}
 	
-	public FieldDescriptor(String name, int length, int lineNumber, int columnNumber, BaseType type){
+    public FieldDescriptor(String name, IntLiteral length, int lineNumber, int columnNumber,
+            BaseType type) {
 		this.name = name;
 		this.length = Optional.of(length);
 		this.lineNumber = lineNumber;
@@ -35,7 +36,7 @@ public class FieldDescriptor {
 		return name;
 	}
 	
-	public Optional<Integer> getLength(){
+	public Optional<IntLiteral> getLength(){
 		return length;
 	}
 	
