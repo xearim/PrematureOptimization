@@ -10,9 +10,9 @@ public class Block implements Node {
     private final Scope scope;
     private final NodeSequence<Statement> statements;
     
-    public Block(String name, List<FieldDescriptor> scope, List<Statement> statements) {
+    public Block(String name, Scope scope, List<Statement> statements) {
         this.name = name;
-        this.scope = new Scope(scope);
+        this.scope = scope;
         this.statements = new NodeSequence<Statement>(statements, "statements");
     }
     

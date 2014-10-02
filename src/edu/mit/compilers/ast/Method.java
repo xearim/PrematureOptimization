@@ -1,8 +1,5 @@
 package edu.mit.compilers.ast;
 
-import java.util.List;
-
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class Method implements Node {
@@ -12,10 +9,10 @@ public class Method implements Node {
     private final ParameterScope parameters;
     private final Block body;
 
-    public Method(String name, ReturnType returnType, List<FieldDescriptor> parameters, Block body) {
+    public Method(String name, ReturnType returnType, ParameterScope parameters, Block body) {
         this.name = name;
         this.returnType = returnType;
-        this.parameters = new ParameterScope(parameters);
+        this.parameters = parameters;
         this.body = body;
     }
     

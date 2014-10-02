@@ -2,7 +2,6 @@ package edu.mit.compilers.ast;
 
 import java.util.List;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 
@@ -11,10 +10,10 @@ public class Program implements Node {
     private final Scope globals;
     private final NodeSequence<Method> methods;
 
-    public Program(List<Callout> callouts, List<FieldDescriptor> globals,
+    public Program(List<Callout> callouts, Scope globals,
             List<Method> methods) {
         this.callouts = new NodeSequence<Callout>(callouts, "callouts");
-        this.globals = new Scope(globals);
+        this.globals = globals;
         this.methods = new NodeSequence<Method>(methods, "methods");
     }
     

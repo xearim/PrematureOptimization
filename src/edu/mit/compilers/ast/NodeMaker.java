@@ -93,8 +93,8 @@ public class NodeMaker {
         List<AST> children = children(program);
 
         List<Callout> callouts = callouts(children.get(0));
-        List<FieldDescriptor> globals = fieldDescriptors(children.get(1));
-        List<Method> methods = methods(children.get(2));
+        Scope globals = rootScope(children.get(1));
+        List<Method> methods = methods(children.get(2), globals);
 
         return new Program(callouts, globals, methods);
     }
@@ -111,7 +111,15 @@ public class NodeMaker {
     }
 
     /** Make some FieldDescriptors from a "field_decls" ANTLR AST. */
-    public static List<FieldDescriptor> fieldDescriptors(AST fieldDecls) {
+    public static Scope scope(AST fieldDecls, Scope parent) {
+        return new Scope(fieldDescriptors(fieldDecls), parent);
+    }
+
+    public static Scope rootScope(AST fieldDecls) {
+        return new Scope(fieldDescriptors(fieldDecls));
+    }
+
+    private static List<FieldDescriptor> fieldDescriptors(AST fieldDecls) {
         checkType(fieldDecls, FIELD_DECLS);
         ImmutableList.Builder<FieldDescriptor> builder = ImmutableList.builder();
         for (AST child : children(fieldDecls)) {
@@ -121,11 +129,11 @@ public class NodeMaker {
     }
 
     /** Make some Methods from a "method_decls" ANTLR AST. */
-    public static List<Method> methods(AST methodDecls) {
+    public static List<Method> methods(AST methodDecls, Scope scope) {
         checkType(methodDecls, METHOD_DECLS);
         ImmutableList.Builder<Method> builder = ImmutableList.builder();
         for (AST child : children(methodDecls)) {
-            builder.add(method(child));
+            builder.add(method(child, scope));
         }
         return builder.build();
     }
@@ -170,14 +178,14 @@ public class NodeMaker {
         }
     }
 
-    public static Method method(AST method) {
+    public static Method method(AST method, Scope scope) {
         checkType(method, ID);
         checkChildCount(3, method);
 
         List<AST> children = children(method);
         ReturnType returnType = returnType(children.get(0));
-        List<FieldDescriptor> parameters = parameterDescriptors(children.get(1));
-        Block body = block(children.get(2));
+        ParameterScope parameters = parameterDescriptors(children.get(1), scope);
+        Block body = block(children.get(2), parameters);
         String name = method.getText();
 
         return new Method(name, returnType, parameters, body);
@@ -196,13 +204,13 @@ public class NodeMaker {
         }
     }
 
-    public static List<FieldDescriptor> parameterDescriptors(AST signatureArgs) {
+    public static ParameterScope parameterDescriptors(AST signatureArgs, Scope parent) {
         checkType(signatureArgs, SIGNATURE_ARGS);
         ImmutableList.Builder<FieldDescriptor> builder = ImmutableList.builder();
         for (AST signatureArg : children(signatureArgs)) {
             builder.add(parameterDescriptor(signatureArg));
         }
-        return builder.build();
+        return new ParameterScope(builder.build(), parent);
     }
 
     public static FieldDescriptor parameterDescriptor(AST signatureArg) {
@@ -223,25 +231,25 @@ public class NodeMaker {
         return new FieldDescriptor(name, line, column, type);
     }
 
-    public static Block block(AST block) {
+    public static Block block(AST block, Scope scope) {
         checkType(block, BLOCK);
         checkChildCount(2, block);
 
         List<AST> children = children(block);
-        List<FieldDescriptor> locals = fieldDescriptors(children.get(0));
-        List<Statement> statements = statements(children.get(1));
+        Scope locals = scope(children.get(0), scope);
+        List<Statement> statements = statements(children.get(1), locals);
 
         // TODO(jasonpr): Remove the name parameter of Block!
         return new Block(null, locals, statements);
     }
 
-    public static List<Statement> statements(AST statements) {
+    public static List<Statement> statements(AST statements, Scope scope) {
         checkType(statements, STATEMENTS);
 
         ImmutableList.Builder<Statement> builder = ImmutableList.builder();
         List<AST> children = children(statements);
         for (AST statement : children) {
-            builder.add(statement(statement));
+            builder.add(statement(statement, scope));
         }
         return builder.build();
     }
@@ -250,7 +258,7 @@ public class NodeMaker {
         ASSIGNMENT, METHOD_CALL, IF, FOR, WHILE, RETURN, BREAK, CONTINUE;
     }
 
-    public static Statement statement(AST statement) {
+    public static Statement statement(AST statement, Scope scope) {
         StatementType type = statementType(statement);
         switch (type) {
         case ASSIGNMENT:
@@ -260,15 +268,15 @@ public class NodeMaker {
         case CONTINUE:
             return continueStatement(statement);
         case FOR:
-            return forLoop(statement);
+                return forLoop(statement, scope);
         case IF:
-            return ifStatement(statement);
+                return ifStatement(statement, scope);
         case METHOD_CALL:
             return methodCall(statement);
         case RETURN:
             return returnStatement(statement);
         case WHILE:
-            return whileLoop(statement);
+                return whileLoop(statement, scope);
         default:
             throw new AssertionError("Unexpected StatementType " + type);
         }
@@ -330,34 +338,34 @@ public class NodeMaker {
         return new MethodCall(methodName, parameterValues);
     }
 
-    public static IfStatement ifStatement(AST ifStatement) {
+    public static IfStatement ifStatement(AST ifStatement, Scope scope) {
         checkChildCount(2, 3, ifStatement);
         List<AST> children = children(ifStatement);
         NativeExpression condition = nativeExpression(children.get(0));
-        Block thenBlock = block(children.get(1));
+        Block thenBlock = block(children.get(1), scope);
         if (children.size() == 2) {
             // It's just the condition and the then block.
             return IfStatement.ifThen(condition, thenBlock);
         } else {
             // There's an else block, too!
-            Block elseBlock = block(children.get(2));
+            Block elseBlock = block(children.get(2), scope);
             return IfStatement.ifThenElse(condition, thenBlock, elseBlock);
         }
     }
 
-    public static ForLoop forLoop(AST forLoop) {
+    public static ForLoop forLoop(AST forLoop, Scope scope) {
         checkChildCount(4, forLoop);
 
         List<AST> children = children(forLoop);
         ScalarLocation loopVariable = scalarLocation(children.get(0));
         NativeExpression rangeStart = nativeExpression(children.get(1));
         NativeExpression rangeEnd = nativeExpression(children.get(2));
-        Block body = block(children.get(3));
+        Block body = block(children.get(3), scope);
 
         return new ForLoop(loopVariable, rangeStart, rangeEnd, body);
     }
 
-    public static WhileLoop whileLoop(AST whileLoop) {
+    public static WhileLoop whileLoop(AST whileLoop, Scope scope) {
         checkChildCount(2, 3, whileLoop);
 
         List<AST> children = children(whileLoop);
@@ -365,11 +373,11 @@ public class NodeMaker {
 
         if (children.size() == 2) {
             // There is no bound on the while loop.
-            return WhileLoop.simple(condition, block(children.get(1)));
+            return WhileLoop.simple(condition, block(children.get(1), scope));
         } else {
             // There is a bound on the while loop.
             IntLiteral maxRepetitions = intLiteral(children.get(1));
-            Block body = block(children.get(2));
+            Block body = block(children.get(2), scope);
             return WhileLoop.limited(condition, maxRepetitions, body);
         }
     }

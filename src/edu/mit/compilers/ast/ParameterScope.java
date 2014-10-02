@@ -9,14 +9,14 @@ public class ParameterScope extends Scope{
 
 	private ImmutableList<BaseType> signature;
 	
-	public ParameterScope(List<FieldDescriptor> variables) {
-		super(variables);
+    public ParameterScope(List<FieldDescriptor> variables, Scope parent) {
+        super(variables, parent);
 		List<BaseType> signatureSet = new ArrayList<BaseType>();
 		for(FieldDescriptor var: variables)
 			signatureSet.add(var.type);
 		signature = ImmutableList.copyOf(signatureSet);
 	}
-	
+
 	public ImmutableList<BaseType> getSignature(){
 		return signature;
 	}
