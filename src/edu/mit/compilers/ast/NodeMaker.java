@@ -48,13 +48,42 @@ import static edu.mit.compilers.grammar.DecafParserTokenTypes.VOID;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.WHILE;
 
 import java.util.List;
+import java.util.Map;
 
 import antlr.collections.AST;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /** Utility class for dealing with ANTLR's ASTs. */
 public class NodeMaker {
+
+    private static final Map<Integer, UnaryOperator> UNARY_OPERATORS;
+    private static final Map<Integer, BinaryOperator> BINARY_OPERATORS;
+
+    static {
+        UNARY_OPERATORS = ImmutableMap.of(
+                AT_SIGN, UnaryOperator.ARRAY_LENGTH,
+                NOT_OP, UnaryOperator.NOT,
+                MINUS, UnaryOperator.NEGATIVE);
+
+        BINARY_OPERATORS = ImmutableMap.<Integer, BinaryOperator>builder()
+                .put(TIMES, BinaryOperator.TIMES)
+                .put(DIVIDED, BinaryOperator.DIVIDED_BY)
+                .put(MODULO, BinaryOperator.MODULO)
+                .put(PLUS, BinaryOperator.PLUS)
+                .put(MINUS, BinaryOperator.MINUS)
+                .put(LT, BinaryOperator.LESS_THAN)
+                .put(GT, BinaryOperator.GREATER_THAN)
+                .put(LTE, BinaryOperator.LESS_THAN_OR_EQUAL)
+                .put(GTE, BinaryOperator.GREATER_THAN_OR_EQUAL)
+                .put(DOUBLE_EQUAL, BinaryOperator.DOUBLE_EQUALS)
+                .put(NE, BinaryOperator.NOT_EQUALS)
+                .put(COND_OR, BinaryOperator.OR)
+                .put(COND_AND, BinaryOperator.AND)
+                .build();
+    }
+
     // Prohibit instantiation.
     private NodeMaker() {}
 
@@ -457,23 +486,56 @@ public class NodeMaker {
     }
 
     public static NativeLiteral literal(AST nativeLiteral) {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        checkChildCount(1, nativeLiteral);
+        int type = nativeLiteral.getType();
+        if (type == CHAR) {
+            // TODO(jasonpr): Check that this is handled properly. Is the text
+            // "a" or "'a'"?
+            return new CharLiteral(nativeLiteral.getText());
+        } else if (type == BOOLEAN) {
+            return new BooleanLiteral(nativeLiteral.getText());
+        } else if (type == INT) {
+            return new IntLiteral(nativeLiteral.getText());
+        } else {
+            throw new AssertionError("Node is not a native literal: " + nativeLiteral);
+        }
     }
 
     public static UnaryOperation unaryOperation(AST unaryOperation) {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        UnaryOperator operator = UNARY_OPERATORS.get(unaryOperation.getType());
+        if (operator == null) {
+            throw new AssertionError("Non-unary-operation node: " + unaryOperation);
+        }
+        checkChildCount(1, unaryOperation);
+        return new UnaryOperation(operator, nativeExpression(unaryOperation.getFirstChild()));
     }
 
     public static BinaryOperation binaryOperation(AST binaryOperation) {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        BinaryOperator operator = BINARY_OPERATORS.get(binaryOperation.getType());
+        if (operator == null) {
+            throw new AssertionError("Non-binary-operation node: " + binaryOperation);
+        }
+        checkChildCount(2, binaryOperation);
+        List<AST> children = children(binaryOperation);
+        return new BinaryOperation(operator, nativeExpression(children.get(0)),
+                nativeExpression(children.get(1)));
     }
 
-    public static NativeExpression unaryMinus(AST nativeLiteral) {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+    public static NativeExpression unaryMinus(AST unaryMinus) {
+        checkType(unaryMinus, MINUS);
+        checkChildCount(1, unaryMinus);
+        AST child = unaryMinus.getFirstChild();
+        if (child.getType() == INT_LITERAL) {
+            checkChildCount(0, child);
+            // Let these two nodes (unary minus, and single positive int literal
+            // leaf) with one node (single negative int literal leaf).
+            // Replace -(128) with -128, for example.
+            return new IntLiteral("-" + child.getText());
+        } else {
+            // No special behavior is needed for anything that is not an int
+            // literal. Treat it normally.
+            return unaryOperation(unaryMinus);
+        }
     }
 
     public static Location location(AST location) {
