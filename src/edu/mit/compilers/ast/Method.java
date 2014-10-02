@@ -41,6 +41,10 @@ public class Method implements Node {
     	return parameters.getSignature();
     }
     
+    public Block getBlock() {
+    	return body;
+    }
+    
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

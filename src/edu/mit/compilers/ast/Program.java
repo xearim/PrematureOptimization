@@ -34,7 +34,15 @@ public class Program implements Node {
     public NodeSequence<Callout> getCallouts() {
     	return callouts;
     }
+
+	public Scope getGlobals() {
+		return globals;
+	}
     
+	public NodeSequence<Method> getMethods() {
+		return methods;
+	}
+	
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }
