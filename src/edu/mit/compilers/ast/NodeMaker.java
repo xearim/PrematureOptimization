@@ -389,7 +389,7 @@ public class NodeMaker {
         if (children.size() == 0) {
             return ReturnStatement.ofVoid();
         } else {
-            return ReturnStatement.of(nativeExpression(children.get(1)));
+            return ReturnStatement.of(nativeExpression(children.get(0)));
         }
     }
 
