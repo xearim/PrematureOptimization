@@ -37,26 +37,6 @@ public class Type implements Node {
         return base + reach;
     }
 
-	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		if(!length.isPresent()){
-			if(!type.isPresent())
-				return false;
-			return type.get() == baseType;
-		}
-		return false;
-	}
-
-	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
-		if(!length.isPresent()){
-			if(!type.isPresent())
-				return false;
-			return type.get() == baseType;
-		}
-		return false;
-	}
-
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

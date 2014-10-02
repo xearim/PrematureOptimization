@@ -40,18 +40,6 @@ public class Method implements Node {
     public ImmutableList<BaseType> getSignature() {
     	return parameters.getSignature();
     }
-
-    // A method's return is determined entirely by its return type
-	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		return returnType.canReturn(type);
-	}
-
-	// A method's return is determined entirely by its return type
-	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
-		return returnType.mustReturn(type);
-	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

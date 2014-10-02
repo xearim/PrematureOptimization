@@ -2,10 +2,9 @@ package edu.mit.compilers.ast;
 
 import java.util.List;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-public class MethodCall implements Statement {
+public class MethodCall implements Statement, NativeExpression {
 
     private final String methodName;
     private final NodeSequence<GeneralExpression> parameterValues;
@@ -25,15 +24,13 @@ public class MethodCall implements Statement {
         return "call " + methodName;
     }
 
-    // A method must be looked up to know its return type
 	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		return false;
+	public Iterable<Block> getBlocks() {
+		return ImmutableList.of();
 	}
-
-	// A method must be looked up to know its return type
+	
 	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
+	public boolean canReturn() {
 		return false;
 	}
     

@@ -40,21 +40,24 @@ public class IfStatement implements Statement {
         return "if" + (elseBlock.isPresent() ? "-else" : "");
     }
 
-    // If statements are the superset of their two contained blocks
 	@Override
-	public boolean canReturn(Optional<BaseType> type) {
+	public Iterable<Block> getBlocks() {
 		if(elseBlock.isPresent())
-			return elseBlock.get().canReturn(type) || thenBlock.canReturn(type);
-		return thenBlock.canReturn(type);
+			return ImmutableList.of(thenBlock, elseBlock.get());
+		return ImmutableList.of(thenBlock);
 	}
 
-	// If statements must return a value iff
-	// A) it has an elseBlock (so it has complete control flow)
-	// B) both blocks return the same value
 	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
+	public boolean canReturn() {
+		for(Statement subStatement: thenBlock.getStatements()){
+			if(subStatement.canReturn())
+				return true;
+		}
 		if(elseBlock.isPresent())
-			return elseBlock.get().mustReturn(type) && thenBlock.mustReturn(type);
+			for(Statement subStatement: elseBlock.get().getStatements()){
+				if(subStatement.canReturn())
+					return true;
+			}
 		return false;
 	}
     

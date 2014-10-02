@@ -34,27 +34,6 @@ public class Program implements Node {
     public NodeSequence<Callout> getCallouts() {
     	return callouts;
     }
-
-    public Scope getGlobals() {
-    	return globals;
-    }
-    
-    public NodeSequence<Method> getMethods() {
-    	return methods;
-    }
-
-    // The program root doesn't have a meaningful return value
-	@Override
-	public boolean canReturn(Optional<BaseType> type) {
-		return false;
-	}
-
-	// The program root doesn't have a meaningful return value
-	@Override
-	public boolean mustReturn(Optional<BaseType> type) {
-		// TODO Auto-generated method stub
-		return false;
-	}
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
