@@ -1,0 +1,10 @@
+void foo ( int i, boolean b ) {
+  if ( i == 2) {
+    return 3;
+  } else {
+    return b;
+  }
+  // should not return value;
+}
+void main ( ) {
+}

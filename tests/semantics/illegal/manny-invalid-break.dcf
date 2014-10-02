@@ -1,0 +1,4 @@
+void main ( ) {
+  break;
+  // break must be in while or for loop
+}

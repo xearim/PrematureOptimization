@@ -1,0 +1,7 @@
+void main ( ) {
+  if ( true ) {
+    int a;
+    int a;
+  }
+  // duplicate variables in if
+}

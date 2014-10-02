@@ -1,0 +1,4 @@
+void main ( ) {
+  int b;
+  b = (true) 5 : false;
+}

@@ -1,0 +1,5 @@
+void main ( ) {
+     while (true) : -1   {
+           // upper bound must be positive integer
+     } 
+}

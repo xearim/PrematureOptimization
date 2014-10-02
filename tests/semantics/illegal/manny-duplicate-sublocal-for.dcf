@@ -1,0 +1,7 @@
+void main ( ) {
+  for ( x = 0, 10 ) {
+    // duplicate
+    int a;
+    int a;
+  }
+}
