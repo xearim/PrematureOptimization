@@ -564,8 +564,7 @@ public class NodeMaker {
         checkType(arrayLocation, ARRAY_LOCATION);
         checkChildCount(2, arrayLocation);
         List<AST> children = children(arrayLocation);
-        // TODO(jasonpr): Do not convert to int yet! Keep it as a literal.
-        return new ArrayLocation(stringFromId(children.get(0)), intFromLiteral(children.get(1)));
+        return new ArrayLocation(stringFromId(children.get(0)), nativeExpression(children.get(1)));
     }
 
     public static IntLiteral intLiteral(AST intLiteral) {
