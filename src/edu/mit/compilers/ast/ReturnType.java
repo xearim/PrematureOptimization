@@ -12,7 +12,7 @@ public class ReturnType implements Node {
     }
     
     public static ReturnType fromVoid() {
-        return new ReturnType(Optional.<BaseType>absent());
+        return new ReturnType(Optional.of(BaseType.VOID));
     }
 
     public static ReturnType fromBaseType(BaseType baseType) {
@@ -22,6 +22,10 @@ public class ReturnType implements Node {
     @Override
     public Iterable<Node> getChildren() {
         return ImmutableList.of();
+    }
+    
+    public Optional<BaseType> getReturnType() {
+    	return type;
     }
 
     @Override
