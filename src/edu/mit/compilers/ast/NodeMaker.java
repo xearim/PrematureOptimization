@@ -489,9 +489,9 @@ public class NodeMaker {
             // TODO(jasonpr): Check that this is handled properly. Is the text
             // "a" or "'a'"?
             return new CharLiteral(nativeLiteral.getText());
-        } else if (type == BOOLEAN) {
+        } else if (type == TRUE || type == FALSE) {
             return new BooleanLiteral(nativeLiteral.getText());
-        } else if (type == INT) {
+        } else if (type == INT_LITERAL) {
             return new IntLiteral(nativeLiteral.getText());
         } else {
             throw new AssertionError("Node is not a native literal: " + nativeLiteral);
