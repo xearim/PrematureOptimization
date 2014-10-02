@@ -69,9 +69,12 @@ public class EvaluateCheck {
 		return Optional.of(BaseType.VOID);
 	}
 	
-	// TODO: Gotta figure out some good way to check methods without needing to screw with a bunch of things
-	public static Optional<BaseType> evaluatesTo(MethodCall expression, Scope scope){
-		return Optional.of(BaseType.VOID);
+	public static Optional<BaseType> evaluatesTo(MethodCall expression, Iterable<Method> methodTable){
+		for(Method method : methodTable){
+			if(expression.getName().equals(method.getName()))
+				return method.getReturnType().getReturnType();
+		}
+		return Optional.absent();
 	}
 	
 	public static Optional<BaseType> evaluatesTo(ScalarLocation expression, Scope scope){
