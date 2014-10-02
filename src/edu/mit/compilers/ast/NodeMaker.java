@@ -115,7 +115,7 @@ public class NodeMaker {
         checkType(fieldDecls, FIELD_DECLS);
         ImmutableList.Builder<FieldDescriptor> builder = ImmutableList.builder();
         for (AST child : children(fieldDecls)) {
-            builder.add(fieldDescriptor(child));
+            builder.addAll(bunchedFieldDescriptors(child));
         }
         return builder.build();
     }
@@ -130,26 +130,28 @@ public class NodeMaker {
         return builder.build();
     }
 
-    /** Make a FieldDescriptor from a "field_decl" ANTLR AST. */
-    public static FieldDescriptor fieldDescriptor(AST fieldDecl) {
+    /** Make some FieldDescriptors from a "field_decl" ANTLR AST. */
+    public static List<FieldDescriptor> bunchedFieldDescriptors(AST fieldDecl) {
         BaseType type = baseType(fieldDecl);
-        int line = fieldDecl.getLine();
-        int column = fieldDecl.getColumn();
 
-        checkChildCount(1, fieldDecl);
-        AST namedField = fieldDecl.getFirstChild();
-        if (namedField.getType() == ID) {
-            String name = namedField.getText();
-            return new FieldDescriptor(name, line, column, type);
-        } else if (namedField.getType() == ARRAY_FIELD_DECL) {
-            checkChildCount(2, namedField);
-            List<AST> arrayInfo = children(namedField);
-            String name = stringFromId(arrayInfo.get(0));
-            IntLiteral length = intLiteral(arrayInfo.get(1));
-            return new FieldDescriptor(name, length, line, column, type);
-        } else {
-            throw new AssertionError("AST " + fieldDecl + " is not an ID or an ARRAY_FIELD_DECL.");
+        ImmutableList.Builder<FieldDescriptor> builder = ImmutableList.builder();
+        for (AST namedField : children(fieldDecl)) {
+            int line = namedField.getLine();
+            int column = namedField.getColumn();
+            if (namedField.getType() == ID) {
+                String name = namedField.getText();
+                builder.add(new FieldDescriptor(name, line, column, type));
+            } else if (namedField.getType() == ARRAY_FIELD_DECL) {
+                checkChildCount(2, namedField);
+                List<AST> arrayInfo = children(namedField);
+                String name = stringFromId(arrayInfo.get(0));
+                IntLiteral length = intLiteral(arrayInfo.get(1));
+                builder.add(new FieldDescriptor(name, length, line, column, type));
+            } else {
+                throw new AssertionError("AST " + fieldDecl + " is not an ID or an ARRAY_FIELD_DECL.");
+            }
         }
+        return builder.build();
     }
 
     public static String stringFromId(AST id) {
