@@ -328,6 +328,12 @@ public class TypesSemanticCheck implements SemanticCheck {
                     Utils.check(leftType.equals(rightType), errorAccumulator,
                             "Type mismatch at %s: expected equal types, but got %s and %s.",
                             operation.getLocationDescriptor(), leftType.get(), rightType.get());
+                    // No need to check rightType: it's equal to leftType.
+                    Utils.check(
+                            leftType.get().equals(BaseType.BOOLEAN)
+                                    || leftType.get().equals(BaseType.INTEGER), errorAccumulator,
+                            "Type mismatch at %s: expected an integer or a boolean, but got %s",
+                            operation.getLocationDescriptor(), leftType.get());
                 }
                 return Optional.of(BaseType.BOOLEAN);
             case GREATER_THAN:
