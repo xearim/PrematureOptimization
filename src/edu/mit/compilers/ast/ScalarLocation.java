@@ -18,6 +18,11 @@ public class ScalarLocation implements Location {
     }
 
     @Override
+    public String getVariableName() {
+        return variableName;
+    }
+
+    @Override
     public String getName() {
         return variableName;
     }
