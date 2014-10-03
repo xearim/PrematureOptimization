@@ -302,8 +302,45 @@ public class TypesSemanticCheck implements SemanticCheck {
     /** See validNativeExpressionType. */
     private Optional<BaseType> validBinaryOperationType(
             BinaryOperation operation, Scope scope, List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        switch (operation.getOperator()) {
+            case AND:
+            case OR:
+                for (NativeExpression expression : operation.getChildren()) {
+                    checkTypedExpression(BaseType.BOOLEAN, expression, scope, errorAccumulator);
+                }
+                return Optional.of(BaseType.BOOLEAN);
+            case PLUS:
+            case MINUS:
+            case DIVIDED_BY:
+            case TIMES:
+            case MODULO:
+                for (NativeExpression expression : operation.getChildren()) {
+                    checkTypedExpression(BaseType.INTEGER, expression, scope, errorAccumulator);
+                }
+                return Optional.of(BaseType.INTEGER);
+            case DOUBLE_EQUALS:
+            case NOT_EQUALS:
+                Optional<BaseType> leftType = validNativeExpressionType(
+                        operation.getLeftArgument(), scope, errorAccumulator);
+                Optional<BaseType> rightType = validNativeExpressionType(
+                        operation.getRightArgument(), scope, errorAccumulator);
+                if (allPresent(leftType, rightType)) {
+                    Utils.check(leftType.equals(rightType), errorAccumulator,
+                            "Type mismatch at %s: expected equal types, but got %s and %s.",
+                            operation.getLocationDescriptor(), leftType.get(), rightType.get());
+                }
+                return Optional.of(BaseType.BOOLEAN);
+            case GREATER_THAN:
+            case GREATER_THAN_OR_EQUAL:
+            case LESS_THAN:
+            case LESS_THAN_OR_EQUAL:
+                for (NativeExpression expression : operation.getChildren()) {
+                    checkTypedExpression(BaseType.INTEGER, expression, scope, errorAccumulator);
+                }
+                return Optional.of(BaseType.BOOLEAN);
+            default:
+                throw new AssertionError("Got unexpected operator " + operation.getOperator());
+        }
     }
 
     /** See validNativeExpressionType. */
