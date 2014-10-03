@@ -56,6 +56,7 @@ public class UsedBeforeDeclaredSemanticCheck implements SemanticCheck {
 
             // Check immediate fields
             if (stmt instanceof Assignment){
+                checkLocation(((Assignment) stmt).getLocation(), blockScope);
                 checkNativeExpression(((Assignment) stmt).getExpression(), blockScope);
             } else if (stmt instanceof BreakStatement) {
                 continue;
@@ -79,6 +80,16 @@ public class UsedBeforeDeclaredSemanticCheck implements SemanticCheck {
             } else {
                 // TODO(Manny) throw error
             }
+        }
+    }
+
+    private void checkLocation(Location loc, Scope scope) {
+        if (loc instanceof ArrayLocation) {
+            checkArrayLocation((ArrayLocation) loc, scope);
+        } else if (loc instanceof ScalarLocation) {
+            checkScalarLocation((ScalarLocation) loc, scope);
+        } else {
+            // TODO(Manny) throw error
         }
     }
 

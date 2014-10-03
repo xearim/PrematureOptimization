@@ -11,7 +11,6 @@ import edu.mit.compilers.ast.Callout;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.LocationDescriptor;
 import edu.mit.compilers.ast.Method;
-import edu.mit.compilers.ast.Node;
 import edu.mit.compilers.ast.NodeSequence;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.ast.Scope;

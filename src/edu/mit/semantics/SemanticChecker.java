@@ -21,6 +21,7 @@ public class SemanticChecker {
         errors.addAll(new DeclaredTwiceSemanticCheck(this.prog).doCheck()); // 1
         errors.addAll(new UsedBeforeDeclaredSemanticCheck(this.prog).doCheck()); // 2
         errors.addAll(new MissingMainSemanticCheck(this.prog).doCheck()); // 3
+        errors.addAll(new NonPositiveArrayLengthSemanticCheck(this.prog).doCheck()); // 4
 
         return errors;
     }

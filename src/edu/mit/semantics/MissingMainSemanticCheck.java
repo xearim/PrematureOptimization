@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.mit.compilers.ast.Method;
-import edu.mit.compilers.ast.Node;
 import edu.mit.compilers.ast.Program;
 import edu.mit.semantics.errors.MissingMainSemanticError;
 import edu.mit.semantics.errors.SemanticError;
