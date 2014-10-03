@@ -305,6 +305,8 @@ public class TypesSemanticCheck implements SemanticCheck {
         switch (operation.getOperator()) {
             case AND:
             case OR:
+                // Boolean binary operations must take booleans (binary part of
+                // SR18).
                 for (NativeExpression expression : operation.getChildren()) {
                     checkTypedExpression(BaseType.BOOLEAN, expression, scope, errorAccumulator);
                 }
@@ -314,12 +316,15 @@ public class TypesSemanticCheck implements SemanticCheck {
             case DIVIDED_BY:
             case TIMES:
             case MODULO:
+                // Arithmetic binary operations must take integers (half of
+                // SR16).
                 for (NativeExpression expression : operation.getChildren()) {
                     checkTypedExpression(BaseType.INTEGER, expression, scope, errorAccumulator);
                 }
                 return Optional.of(BaseType.INTEGER);
             case DOUBLE_EQUALS:
             case NOT_EQUALS:
+                // Equality operators must take two ints or two booleans (SR17).
                 Optional<BaseType> leftType = validNativeExpressionType(
                         operation.getLeftArgument(), scope, errorAccumulator);
                 Optional<BaseType> rightType = validNativeExpressionType(
@@ -340,6 +345,7 @@ public class TypesSemanticCheck implements SemanticCheck {
             case GREATER_THAN_OR_EQUAL:
             case LESS_THAN:
             case LESS_THAN_OR_EQUAL:
+                // Relative binary operations must take integers (half of SR16).
                 for (NativeExpression expression : operation.getChildren()) {
                     checkTypedExpression(BaseType.INTEGER, expression, scope, errorAccumulator);
                 }
