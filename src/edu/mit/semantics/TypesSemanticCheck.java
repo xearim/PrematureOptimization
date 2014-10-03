@@ -14,7 +14,9 @@ import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BaseType;
 import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.Block;
+import edu.mit.compilers.ast.BooleanLiteral;
 import edu.mit.compilers.ast.BreakStatement;
+import edu.mit.compilers.ast.CharLiteral;
 import edu.mit.compilers.ast.ContinueStatement;
 import edu.mit.compilers.ast.ForLoop;
 import edu.mit.compilers.ast.IfStatement;
@@ -407,8 +409,20 @@ public class TypesSemanticCheck implements SemanticCheck {
     /** See validNativeExpressionType. */
     private Optional<BaseType> validNativeLiteralType(
             NativeLiteral literal, Scope scope, List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        if (literal instanceof BooleanLiteral) {
+            return Optional.of(BaseType.BOOLEAN);
+        } else if (literal instanceof IntLiteral) {
+            return Optional.of(BaseType.INTEGER);
+        } else if (literal instanceof CharLiteral) {
+            // TODO(jasonpr): Make parser reject misplaced char literals, so it doesn't need to
+            // extend NativeLiteral... it's not really native, after all!
+            Utils.check(false, errorAccumulator,
+                    "Type mismatch at %s: expected an integer or a boolean, but got a char, %s",
+                    literal.getLocationDescriptor(), literal.getName());
+            return Optional.absent();
+        } else {
+            throw new AssertionError("Unexpected NativeLiteral " + literal);
+        }
     }
 
     /** See validNativeExpressionType. */
