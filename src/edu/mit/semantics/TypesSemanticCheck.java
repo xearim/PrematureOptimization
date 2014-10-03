@@ -127,8 +127,31 @@ public class TypesSemanticCheck implements SemanticCheck {
      */
     private void checkIfStatement(IfStatement ifStatement, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        for (Block block : ifStatement.getBlocks()) {
+            checkBlock(block, errorAccumulator);
+        }
+
+        checkCondition(ifStatement.getCondition(), scope, errorAccumulator);
+    }
+
+    /**
+     * Check that the type of a condition is a boolean.
+     *
+     * <p>Additionally, recursively check the children of the condition expression.
+     */
+    private void checkCondition(NativeExpression condition, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // No matter the result of the block checks, we can still check the
+        // condition.
+        Optional<BaseType> conditionType =
+                validNativeExpressionType(condition, scope, errorAccumulator);
+
+        // Condition statements must have boolean conditions (SR13).
+        if (conditionType.isPresent()) {
+            Utils.check(conditionType.get().equals(BaseType.BOOLEAN), errorAccumulator,
+                    "Type mismatch in condition at %s: expected boolean but got $s.",
+                    condition.getLocationDescriptor(), conditionType.get());
+        }
     }
 
     /**
