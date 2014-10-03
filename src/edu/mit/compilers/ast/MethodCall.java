@@ -36,6 +36,10 @@ public class MethodCall implements Statement, NativeExpression {
 	public boolean canReturn() {
 		return false;
 	}
+	
+	public String getMethodName(){
+		return methodName;
+	}
 
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
