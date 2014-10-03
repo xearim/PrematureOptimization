@@ -131,6 +131,7 @@ public class TypesSemanticCheck implements SemanticCheck {
                     loopVariableType.get());
         }
         checkBlock(Iterables.getOnlyElement(forLoop.getBlocks()), errorAccumulator);
+        // For loops must have integer bounds (SR21).
         checkIntegerExpression(forLoop.getRangeStart(), scope, errorAccumulator);
         checkIntegerExpression(forLoop.getRangeEnd(), scope, errorAccumulator);
     }
@@ -218,6 +219,7 @@ public class TypesSemanticCheck implements SemanticCheck {
         checkBlock(Iterables.getOnlyElement(whileLoop.getBlocks()), errorAccumulator);
         Optional<IntLiteral> maxRepetitions = whileLoop.getMaxRepetitions();
         if (maxRepetitions.isPresent()) {
+            // maxRepetitions must be a positive integer (SR22).
             // TODO(jasonpr): Tie in manny's positive-checking code.
             throw new RuntimeException("Not yet implemented!");
         }
