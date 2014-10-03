@@ -29,6 +29,7 @@ public class ArrayLocation implements Location {
         return locationDescriptor;
     }
 
+    @Override
     public String getVariableName() {
         return variableName;
     }
