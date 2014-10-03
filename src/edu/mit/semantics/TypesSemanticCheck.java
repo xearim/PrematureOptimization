@@ -11,6 +11,7 @@ import com.google.common.collect.Iterables;
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BaseType;
+import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.BreakStatement;
 import edu.mit.compilers.ast.ContinueStatement;
@@ -21,11 +22,14 @@ import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
+import edu.mit.compilers.ast.NativeLiteral;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.Statement;
+import edu.mit.compilers.ast.TernaryOperation;
+import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.ast.WhileLoop;
 import edu.mit.semantics.errors.SemanticError;
 
@@ -187,8 +191,9 @@ public class TypesSemanticCheck implements SemanticCheck {
      * @param methodCall The method-call node.
      * @param scope The scope in which the parameters are evaluated.
      * @param errorAccumulator Errors are added to this accumulator.
+     * @return The type that this method call returns.
      */
-    private Optional<BaseType> checkMethodCall(MethodCall methodCall, Scope scope,
+    private Optional<BaseType> validMethodCallType(MethodCall methodCall, Scope scope,
             List<SemanticError> errorAccumulator) {
         // TODO(jasonpr): Implement!
         throw new RuntimeException("Not yet implemented!");
@@ -241,7 +246,9 @@ public class TypesSemanticCheck implements SemanticCheck {
         } else if (statement instanceof IfStatement) {
             checkIfStatement((IfStatement) statement, scope, errorAccumulator);
         } else if (statement instanceof MethodCall) {
-            checkMethodCall((MethodCall) statement, scope, errorAccumulator);
+            // If it's just in the list of statements, we don't care about its
+            // type. We discard it.
+            validMethodCallType((MethodCall) statement, scope, errorAccumulator);
         } else if (statement instanceof ReturnStatement) {
             checkReturnStatement((ReturnStatement) statement, scope, errorAccumulator);
         } else if (statement instanceof WhileLoop) {
@@ -251,6 +258,85 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
     }
 
+
+    /**
+     * Get the BaseType to which the expression evaluates.  At the same time, check this
+     * expression and its children for semantic errors.
+     *
+     * <p>If it is impossible to decide, of semantic errors, then return Optional.absent(). But,
+     * if it is still possible to infer what the type must be if there were no semantic errors,
+     * then return that type
+     *
+     * @param scope The scope in which the expression is evaluated.
+     * @param errorAccumulator Errors are added to this accumulator.
+     * @return The type of this expression.  If it is impossible to decide, due to to semantic
+     * errors, then return Optional.absent().  But, if it is possible to infer what the type must
+     * have been if there were no semantic errors, then return that type.
+     */
+    private Optional<BaseType> validNativeExpressionType(NativeExpression expression, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Use a visitor pattern if these instanceofsget out of
+        // hand.
+        // But, as in checkStatement, the current condition isn't so dire.
+        if (expression instanceof BinaryOperation) {
+            return validBinaryOperationType((BinaryOperation) expression, scope, errorAccumulator);
+        } else if (expression instanceof MethodCall) {
+            return validMethodCallType((MethodCall) expression, scope, errorAccumulator);
+        } else if (expression instanceof TernaryOperation) {
+            return validTernaryOperationType((TernaryOperation) expression, scope, errorAccumulator);
+        } else if (expression instanceof UnaryOperation) {
+            return validUnaryOperationType((UnaryOperation) expression, scope, errorAccumulator);
+        } else if (expression instanceof Location) {
+            return validLocationType((Location) expression, scope, errorAccumulator);
+        } else if (expression instanceof NativeLiteral) {
+            return validNativeLiteralType((NativeLiteral) expression, scope, errorAccumulator);
+        } else {
+            throw new AssertionError("Unexpected NativeExpression type for " + expression);
+        }
+    }
+    
+    /** See validNativeExpressionType. */
+    private Optional<BaseType> validBinaryOperationType(
+            BinaryOperation operation, Scope scope, List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented!");
+    }
+
+    /** See validNativeExpressionType. */
+    private Optional<BaseType> validTernaryOperationType(
+            TernaryOperation opeartion, Scope scope, List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented!");
+    }
+
+    /** See validNativeExpressionType. */
+    private Optional<BaseType> validUnaryOperationType(
+            UnaryOperation operation, Scope scope, List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented!");
+    }
+
+    /** See validNativeExpressionType. */
+    private Optional<BaseType> validNativeLiteralType(
+            NativeLiteral literal, Scope scope, List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented!");
+    }
+
+    /** See validNativeExpressionType. */
+    private Optional<BaseType> validLocationType(Location location, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented.");
+    }
+
+    /** See validNativeExpressionType. */
+    private Optional<BaseType> validScalarLocationType(ScalarLocation location, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented.");
+    }
+
     private static boolean allPresent(Optional<?>... optionals) {
         for (Optional<?> optional : optionals) {
             if (!optional.isPresent()) {
@@ -258,23 +344,5 @@ public class TypesSemanticCheck implements SemanticCheck {
             }
         }
         return true;
-    }
-
-    private Optional<BaseType> validNativeExpressionType(NativeExpression expression, Scope scope,
-            List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented.");
-    }
-
-    private Optional<BaseType> validLocationType(Location location, Scope scope,
-            List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented.");
-    }
-
-    private Optional<BaseType> validScalarLocationType(ScalarLocation location, Scope scope,
-            List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented.");
     }
 }
