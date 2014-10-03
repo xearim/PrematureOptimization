@@ -17,6 +17,7 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
     private final static String HEX_START = "0x";
     private final static String NEGATIVE_START = "-";
     private final static String ZERO = "(0)+";
+    private final static String NegativeHexStart = "89ABCDEF";
     Program prog;
     List<SemanticError> errors = new ArrayList<SemanticError>();
 
@@ -53,12 +54,14 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
 
                 /*
                  * Examples of invalid int literals for array indices:
-                 * "-3" or "-0x2"
+                 * "-3"
+                 * "0x8000
                  * "0x00"
                  * "000"
                  */
                 if (length.startsWith(NEGATIVE_START) ||
-                        length.matches(HEX_START+ZERO) ||
+                        isNegativeHex(length) ||
+                        length.matches(HEX_START + ZERO) ||
                         length.matches(ZERO)) {
                     errors.add(new NonPositiveArrayLengthSemanticError(
                             field.getLocationDescriptor(), this.prog.getName(),
@@ -66,6 +69,15 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
                 }
             }
         }
+    }
+    
+    /**
+     * Returns true if length in the range 0x8000 - 0xFFFF
+     */
+    private boolean isNegativeHex(String length) {
+        return length.startsWith(HEX_START) &&
+                (NegativeHexStart.indexOf(
+                        length.charAt(HEX_START.length())) != -1);
     }
     
     private void checkMethods(Iterable<Method> methods) {
