@@ -39,18 +39,19 @@ public class DeclaredTwiceSemanticError implements SemanticError {
         String returnString;
         switch (this.type){
             case GLOBAL:
-                returnString = String.format("%s in %s: %s variable \"%s\" used multiple times.",
+                returnString = String.format("%s %s %s variable \"%s\" used multiple times.",
                         this.programName, getLocationsString(), GLOBALSCOPE, this.name);
                 break;
             case LOCAL:
-                returnString = String.format("%s in %s: %s variable \"%s\" used multiple times in method \"%s\".",
+                returnString = String.format("%s %s %s variable \"%s\" used multiple times in method \"%s\".",
                         this.programName, getLocationsString(), LOCALSCOPE, this.name, this.methodName);
                 break;
             case PARAM:
-                returnString = String.format("%s in %s: %s variable \"%s\" used multiple times in method \"%s\".",
+                returnString = String.format("%s %s %s variable \"%s\" used multiple times in method \"%s\".",
                         this.programName, getLocationsString(), PARAMSCOPE, this.name, this.methodName);
                 break;
             default: // Should never hit this, might want to through exception instead
+                // TODO(Manny) throw error
                 returnString = "";
                 break;
         }

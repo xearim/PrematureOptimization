@@ -46,6 +46,18 @@ public class ForLoop implements Statement {
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
     }
+
+    public ScalarLocation getLoopVariable() {
+        return loopVariable;
+    }
+
+    public NativeExpression getRangeStart() {
+        return rangeStart;
+    }
+
+    public NativeExpression getRangeEnd() {
+        return rangeEnd;
+    }
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

@@ -122,7 +122,7 @@ class Main {
         Program program = NodeMaker.program(ast);
 
         if (!isSemanticallyValid(program, outputStream)) {
-            // The program is semanitcally invalid.
+            // The program is semantically invalid.
             System.exit(1);
         }
     }

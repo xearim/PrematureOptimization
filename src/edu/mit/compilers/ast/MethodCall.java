@@ -40,6 +40,10 @@ public class MethodCall implements Statement, NativeExpression {
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
     }
+
+    public NodeSequence<GeneralExpression> getParameterValues() {
+        return parameterValues;
+    }
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

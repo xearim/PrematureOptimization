@@ -62,6 +62,10 @@ public class WhileLoop implements Statement {
         return locationDescriptor;
     }
 
+    public NativeExpression getCondition() {
+        return condition;
+    }
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }
