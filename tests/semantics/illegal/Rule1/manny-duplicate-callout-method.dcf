@@ -1,0 +1,6 @@
+callout foo;
+void foo () {
+  return;
+}
+void main ( ) {
+}
