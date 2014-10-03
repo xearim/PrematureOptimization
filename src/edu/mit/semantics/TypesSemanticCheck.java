@@ -132,23 +132,25 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
         checkBlock(Iterables.getOnlyElement(forLoop.getBlocks()), errorAccumulator);
         // For loops must have integer bounds (SR21).
-        checkIntegerExpression(forLoop.getRangeStart(), scope, errorAccumulator);
-        checkIntegerExpression(forLoop.getRangeEnd(), scope, errorAccumulator);
+        checkTypedExpression(BaseType.INTEGER, forLoop.getRangeStart(), scope, errorAccumulator);
+        checkTypedExpression(BaseType.INTEGER, forLoop.getRangeEnd(), scope, errorAccumulator);
     }
 
-    private void checkIntegerExpression(NativeExpression expression, Scope scope,
+    private void checkTypedExpression(BaseType type, NativeExpression expression, Scope scope,
             List<SemanticError> errorAccumulator) {
-        Optional<BaseType> type = validNativeExpressionType(expression, scope, errorAccumulator);
-        if (!type.isPresent()) {
+        Optional<BaseType> actualType = validNativeExpressionType(expression, scope,
+                errorAccumulator);
+        if (!actualType.isPresent()) {
             // There was an error below that makes it impossible to check
-            // whether this is an int.
+            // whether its type.
             // Give up on this check.
             return;
         }
-        Utils.check(type.get().equals(BaseType.INTEGER), errorAccumulator,
-                "Type mismatch at %s: expected integer but got %s.",
-                expression.getLocationDescriptor(), type.get());
+        Utils.check(actualType.get().equals(type), errorAccumulator,
+                "Type mismatch at %s: expected %s but got %s.", expression.getLocationDescriptor(),
+                type, actualType.get());
     }
+
 
     /**
      * Check that the types are all semantically correct in an if statement, recursively.
