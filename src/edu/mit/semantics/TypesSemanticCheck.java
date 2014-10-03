@@ -377,8 +377,31 @@ public class TypesSemanticCheck implements SemanticCheck {
     /** See validNativeExpressionType. */
     private Optional<BaseType> validUnaryOperationType(
             UnaryOperation operation, Scope scope, List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        NativeExpression argument = operation.getArgument();
+        switch (operation.getOperator()) {
+            case ARRAY_LENGTH:
+                // This is true, but very strange.
+                // TODO(jasonpr): Modify grammar so this isn't the case.
+                checkState(argument instanceof ScalarLocation);
+
+                // The argument of the "@" operator must be an array (SR12).
+                // We don't actually care about its type, or whether it
+                // succeeded! Discard the result.
+                checkArray((ScalarLocation) operation.getArgument(), scope, errorAccumulator);
+
+                return Optional.of(BaseType.INTEGER);
+            case NEGATIVE:
+                checkTypedExpression(
+                        BaseType.INTEGER, operation.getArgument(), scope, errorAccumulator);
+                return Optional.of(BaseType.INTEGER);
+            case NOT:
+                // Logical not must have a boolean argument (half of SR18).
+                checkTypedExpression(
+                        BaseType.BOOLEAN, operation.getArgument(), scope, errorAccumulator);
+                return Optional.of(BaseType.BOOLEAN);
+            default:
+                throw new AssertionError("Got unexpected operator: " + operation.getOperator());
+        }
     }
 
     /** See validNativeExpressionType. */
