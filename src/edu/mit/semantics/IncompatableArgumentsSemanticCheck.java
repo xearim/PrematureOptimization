@@ -11,6 +11,7 @@ import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.BreakStatement;
 import edu.mit.compilers.ast.Callout;
+import edu.mit.compilers.ast.CharLiteral;
 import edu.mit.compilers.ast.ContinueStatement;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.ForLoop;
@@ -100,7 +101,10 @@ public class IncompatableArgumentsSemanticCheck implements SemanticCheck{
         } else if (ne instanceof MethodCall) {
             checkMethodCall((MethodCall) ne, scope);
         } else if (ne instanceof NativeLiteral) {
-            return;
+            if(ne instanceof CharLiteral){
+            	if(!isInCallout)
+					errors.add(new IncompatableArgumentsSemanticError("Char " + ((CharLiteral) ne).getName(), ne.getLocationDescriptor()));
+            }
         } else if (ne instanceof TernaryOperation) {
             @SuppressWarnings("unchecked")
             Iterable<NativeExpression> children = (Iterable<NativeExpression>) ((TernaryOperation) ne).getChildren();
