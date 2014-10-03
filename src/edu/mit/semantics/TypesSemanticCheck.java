@@ -371,9 +371,28 @@ public class TypesSemanticCheck implements SemanticCheck {
 
     /** See validNativeExpressionType. */
     private Optional<BaseType> validTernaryOperationType(
-            TernaryOperation opeartion, Scope scope, List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+            TernaryOperation operation, Scope scope, List<SemanticError> errorAccumulator) {
+        // Check that the ternary condition is, in fact, a condition (SR14).
+        checkCondition(operation.getCondition(), scope, errorAccumulator);
+        Optional<BaseType> trueResultType = validNativeExpressionType(
+                operation.getTrueResult(), scope, errorAccumulator);
+        Optional<BaseType> falseResultType = validNativeExpressionType(
+                operation.getFalseResult(), scope, errorAccumulator);
+
+        if (!allPresent(trueResultType, falseResultType)) {
+            // We can't tell what it returns!
+            return Optional.absent();
+        }
+
+        // Check that the two expressions have the same type (SR15).
+        if (!trueResultType.equals(falseResultType)) {
+            Utils.check(false, errorAccumulator,
+                    "Type mismatch at %s: Expected same types, but got %s and %s.",
+                    operation.getTrueResult().getLocationDescriptor(),
+                    trueResultType.get(), falseResultType.get());
+            return Optional.absent();
+        }
+        return trueResultType;
     }
 
     /** See validNativeExpressionType. */
