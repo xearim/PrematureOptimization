@@ -1,0 +1,7 @@
+// duplicate identifier in param
+int foo ( int i, boolean i ) {
+  return 4;
+}
+void main ( ) {
+  x = foo ( 34, true );
+}

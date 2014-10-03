@@ -29,6 +29,14 @@ public class ArrayLocation implements Location {
         return locationDescriptor;
     }
 
+    public String getVariableName() {
+        return variableName;
+    }
+
+    public NativeExpression getIndex() {
+        return index;
+    }
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

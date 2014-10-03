@@ -2,7 +2,6 @@ package edu.mit.compilers.ast;
 
 /** An Node of an AST that is a Decaf statement. */
 public interface Statement extends Node {
-	
 	/**
 	 * Returns a boolean representing if this statement, or any statement
 	 * recursively contained within it has an explicit return in them

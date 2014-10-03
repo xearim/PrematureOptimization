@@ -50,6 +50,10 @@ public class ReturnStatement implements Statement {
         return locationDescriptor;
     }
 
+    public Optional<NativeExpression> getValue() {
+        return value;
+    }
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

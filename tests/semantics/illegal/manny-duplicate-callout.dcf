@@ -1,0 +1,5 @@
+// duplicate callout
+callout x;
+callout x;
+void main ( ) {
+}

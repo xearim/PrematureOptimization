@@ -33,6 +33,10 @@ public class UnaryOperation implements NativeExpression {
         return locationDescriptor;
     }
 
+    public NativeExpression getArgument() {
+        return argument;
+    }
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

@@ -1,0 +1,5 @@
+// duplicate global
+int x;
+boolean x;
+void main ( ) {
+}

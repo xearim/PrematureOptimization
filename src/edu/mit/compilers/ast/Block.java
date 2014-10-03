@@ -23,7 +23,7 @@ public class Block implements Node {
     public Iterable<? extends Node> getChildren() {
         return ImmutableList.of(statements);
     }
-
+    
     @Override
     public String getName() {
         return name;

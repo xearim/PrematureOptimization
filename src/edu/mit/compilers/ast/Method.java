@@ -29,7 +29,7 @@ public class Method implements Node {
         return name;
     }
     
-    public Scope getParameters() {
+    public ParameterScope getParameters() {
     	return parameters;
     }
     
@@ -43,6 +43,10 @@ public class Method implements Node {
 
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
+    }
+    
+    public Block getBlock() {
+    	return body;
     }
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.

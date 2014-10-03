@@ -1,0 +1,8 @@
+void main ( ) {
+  if ( false ) {
+  } else {
+    int a;
+    int a;
+  }
+  // duplicate variables in else
+}

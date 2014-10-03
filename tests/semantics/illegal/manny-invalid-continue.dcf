@@ -1,0 +1,4 @@
+void main ( ) {
+  continue;
+  // continue must be in while or for loop
+}

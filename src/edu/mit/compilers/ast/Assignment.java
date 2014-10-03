@@ -3,7 +3,6 @@ package edu.mit.compilers.ast;
 import com.google.common.collect.ImmutableList;
 
 public class Assignment implements Statement {
-
     private final Location location;
     private final AssignmentOperation operation;
     private final NativeExpression expression;
@@ -40,7 +39,18 @@ public class Assignment implements Statement {
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
     }
-    
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public AssignmentOperation getOperation() {
+        return operation;
+    }
+
+    public NativeExpression getExpression() {
+        return expression;
+    }
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }
