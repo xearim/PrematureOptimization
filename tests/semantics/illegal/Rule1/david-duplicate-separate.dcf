@@ -1,0 +1,6 @@
+// Duplicate with separation
+int x;
+int y;
+int x;
+void main ( ) {
+}

@@ -1,0 +1,8 @@
+void foo ( ) {
+}
+
+void main ( ) {
+  int x;
+  x = foo ( );
+  // method in expression must have return
+}

@@ -1,0 +1,9 @@
+int a[10]
+
+void foo ( int i, boolean b ) {
+}
+
+void main ( ) {
+  foo( a[5], "hello")
+  // No strings in arguments to non-callout methods
+}

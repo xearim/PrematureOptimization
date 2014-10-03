@@ -7,10 +7,13 @@ runsemantics() {
 fail=0
 
 for file in `dirname $0`/illegal/*; do
-  if runsemantics $file > /dev/null 2>&1; then
-    echo "Illegal file $file semantic checked successfully.";
-    fail=1
-  fi
+  for decaf in $file/*; do
+    if runsemantics $decaf > /dev/null 2>&1; then
+      echo "Illegal file $decaf semantic checked successfully.";
+      fail=1
+    fi
+  done
+  echo "passed all tests in $file, yay"
 done
 
 for file in `dirname $0`/legal/*; do

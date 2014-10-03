@@ -1,0 +1,6 @@
+int e[10];
+void main ( ) {
+  while ( e ) {
+  }
+  // condition should be a boolean
+}

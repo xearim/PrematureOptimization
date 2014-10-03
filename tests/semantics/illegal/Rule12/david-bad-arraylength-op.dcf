@@ -1,0 +1,7 @@
+int a[10];
+int b;
+void main ( ) {
+  a[1] = @a;
+  a[2] = @b;
+  // Array length operator only accepts arrays as args
+}
