@@ -34,22 +34,28 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
     }
 
     public List<SemanticError> doCheck() {
-        checkCalloutsAndGlobals(prog.getCallouts(), prog.getGlobals());
+        checkCalloutsAndGlobals(prog.getMethods(), prog.getCallouts(),
+                prog.getGlobals());
         checkMethods(prog.getMethods());
 
         return this.errors;
     }
 
-    private void checkCalloutsAndGlobals(NodeSequence<Callout> callouts,
-            Scope globals) {
+    private void checkCalloutsAndGlobals(NodeSequence<Method> methods,
+            NodeSequence<Callout> callouts, Scope globals) {
         HashMap<String, List<LocationDescriptor>> nameToLocations = new HashMap<String, List<LocationDescriptor>>();
+        
+        @SuppressWarnings("unchecked")
+        Iterable<Method> methodItr = (Iterable<Method>) methods.getChildren();
 
-        // Add callouts
-        /*
-         * The cast is necessary, because we need to access elements that are
-         * in specifically in Callout.
-         * TODO(Manny): when node gets a getLocation, fix this
-         */
+        for (Method method : methodItr) {
+            String name = method.getName();
+            if (!nameToLocations.containsKey(name)) {
+                nameToLocations.put(name, new ArrayList<LocationDescriptor>());
+            }
+            nameToLocations.get(name).add(method.getLocationDescriptor());
+        }
+        
         @SuppressWarnings("unchecked")
         Iterable<Callout> calloutItr = (Iterable<Callout>) callouts.getChildren();
 

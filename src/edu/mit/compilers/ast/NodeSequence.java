@@ -28,4 +28,8 @@ public class NodeSequence<T extends Node> implements Node {
     public String getName() {
         return name;
     }
+
+    public ImmutableList<? extends T> getSequence() {
+        return sequence;
+    }
 }
