@@ -8,6 +8,7 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 
+import edu.mit.compilers.ast.ArrayLocation;
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BaseType;
@@ -262,6 +263,17 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
     }
 
+    // TODO(jasonpr): Modify the grammar so that array names are not interpreted
+    // as locations.
+    /**
+     * Assert that this Location actually points to an array variable.
+     */
+    private void checkArray(ScalarLocation location, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented.");
+    }
+
 
     /**
      * Get the BaseType to which the expression evaluates.  At the same time, check this
@@ -379,6 +391,20 @@ public class TypesSemanticCheck implements SemanticCheck {
     /** See validNativeExpressionType. */
     private Optional<BaseType> validLocationType(Location location, Scope scope,
             List<SemanticError> errorAccumulator) {
+        if (location instanceof ArrayLocation) {
+            return validArrayLocationType((ArrayLocation) location, scope, errorAccumulator);
+        } else if (location instanceof ScalarLocation) {
+            return validScalarLocationType((ScalarLocation) location, scope, errorAccumulator);
+        } else {
+            throw new AssertionError("Unexpected Location type for " + location);
+        }
+    }
+
+    /** See validNativeExpressionType. */
+    private Optional<BaseType> validArrayLocationType(ArrayLocation location, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // All array locations must be for an array variable, and have an
+        // integer index (SR 11).
         // TODO(jasonpr): Implement!
         throw new RuntimeException("Not yet implemented.");
     }
