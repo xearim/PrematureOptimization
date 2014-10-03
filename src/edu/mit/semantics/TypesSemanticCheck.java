@@ -23,6 +23,7 @@ import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.ast.ReturnStatement;
+import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.Statement;
 import edu.mit.compilers.ast.WhileLoop;
@@ -116,8 +117,32 @@ public class TypesSemanticCheck implements SemanticCheck {
      * @param errorAccumulator Errors are added to this accumulator.
      */
     private void checkForLoop(ForLoop forLoop, Scope scope, List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        ScalarLocation loopVariable = forLoop.getLoopVariable();
+        Optional<BaseType> loopVariableType = validScalarLocationType(loopVariable, scope,
+                errorAccumulator);
+        if (loopVariableType.isPresent()) {
+            Utils.check(loopVariableType.get().equals(BaseType.INTEGER), errorAccumulator,
+                    "Type mismatch for loop variable %s at %s: expected integer but got %s",
+                    loopVariable.getVariableName(), loopVariable.getLocationDescriptor(),
+                    loopVariableType.get());
+        }
+        checkBlock(Iterables.getOnlyElement(forLoop.getBlocks()), errorAccumulator);
+        checkIntegerExpression(forLoop.getRangeStart(), scope, errorAccumulator);
+        checkIntegerExpression(forLoop.getRangeEnd(), scope, errorAccumulator);
+    }
+
+    private void checkIntegerExpression(NativeExpression expression, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        Optional<BaseType> type = validNativeExpressionType(expression, scope, errorAccumulator);
+        if (!type.isPresent()) {
+            // There was an error below that makes it impossible to check
+            // whether this is an int.
+            // Give up on this check.
+            return;
+        }
+        Utils.check(type.get().equals(BaseType.INTEGER), errorAccumulator,
+                "Type mismatch at %s: expected integer but got %s.",
+                expression.getLocationDescriptor(), type.get());
     }
 
     /**
@@ -242,6 +267,12 @@ public class TypesSemanticCheck implements SemanticCheck {
     }
 
     private Optional<BaseType> validLocationType(Location location, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented.");
+    }
+
+    private Optional<BaseType> validScalarLocationType(ScalarLocation location, Scope scope,
             List<SemanticError> errorAccumulator) {
         // TODO(jasonpr): Implement!
         throw new RuntimeException("Not yet implemented.");
