@@ -22,6 +22,7 @@ public class SemanticChecker {
         errors.addAll(new UsedBeforeDeclaredSemanticCheck(this.prog).doCheck()); // 2
         errors.addAll(new MissingMainSemanticCheck(this.prog).doCheck()); // 3
         errors.addAll(new NonPositiveArrayLengthSemanticCheck(this.prog).doCheck()); // 4
+        errors.addAll(new SignatureMismatchSemanticCheck(this.prog).doCheck()); // 5
 
         return errors;
     }

@@ -29,7 +29,7 @@ public class Method implements Node {
         return name;
     }
     
-    public Scope getParameters() {
+    public ParameterScope getParameters() {
     	return parameters;
     }
     

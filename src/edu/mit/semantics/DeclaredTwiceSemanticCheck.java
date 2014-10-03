@@ -6,15 +6,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-import edu.mit.compilers.ast.Block;
-import edu.mit.compilers.ast.Callout;
-import edu.mit.compilers.ast.FieldDescriptor;
-import edu.mit.compilers.ast.LocationDescriptor;
-import edu.mit.compilers.ast.Method;
-import edu.mit.compilers.ast.NodeSequence;
-import edu.mit.compilers.ast.Program;
-import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.ast.Statement;
+import edu.mit.compilers.ast.*;
 import edu.mit.semantics.errors.DeclaredTwiceSemanticError;
 import edu.mit.semantics.errors.LocationType;
 import edu.mit.semantics.errors.SemanticError;

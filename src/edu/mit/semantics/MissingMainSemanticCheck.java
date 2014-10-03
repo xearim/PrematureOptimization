@@ -3,8 +3,7 @@ package edu.mit.semantics;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.mit.compilers.ast.Method;
-import edu.mit.compilers.ast.Program;
+import edu.mit.compilers.ast.*;
 import edu.mit.semantics.errors.MissingMainSemanticError;
 import edu.mit.semantics.errors.SemanticError;
 

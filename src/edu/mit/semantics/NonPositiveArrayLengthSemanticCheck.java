@@ -3,13 +3,7 @@ package edu.mit.semantics;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.mit.compilers.ast.BaseType;
-import edu.mit.compilers.ast.Block;
-import edu.mit.compilers.ast.FieldDescriptor;
-import edu.mit.compilers.ast.Method;
-import edu.mit.compilers.ast.Program;
-import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.ast.Statement;
+import edu.mit.compilers.ast.*;
 import edu.mit.semantics.errors.NonPositiveArrayLengthSemanticError;
 import edu.mit.semantics.errors.SemanticError;
 
