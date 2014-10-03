@@ -1,0 +1,11 @@
+void foo ( int i, boolean b ) {
+  if( true ){
+    return;
+  } else {
+    return 4;
+    // should not return value, even if unreachable;
+  }
+  return;
+}
+void main ( ) {
+}

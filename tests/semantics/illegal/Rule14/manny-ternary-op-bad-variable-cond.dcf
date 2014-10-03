@@ -1,5 +1,6 @@
 void main ( ) {
   int a;
-  a = (2) 3 : 5;
+  int b[10]
+  a = (b) 3 : 5;
   // conditional must be boolean
 }

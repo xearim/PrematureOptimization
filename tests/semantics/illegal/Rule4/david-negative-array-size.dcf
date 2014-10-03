@@ -1,0 +1,4 @@
+int a[-300];
+// bad array size
+void main ( ) {
+}
