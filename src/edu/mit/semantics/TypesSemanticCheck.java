@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
 
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.AssignmentOperation;
@@ -15,6 +16,7 @@ import edu.mit.compilers.ast.BreakStatement;
 import edu.mit.compilers.ast.ContinueStatement;
 import edu.mit.compilers.ast.ForLoop;
 import edu.mit.compilers.ast.IfStatement;
+import edu.mit.compilers.ast.IntLiteral;
 import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.MethodCall;
@@ -182,8 +184,14 @@ public class TypesSemanticCheck implements SemanticCheck {
 
     private void checkWhileLoop(WhileLoop whileLoop, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        checkCondition(whileLoop.getCondition(), scope, errorAccumulator);
+        checkBlock(Iterables.getOnlyElement(whileLoop.getBlocks()), errorAccumulator);
+        Optional<IntLiteral> maxRepetitions = whileLoop.getMaxRepetitions();
+        if (maxRepetitions.isPresent()) {
+            // TODO(jasonpr): Tie in manny's positive-checking code.
+            throw new RuntimeException("Not yet implemented!");
+        }
+
     }
 
     /** Delegate to the semantic type checkers for various statement types. */
