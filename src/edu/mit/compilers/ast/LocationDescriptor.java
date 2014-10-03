@@ -36,4 +36,9 @@ public class LocationDescriptor {
 				   ((LocationDescriptor) other).lineNo() == this.lineNo();
 		}
 	}
+
+    @Override
+    public String toString() {
+        return "file \"" + fileName + "\" at line " + lineNo + ", column " + colNo;
+    }
 }
