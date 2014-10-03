@@ -3,6 +3,7 @@ package edu.mit.compilers;
 import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.List;
 
 import antlr.CharStreamException;
 import antlr.RecognitionException;
@@ -18,6 +19,9 @@ import edu.mit.compilers.grammar.DecafScannerTokenTypes;
 import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
+import edu.mit.semantics.ErrorPrinter;
+import edu.mit.semantics.SemanticChecker;
+import edu.mit.semantics.errors.SemanticError;
 
 class Main {
   public static void main(String[] args) {
@@ -136,7 +140,15 @@ class Main {
      */
     private static boolean isSemanticallyValid(Program program, PrintStream outputStream) {
         // TODO(manny): Implement!
-        throw new RuntimeException("Not yet implemented.");
+        SemanticChecker sc = new SemanticChecker(program);
+        List<SemanticError> errors = sc.checkProgram();
+        if (errors.size() == 0) {
+            return true;
+        } else {
+            ErrorPrinter ep = new ErrorPrinter(errors, outputStream);
+            ep.print();
+            return false;
+        }
     }
 
 

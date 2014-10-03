@@ -3,6 +3,7 @@ package edu.mit.semantics.errors;
 import edu.mit.compilers.ast.LocationDescriptor;
 
 public class UsedBeforeDeclaredSemanticError implements SemanticError {
+    private final static String ERRORNAME="UsedBeforeDeclaredSemanticError";
     private final String name;
     private final LocationDescriptor ld;
 
@@ -13,8 +14,8 @@ public class UsedBeforeDeclaredSemanticError implements SemanticError {
 
     @Override
     public String generateErrorMessage() {
-        return String.format("%s %s; Variable %s used before declared",
-                this.ld.getFileName(), generateLocationString(), this.name);
+        return String.format("%s: %s %s; Variable %s used before declared",
+                ERRORNAME, this.ld.getFileName(), generateLocationString(), this.name);
     }
 
     private String generateLocationString() {

@@ -10,8 +10,9 @@ import edu.mit.compilers.ast.LocationDescriptor;
  * This includes 'callout' identifiers, which exist in the global scope.
  */
 public class DeclaredTwiceSemanticError implements SemanticError {
-    private static final String GLOBALSCOPE = "global",
-            PARAMSCOPE = "parameter", LOCALSCOPE = "local";
+    private static final String ERRORNAME="DeclaredTwiceSemanticError",
+            GLOBALSCOPE = "global", PARAMSCOPE = "parameter",
+            LOCALSCOPE = "local";
     private final LocationType type;
     private final List<LocationDescriptor> locations;
     private final String name,methodName,programName;
@@ -39,16 +40,16 @@ public class DeclaredTwiceSemanticError implements SemanticError {
         String returnString;
         switch (this.type){
             case GLOBAL:
-                returnString = String.format("%s %s %s variable \"%s\" used multiple times.",
-                        this.programName, getLocationsString(), GLOBALSCOPE, this.name);
+                returnString = String.format("%s: %s %s %s variable \"%s\" used multiple times.",
+                        ERRORNAME, this.programName, getLocationsString(), GLOBALSCOPE, this.name);
                 break;
             case LOCAL:
-                returnString = String.format("%s %s %s variable \"%s\" used multiple times in method \"%s\".",
-                        this.programName, getLocationsString(), LOCALSCOPE, this.name, this.methodName);
+                returnString = String.format("%s: %s %s %s variable \"%s\" used multiple times in method \"%s\".",
+                        ERRORNAME, this.programName, getLocationsString(), LOCALSCOPE, this.name, this.methodName);
                 break;
             case PARAM:
-                returnString = String.format("%s %s %s variable \"%s\" used multiple times in method \"%s\".",
-                        this.programName, getLocationsString(), PARAMSCOPE, this.name, this.methodName);
+                returnString = String.format("%s: %s %s %s variable \"%s\" used multiple times in method \"%s\".",
+                        ERRORNAME, this.programName, getLocationsString(), PARAMSCOPE, this.name, this.methodName);
                 break;
             default: // Should never hit this, might want to through exception instead
                 // TODO(Manny) throw error
