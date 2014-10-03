@@ -1,0 +1,7 @@
+void main ( ) {
+  int b;
+  int a[10];
+  int c[10];
+  b = (true) a : c;
+  // need to match and be int/bool
+}

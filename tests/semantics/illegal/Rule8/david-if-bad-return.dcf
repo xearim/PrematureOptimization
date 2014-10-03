@@ -1,0 +1,8 @@
+void foo ( int i, boolean b ) {
+  if( true ){
+    return 4;
+  }
+  return;
+}
+void main ( ) {
+}
