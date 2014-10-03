@@ -1,19 +1,24 @@
 package edu.mit.semantics;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.base.Optional;
 
 import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BaseType;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.BreakStatement;
 import edu.mit.compilers.ast.ContinueStatement;
 import edu.mit.compilers.ast.ForLoop;
 import edu.mit.compilers.ast.IfStatement;
+import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.MethodCall;
+import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.Scope;
@@ -64,14 +69,41 @@ public class TypesSemanticCheck implements SemanticCheck {
     /**
      * Check that the types are all semantically correct in an assignment, recursively.
      *
+     * <p>This check corresponds to SR19 and SR20.
+     *
      * @param assignment The assignment node.
      * @param scope The scope in which the assignment is performed.
      * @param errorAccumulator Errors are added to this accumulator.
      */
     private void checkAssignment(Assignment assignment, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        Location destination = assignment.getLocation();
+        NativeExpression expression = assignment.getExpression();
+
+        Optional<BaseType> expected = validLocationType(destination, scope, errorAccumulator);
+        Optional<BaseType> actual = validNativeExpressionType(expression, scope, errorAccumulator);
+
+        if (!allPresent(expected, actual)) {
+            // Children had errors, so we don't try to use their results.
+            return;
+        }
+
+        // The parser should have guaranteed this.
+        checkState(expected.get() != BaseType.VOID);
+
+        // Increments/decrements must operate over ints (SR20).
+        AssignmentOperation operation = assignment.getOperation();
+        if (operation == AssignmentOperation.MINUS_EQUALS
+                || operation == AssignmentOperation.PLUS_EQUALS) {
+            Utils.check(expected.equals(BaseType.INTEGER), errorAccumulator,
+                    "Type error in assignment at %s: operation applies to type integer, not %s",
+                    assignment.getLocationDescriptor(), expected.get());
+        }
+
+        // All assignments must have the same type on each side (SR19).
+        Utils.check(expected.equals(actual), errorAccumulator,
+                "Type mismatch in assignment at %s: expected %s but got %s.",
+                assignment.getLocationDescriptor(), expected.get(), actual.get());
     }
 
     /**
@@ -163,4 +195,24 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
     }
 
+    private static boolean allPresent(Optional<?>... optionals) {
+        for (Optional<?> optional : optionals) {
+            if (!optional.isPresent()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Optional<BaseType> validNativeExpressionType(NativeExpression expression, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented.");
+    }
+
+    private Optional<BaseType> validLocationType(Location location, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented.");
+    }
 }
