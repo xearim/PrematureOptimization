@@ -59,7 +59,10 @@ public class TypesSemanticCheck implements SemanticCheck {
         // Only blocks hold type-checkable elements. All blocks live under a
         // method.
         for (Method method : program.getMethods()) {
-            checkBlock(method.getBlock(), errorAccumulator);
+            ReturnType returnType = method.getReturnType();
+            checkState(returnType.getReturnType().isPresent());
+            checkBlock(method.getBlock(), errorAccumulator,
+                    method.getReturnType().getReturnType().get());
         }
         return errorAccumulator;
     }
@@ -72,9 +75,9 @@ public class TypesSemanticCheck implements SemanticCheck {
      * <p>This takes no scope: The block knows its own scope, and the scopes of its
      *    parents. 
      */
-    private void checkBlock(Block block, List<SemanticError> errorAccumulator) {
+    private void checkBlock(Block block, List<SemanticError> errorAccumulator, BaseType returnType) {
         for (Statement statement : block.getStatements()) {
-            checkStatement(statement, block.getScope(), errorAccumulator);
+            checkStatement(statement, block.getScope(), errorAccumulator, returnType);
         }
     }
 
@@ -125,7 +128,8 @@ public class TypesSemanticCheck implements SemanticCheck {
      * @param scope The scope in which the loop's setup/control takes place.
      * @param errorAccumulator Errors are added to this accumulator.
      */
-    private void checkForLoop(ForLoop forLoop, Scope scope, List<SemanticError> errorAccumulator) {
+    private void checkForLoop(ForLoop forLoop, Scope scope, List<SemanticError> errorAccumulator,
+            BaseType returnType) {
         ScalarLocation loopVariable = forLoop.getLoopVariable();
         Optional<BaseType> loopVariableType = validScalarLocationType(loopVariable, scope,
                 errorAccumulator);
@@ -135,7 +139,7 @@ public class TypesSemanticCheck implements SemanticCheck {
                     loopVariable.getVariableName(), loopVariable.getLocationDescriptor(),
                     loopVariableType.get());
         }
-        checkBlock(Iterables.getOnlyElement(forLoop.getBlocks()), errorAccumulator);
+        checkBlock(Iterables.getOnlyElement(forLoop.getBlocks()), errorAccumulator, returnType);
         // For loops must have integer bounds (SR21).
         checkTypedExpression(BaseType.INTEGER, forLoop.getRangeStart(), scope, errorAccumulator);
         checkTypedExpression(BaseType.INTEGER, forLoop.getRangeEnd(), scope, errorAccumulator);
@@ -165,9 +169,9 @@ public class TypesSemanticCheck implements SemanticCheck {
      * @param errorAccumulator Errors are added to this accumulator.
      */
     private void checkIfStatement(IfStatement ifStatement, Scope scope,
-            List<SemanticError> errorAccumulator) {
+            List<SemanticError> errorAccumulator, BaseType returnType) {
         for (Block block : ifStatement.getBlocks()) {
-            checkBlock(block, errorAccumulator);
+            checkBlock(block, errorAccumulator, returnType);
         }
 
         checkCondition(ifStatement.getCondition(), scope, errorAccumulator);
@@ -213,6 +217,8 @@ public class TypesSemanticCheck implements SemanticCheck {
             // TODO(jasonpr): Remove the Optional, which was a holdover from the time when
             // void was the absense of a type.  (Or, hold off on that.  That time may come back.)
             checkState(type.getReturnType().isPresent());
+            // The evaluation type of a method is its return type (stronger
+            // version of SR06).
             return type.getReturnType();
         }
 
@@ -231,15 +237,15 @@ public class TypesSemanticCheck implements SemanticCheck {
      * @param errorAccumulator Errors are added to this accumulator.
      */
     private void checkReturnStatement(ReturnStatement returnStatement, Scope scope,
-            List<SemanticError> errorAccumulator) {
+            List<SemanticError> errorAccumulator, BaseType returnType) {
         // TODO(jasonpr): Implement!
         throw new RuntimeException("Not yet implemented!");
     }
 
     private void checkWhileLoop(WhileLoop whileLoop, Scope scope,
-            List<SemanticError> errorAccumulator) {
+            List<SemanticError> errorAccumulator, BaseType returnType) {
         checkCondition(whileLoop.getCondition(), scope, errorAccumulator);
-        checkBlock(Iterables.getOnlyElement(whileLoop.getBlocks()), errorAccumulator);
+        checkBlock(Iterables.getOnlyElement(whileLoop.getBlocks()), errorAccumulator, returnType);
         Optional<IntLiteral> maxRepetitions = whileLoop.getMaxRepetitions();
         if (maxRepetitions.isPresent()) {
             // maxRepetitions must be a positive integer (SR22).
@@ -251,7 +257,7 @@ public class TypesSemanticCheck implements SemanticCheck {
 
     /** Delegate to the semantic type checkers for various statement types. */
     private void checkStatement(Statement statement, Scope scope,
-            List<SemanticError> errorAccumulator) {
+            List<SemanticError> errorAccumulator, BaseType returnType) {
         // TODO(jasonpr): Use a visitor pattern if these instanceofs get out of
         // hand.  Note that they isn't quite as bad as one might think, because
         // we're very unlikely to add any more implementations of Statement in
@@ -259,7 +265,7 @@ public class TypesSemanticCheck implements SemanticCheck {
         if (statement instanceof Assignment) {
             checkAssignment((Assignment) statement, scope, errorAccumulator);
         } else if (statement instanceof Block) {
-            checkBlock((Block) statement, errorAccumulator);
+            checkBlock((Block) statement, errorAccumulator, returnType);
         } else if (statement instanceof BreakStatement) {
             // Breaks have no type-related errors.
             return;
@@ -267,17 +273,17 @@ public class TypesSemanticCheck implements SemanticCheck {
             // Continues have no type-related errors.
             return;
         } else if (statement instanceof ForLoop) {
-            checkForLoop((ForLoop) statement, scope, errorAccumulator);
+            checkForLoop((ForLoop) statement, scope, errorAccumulator, returnType);
         } else if (statement instanceof IfStatement) {
-            checkIfStatement((IfStatement) statement, scope, errorAccumulator);
+            checkIfStatement((IfStatement) statement, scope, errorAccumulator, returnType);
         } else if (statement instanceof MethodCall) {
             // If it's just in the list of statements, we don't care about its
             // type. We discard it.
             validMethodCallType((MethodCall) statement, scope, errorAccumulator);
         } else if (statement instanceof ReturnStatement) {
-            checkReturnStatement((ReturnStatement) statement, scope, errorAccumulator);
+            checkReturnStatement((ReturnStatement) statement, scope, errorAccumulator, returnType);
         } else if (statement instanceof WhileLoop) {
-            checkWhileLoop((WhileLoop) statement, scope, errorAccumulator);
+            checkWhileLoop((WhileLoop) statement, scope, errorAccumulator, returnType);
         } else {
             throw new AssertionError("Unexpected Statement type for " + statement);
         }
