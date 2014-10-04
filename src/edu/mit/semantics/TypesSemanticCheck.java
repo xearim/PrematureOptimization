@@ -18,6 +18,7 @@ import edu.mit.compilers.ast.BooleanLiteral;
 import edu.mit.compilers.ast.BreakStatement;
 import edu.mit.compilers.ast.CharLiteral;
 import edu.mit.compilers.ast.ContinueStatement;
+import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.ForLoop;
 import edu.mit.compilers.ast.IfStatement;
 import edu.mit.compilers.ast.IntLiteral;
@@ -272,8 +273,14 @@ public class TypesSemanticCheck implements SemanticCheck {
      */
     private void checkArray(ScalarLocation location, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        // Reports an error if the name is not found.
+        Optional<FieldDescriptor> descriptor = lookup(location, scope, errorAccumulator);
+        if (descriptor.isPresent()) {
+            // Make sure it's an array.
+            Utils.check(descriptor.get().getLength().isPresent(), errorAccumulator,
+                    "Type mismatch for %s at %s: expected an array, but got ",
+                    location.getVariableName(), location.getLocationDescriptor());
+        }
     }
 
 
@@ -459,17 +466,53 @@ public class TypesSemanticCheck implements SemanticCheck {
     /** See validNativeExpressionType. */
     private Optional<BaseType> validArrayLocationType(ArrayLocation location, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // All array locations must be for an array variable, and have an
-        // integer index (SR 11).
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented.");
+        // All array locations must have an integer index (second half of SR11).
+        checkTypedExpression(BaseType.INTEGER, location.getIndex(), scope, errorAccumulator);
+
+        // All array location must be for an array variable (first half of
+        // SR11).
+        Optional<FieldDescriptor> descriptor = lookup(location, scope, errorAccumulator);
+        if (!descriptor.isPresent()) {
+            return Optional.absent();
+        }
+        if (!descriptor.get().getLength().isPresent()) {
+            Utils.check(false, errorAccumulator,
+                    "Type mismatch: expected an array location for varialbe %s at %s, but got a scalar.",
+                    location.getName(), location.getLocationDescriptor());
+            return Optional.absent();
+        }
+        return Optional.of(descriptor.get().getType());
     }
 
     /** See validNativeExpressionType. */
     private Optional<BaseType> validScalarLocationType(ScalarLocation location, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented.");
+        Optional<FieldDescriptor> descriptor = lookup(location, scope, errorAccumulator);
+        if (!descriptor.isPresent()) {
+            return Optional.absent();
+        }
+        if (descriptor.get().getLength().isPresent()) {
+            Utils.check(false, errorAccumulator,
+                    "Type mismatch: expected a scalar location for variable %s at %s, but got an array.",
+                    location.getVariableName(), location.getLocationDescriptor());
+            return Optional.absent();
+        }
+        return Optional.of(descriptor.get().getType());
+    }
+
+    /** Get the descriptor for a variable, and log an error if it's not found. */
+    private Optional<FieldDescriptor> lookup(Location location, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        Optional<FieldDescriptor> descriptor = scope.getFromScope(location.getVariableName());
+        if (descriptor.isPresent()) {
+            return descriptor;
+        } else {
+            Utils.check(false, errorAccumulator,
+                    "Failed lookup: could not find variable named %s at %s.",
+                    location.getVariableName(), location.getLocationDescriptor());
+            return Optional.absent();
+        }
+
     }
 
     private static boolean allPresent(Optional<?>... optionals) {
