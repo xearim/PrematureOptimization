@@ -274,8 +274,17 @@ public class TypesSemanticCheck implements SemanticCheck {
                     "Improper return at %s: return argument in a void method.",
                     returnStatement.getLocationDescriptor());
         } else {
-            // The return value should match (SR9).
-            checkTypedExpression(returnType, value.get(), scope, errorAccumulator);
+            if (value.isPresent()) {
+                // The return value should match (SR9).
+                checkTypedExpression(returnType, value.get(), scope, errorAccumulator);
+            } else {
+                // There must be a returned value
+                Utils.check(
+                        value.isPresent(),
+                        errorAccumulator,
+                        "Improper return at %s: no value was proveded, but an expression of type %s was required.",
+                        returnStatement.getLocationDescriptor(), returnType);
+            }
         }
     }
 
