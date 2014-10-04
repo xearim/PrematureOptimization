@@ -97,7 +97,7 @@ public class EvaluateCheck {
 	 * Only checks array variable, not the native expression
 	 */
 	public static Optional<BaseType> evaluatesTo(ArrayLocation expression, Scope scope){
-		Optional<FieldDescriptor> var = scope.getFromScope(expression.getName());
+		Optional<FieldDescriptor> var = scope.getFromScope(expression.getVariableName());
 		if(var.isPresent() && var.get().getLength().isPresent())
 			return Optional.of(var.get().getType());
 		return Optional.absent();
