@@ -417,7 +417,15 @@ public class TypesSemanticCheck implements SemanticCheck {
         if (literal instanceof BooleanLiteral) {
             return Optional.of(BaseType.BOOLEAN);
         } else if (literal instanceof IntLiteral) {
-            return Optional.of(BaseType.INTEGER);
+            boolean literalWithinBounds = Utils.isWithinBounds(literal.getName());
+            if (literalWithinBounds) {
+                return Optional.of(BaseType.INTEGER);
+            }
+            Utils.check(literalWithinBounds,
+                    errorAccumulator,
+                    "Invalid integer value at %s: expected 64-bit signed integer, but got %s",
+                    literal.getLocationDescriptor(), literal.getName());
+            return Optional.absent();
         } else if (literal instanceof CharLiteral) {
             // TODO(jasonpr): Make parser reject misplaced char literals, so it doesn't need to
             // extend NativeLiteral... it's not really native, after all!

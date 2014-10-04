@@ -5,6 +5,8 @@ import java.util.List;
 import edu.mit.semantics.errors.SemanticError;
 
 public class Utils {
+    private final static String HEX_START = "0x";
+    private final static String HEX_DIGIT = "[0123456789ABCDEFabcdef]";
 
     private Utils() {}
 
@@ -27,6 +29,38 @@ public class Utils {
                 }
             });
         }
+    }
+
+    /**
+     * Uses Long.parseLong to check if a string is a valid signed 64-bit integer
+     */
+    private static boolean isDecimal(String i) {
+        boolean b;
+        try {
+            Long.parseLong(i);
+            b = true;
+        } catch (NumberFormatException e) {
+            b = false;
+        }
+        return b;
+    }
+
+    /**
+     * Uses regular expressions to see if it's a hex literal with at most 16
+     * hex digits.
+     */
+    private static boolean isHex(String i) {
+        return i.matches(HEX_START + HEX_DIGIT + "{1,16}");
+    }
+
+    /**
+     * Checks if the string is a 64-bit signed decimal or hexadecimal.
+     *
+     * @param i Any string
+     * @return If the string is a valid int_literal that falls within bounds
+     */
+    public static boolean isWithinBounds(String i) {
+        return isDecimal(i) || isHex(i);
     }
 
 }
