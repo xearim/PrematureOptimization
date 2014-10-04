@@ -523,4 +523,20 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
         return true;
     }
+
+    /**
+     * Lookup the method in the global methods table.
+     *
+     * <p>Do NOT report an error if it's not found.
+     *
+     * <p>Do NOT look through the callouts table.
+     */
+    private Optional<Method> lookupMethodWithName(String name) {
+        for (Method method : program.getMethods()) {
+            if (method.getName().equals(name)) {
+                return Optional.of(method);
+            }
+        }
+        return Optional.absent();
+    }
 }
