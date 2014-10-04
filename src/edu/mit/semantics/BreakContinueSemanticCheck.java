@@ -86,8 +86,6 @@ public class BreakContinueSemanticCheck implements SemanticCheck{
                 for (Block subBlock: subBlocks){
                     checkBlock(subBlock, true);
                 }
-            } else {
-                // TODO(Manny) throw error
             }
         }
     }

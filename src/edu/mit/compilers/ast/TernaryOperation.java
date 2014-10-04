@@ -30,4 +30,16 @@ public class TernaryOperation implements NativeExpression {
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
     }
+
+    public NativeExpression getCondition() {
+        return condition;
+    }
+
+    public NativeExpression getTrueResult() {
+        return trueResult;
+    }
+
+    public NativeExpression getFalseResult() {
+        return falseResult;
+    }
 }
