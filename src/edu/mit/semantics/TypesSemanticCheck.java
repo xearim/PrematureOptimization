@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 import edu.mit.compilers.ast.ArrayLocation;
@@ -222,11 +223,25 @@ public class TypesSemanticCheck implements SemanticCheck {
             return Optional.absent();
         }
 
+        boolean shouldMatchParameters = isMethod;
+        if (isMethod) {
+            List<BaseType> signature = calledMethod.get().getSignature();
+            List<GeneralExpression> suppliedParameters = ImmutableList.copyOf(methodCall
+                    .getParameterValues());
+            if (signature.size() != suppliedParameters.size()) {
+                Utils.check(false, errorAccumulator,
+                        "Wrong number of parameters for %s at %s.  Expected %d, got %d.",
+                        methodName, methodCall.getLocationDescriptor(), signature.size(),
+                        suppliedParameters.size());
+                shouldMatchParameters = false;
+            }
+        }
+
         int parameterNumber = 0;
         for (GeneralExpression expression : methodCall.getParameterValues()) {
             if (expression instanceof NativeExpression) {
                 NativeExpression nativeExpression = (NativeExpression) expression;
-                if (isMethod) {
+                if (shouldMatchParameters) {
                     checkTypedExpression(calledMethod.get().getSignature().get(parameterNumber),
                             nativeExpression, scope, errorAccumulator);
                 } else {
