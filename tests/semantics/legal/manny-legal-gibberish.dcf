@@ -18,8 +18,8 @@ void conditionallyReturns() {
 }
 
 int conditionalInt() {
-  conditionallyReturns();
   int k;
+  conditionallyReturns();
   k = c%9;
   if (d == false) { // please save me from myself
     d = true;
@@ -35,7 +35,7 @@ boolean conditionalBool(boolean j, boolean k) {
   int larceny;
   ehhh[0] = c;
   ehhh[2] = ehhh[0x1];
-  ehhh[4] = ehhh[conditionalInt() % @ehhh;
+  ehhh[4] = ehhh[conditionalInt() % @ehhh];
   larceny = conditionalInt();
   if (larceny == c) {
     // oh dear god, what have i done
@@ -44,11 +44,11 @@ boolean conditionalBool(boolean j, boolean k) {
     return true;
   } else{
     if (larceny > c) {
-      d = (k || j) c <= c2 : c >= c2;
+      d = (k || j) ? c <= c2 : c >= c2;
       c -= 0x3;
       return false;
     } else {
-      c += (k && j) 2 : 3;
+      c += (k && j) ? 2 : 3;
       return false;
     }
   }
@@ -80,7 +80,7 @@ int f(int k, boolean l) {
   int i[3];
   boolean j[4];
   returns();
-  b = (j[2] != false) 0x8765 : -1;
+  b = (j[2] != false) ? 0x8765 : -1;
   
   return 35+(2-7)*4/2;
 }
@@ -101,13 +101,13 @@ boolean g() {
 
 boolean one_more_time() {
   int loop_var;
-  while (g()) : 4 {
+  while (g()) {
     c += 1;
   }
-  for (loop_var = 3, f(2,true) {
+  for (loop_var = 3, f(2,true)) {
     break;
   }
-  return (c > 0) g() : false;
+  return (c > 0) ? g() : false;
 }
 
 void main ( ) {

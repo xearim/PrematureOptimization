@@ -114,7 +114,7 @@ public class TypesSemanticCheck implements SemanticCheck {
         AssignmentOperation operation = assignment.getOperation();
         if (operation == AssignmentOperation.MINUS_EQUALS
                 || operation == AssignmentOperation.PLUS_EQUALS) {
-            Utils.check(expected.equals(BaseType.INTEGER), errorAccumulator,
+            Utils.check(expected.equals(Optional.of(BaseType.INTEGER)), errorAccumulator,
                     "Type error in assignment at %s: operation applies to type integer, not %s.",
                     assignment.getLocationDescriptor(), expected.get());
         }
