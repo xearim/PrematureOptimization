@@ -1,6 +1,7 @@
 package edu.mit.semantics;
 
 import static com.google.common.base.Preconditions.checkState;
+import static edu.mit.semantics.NonPositiveArrayLengthSemanticCheck.isNonPositiveIntLiteral;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +9,37 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 
-import edu.mit.compilers.ast.*;
+import edu.mit.compilers.ast.ArrayLocation;
+import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.AssignmentOperation;
+import edu.mit.compilers.ast.BaseType;
+import edu.mit.compilers.ast.BinaryOperation;
+import edu.mit.compilers.ast.Block;
+import edu.mit.compilers.ast.BooleanLiteral;
+import edu.mit.compilers.ast.BreakStatement;
+import edu.mit.compilers.ast.Callout;
+import edu.mit.compilers.ast.CharLiteral;
+import edu.mit.compilers.ast.ContinueStatement;
+import edu.mit.compilers.ast.FieldDescriptor;
+import edu.mit.compilers.ast.ForLoop;
+import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.IfStatement;
+import edu.mit.compilers.ast.IntLiteral;
+import edu.mit.compilers.ast.Location;
+import edu.mit.compilers.ast.Method;
+import edu.mit.compilers.ast.MethodCall;
+import edu.mit.compilers.ast.NativeExpression;
+import edu.mit.compilers.ast.NativeLiteral;
+import edu.mit.compilers.ast.Program;
+import edu.mit.compilers.ast.ReturnStatement;
+import edu.mit.compilers.ast.ReturnType;
+import edu.mit.compilers.ast.ScalarLocation;
+import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.ast.Statement;
+import edu.mit.compilers.ast.TernaryOperation;
+import edu.mit.compilers.ast.UnaryOperation;
+import edu.mit.compilers.ast.WhileLoop;
 import edu.mit.semantics.errors.SemanticError;
-import static edu.mit.semantics.NonPositiveArrayLengthSemanticCheck.isNonPositiveIntLiteral;
 
 public class TypesSemanticCheck implements SemanticCheck {
 
@@ -33,7 +62,10 @@ public class TypesSemanticCheck implements SemanticCheck {
         // Only blocks hold type-checkable elements. All blocks live under a
         // method.
         for (Method method : program.getMethods()) {
-            checkBlock(method.getBlock(), errorAccumulator);
+            ReturnType returnType = method.getReturnType();
+            checkState(returnType.getReturnType().isPresent());
+            checkBlock(method.getBlock(), errorAccumulator,
+                    method.getReturnType().getReturnType().get());
         }
         return errorAccumulator;
     }
@@ -46,9 +78,9 @@ public class TypesSemanticCheck implements SemanticCheck {
      * <p>This takes no scope: The block knows its own scope, and the scopes of its
      *    parents. 
      */
-    private void checkBlock(Block block, List<SemanticError> errorAccumulator) {
+    private void checkBlock(Block block, List<SemanticError> errorAccumulator, BaseType returnType) {
         for (Statement statement : block.getStatements()) {
-            checkStatement(statement, block.getScope(), errorAccumulator);
+            checkStatement(statement, block.getScope(), errorAccumulator, returnType);
         }
     }
 
@@ -87,7 +119,7 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
 
         // All assignments must have the same type on each side (SR19).
-        Utils.check(expected.equals(actual), errorAccumulator,
+        Utils.check(actual.get().isA(expected.get()), errorAccumulator,
                 "Type mismatch in assignment at %s: expected %s but got %s.",
                 assignment.getLocationDescriptor(), expected.get(), actual.get());
     }
@@ -99,7 +131,8 @@ public class TypesSemanticCheck implements SemanticCheck {
      * @param scope The scope in which the loop's setup/control takes place.
      * @param errorAccumulator Errors are added to this accumulator.
      */
-    private void checkForLoop(ForLoop forLoop, Scope scope, List<SemanticError> errorAccumulator) {
+    private void checkForLoop(ForLoop forLoop, Scope scope, List<SemanticError> errorAccumulator,
+            BaseType returnType) {
         ScalarLocation loopVariable = forLoop.getLoopVariable();
         Optional<BaseType> loopVariableType = validScalarLocationType(loopVariable, scope,
                 errorAccumulator);
@@ -109,7 +142,7 @@ public class TypesSemanticCheck implements SemanticCheck {
                     loopVariable.getVariableName(), loopVariable.getLocationDescriptor(),
                     loopVariableType.get());
         }
-        checkBlock(Iterables.getOnlyElement(forLoop.getBlocks()), errorAccumulator);
+        checkBlock(Iterables.getOnlyElement(forLoop.getBlocks()), errorAccumulator, returnType);
         // For loops must have integer bounds (SR21).
         checkTypedExpression(BaseType.INTEGER, forLoop.getRangeStart(), scope, errorAccumulator);
         checkTypedExpression(BaseType.INTEGER, forLoop.getRangeEnd(), scope, errorAccumulator);
@@ -125,7 +158,7 @@ public class TypesSemanticCheck implements SemanticCheck {
             // Give up on this check.
             return;
         }
-        Utils.check(actualType.get().equals(type), errorAccumulator,
+        Utils.check(actualType.get().isA(type), errorAccumulator,
                 "Type mismatch at %s: expected %s but got %s.", expression.getLocationDescriptor(),
                 type, actualType.get());
     }
@@ -139,9 +172,9 @@ public class TypesSemanticCheck implements SemanticCheck {
      * @param errorAccumulator Errors are added to this accumulator.
      */
     private void checkIfStatement(IfStatement ifStatement, Scope scope,
-            List<SemanticError> errorAccumulator) {
+            List<SemanticError> errorAccumulator, BaseType returnType) {
         for (Block block : ifStatement.getBlocks()) {
-            checkBlock(block, errorAccumulator);
+            checkBlock(block, errorAccumulator, returnType);
         }
 
         checkCondition(ifStatement.getCondition(), scope, errorAccumulator);
@@ -161,7 +194,7 @@ public class TypesSemanticCheck implements SemanticCheck {
 
         // Condition statements must have boolean conditions (SR13).
         if (conditionType.isPresent()) {
-            Utils.check(conditionType.get().equals(BaseType.BOOLEAN), errorAccumulator,
+            Utils.check(conditionType.get().isA(BaseType.BOOLEAN), errorAccumulator,
                     "Type mismatch in condition at %s: expected boolean but got $s.",
                     condition.getLocationDescriptor(), conditionType.get());
         }
@@ -177,8 +210,52 @@ public class TypesSemanticCheck implements SemanticCheck {
      */
     private Optional<BaseType> validMethodCallType(MethodCall methodCall, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+
+        String methodName = methodCall.getName();
+        Optional<Method> calledMethod = lookupMethodWithName(methodName);
+        boolean isMethod = calledMethod.isPresent();
+
+        if (!isMethod && !isCallout(methodName)) {
+            Utils.check(false, errorAccumulator,
+                    "Failed lookup: Could not find method or callout %s at %s", methodName,
+                    methodCall.getLocationDescriptor());
+            return Optional.absent();
+        }
+
+        int parameterNumber = 0;
+        for (GeneralExpression expression : methodCall.getParameterValues()) {
+            if (expression instanceof NativeExpression) {
+                NativeExpression nativeExpression = (NativeExpression) expression;
+                if (isMethod) {
+                    checkTypedExpression(calledMethod.get().getSignature().get(parameterNumber),
+                            nativeExpression, scope, errorAccumulator);
+                } else {
+                    // Just make sure it evaluates.
+                    validNativeExpressionType(nativeExpression, scope, errorAccumulator);
+                }
+            }
+            // Otherwise, the expression is non-native.
+            // If this is a method, the SR7 check takes care of this
+            // case, so we don't have to.
+            // If it's a callout, we don't need to check it, because non-native
+            // expressions don't fit into the type system.
+            // So, for non-native expressions, we do nothing!
+            parameterNumber++;
+        }
+
+        // TODO(jasonpr): Remove this global-ish reference, if possible?
+        if (isMethod) {
+            ReturnType type = calledMethod.get().getReturnType();
+            // TODO(jasonpr): Remove the Optional, which was a holdover from the time when
+            // void was the absense of a type.  (Or, hold off on that.  That time may come back.)
+            checkState(type.getReturnType().isPresent());
+            // The evaluation type of a method is its return type (stronger
+            // version of SR06).
+            return type.getReturnType();
+        } else {
+            // It's a callout.
+            return Optional.of(BaseType.WILDCARD);
+        }
     }
     
     /**
@@ -189,15 +266,23 @@ public class TypesSemanticCheck implements SemanticCheck {
      * @param errorAccumulator Errors are added to this accumulator.
      */
     private void checkReturnStatement(ReturnStatement returnStatement, Scope scope,
-            List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+            List<SemanticError> errorAccumulator, BaseType returnType) {
+        Optional<NativeExpression> value = returnStatement.getValue();
+        if (returnType == BaseType.VOID) {
+            // There should be no return value at all (SR8).
+            Utils.check(!value.isPresent(), errorAccumulator,
+                    "Improper return at %s: return argument in a void method.",
+                    returnStatement.getLocationDescriptor());
+        } else {
+            // The return value should match (SR9).
+            checkTypedExpression(returnType, value.get(), scope, errorAccumulator);
+        }
     }
 
     private void checkWhileLoop(WhileLoop whileLoop, Scope scope,
-            List<SemanticError> errorAccumulator) {
+            List<SemanticError> errorAccumulator, BaseType returnType) {
         checkCondition(whileLoop.getCondition(), scope, errorAccumulator);
-        checkBlock(Iterables.getOnlyElement(whileLoop.getBlocks()), errorAccumulator);
+        checkBlock(Iterables.getOnlyElement(whileLoop.getBlocks()), errorAccumulator, returnType);
         Optional<IntLiteral> maxRepetitions = whileLoop.getMaxRepetitions();
         if (maxRepetitions.isPresent()) {
             // maxRepetitions must be a positive integer (SR22).
@@ -213,7 +298,7 @@ public class TypesSemanticCheck implements SemanticCheck {
 
     /** Delegate to the semantic type checkers for various statement types. */
     private void checkStatement(Statement statement, Scope scope,
-            List<SemanticError> errorAccumulator) {
+            List<SemanticError> errorAccumulator, BaseType returnType) {
         // TODO(jasonpr): Use a visitor pattern if these instanceofs get out of
         // hand.  Note that they isn't quite as bad as one might think, because
         // we're very unlikely to add any more implementations of Statement in
@@ -221,7 +306,7 @@ public class TypesSemanticCheck implements SemanticCheck {
         if (statement instanceof Assignment) {
             checkAssignment((Assignment) statement, scope, errorAccumulator);
         } else if (statement instanceof Block) {
-            checkBlock((Block) statement, errorAccumulator);
+            checkBlock((Block) statement, errorAccumulator, returnType);
         } else if (statement instanceof BreakStatement) {
             // Breaks have no type-related errors.
             return;
@@ -229,17 +314,17 @@ public class TypesSemanticCheck implements SemanticCheck {
             // Continues have no type-related errors.
             return;
         } else if (statement instanceof ForLoop) {
-            checkForLoop((ForLoop) statement, scope, errorAccumulator);
+            checkForLoop((ForLoop) statement, scope, errorAccumulator, returnType);
         } else if (statement instanceof IfStatement) {
-            checkIfStatement((IfStatement) statement, scope, errorAccumulator);
+            checkIfStatement((IfStatement) statement, scope, errorAccumulator, returnType);
         } else if (statement instanceof MethodCall) {
             // If it's just in the list of statements, we don't care about its
             // type. We discard it.
             validMethodCallType((MethodCall) statement, scope, errorAccumulator);
         } else if (statement instanceof ReturnStatement) {
-            checkReturnStatement((ReturnStatement) statement, scope, errorAccumulator);
+            checkReturnStatement((ReturnStatement) statement, scope, errorAccumulator, returnType);
         } else if (statement instanceof WhileLoop) {
-            checkWhileLoop((WhileLoop) statement, scope, errorAccumulator);
+            checkWhileLoop((WhileLoop) statement, scope, errorAccumulator, returnType);
         } else {
             throw new AssertionError("Unexpected Statement type for " + statement);
         }
@@ -330,15 +415,12 @@ public class TypesSemanticCheck implements SemanticCheck {
                 Optional<BaseType> rightType = validNativeExpressionType(
                         operation.getRightArgument(), scope, errorAccumulator);
                 if (allPresent(leftType, rightType)) {
-                    Utils.check(leftType.equals(rightType), errorAccumulator,
-                            "Type mismatch at %s: expected equal types, but got %s and %s.",
-                            operation.getLocationDescriptor(), leftType.get(), rightType.get());
-                    // No need to check rightType: it's equal to leftType.
                     Utils.check(
-                            leftType.get().equals(BaseType.BOOLEAN)
-                                    || leftType.get().equals(BaseType.INTEGER), errorAccumulator,
-                            "Type mismatch at %s: expected an integer or a boolean, but got %s",
-                            operation.getLocationDescriptor(), leftType.get());
+                            bothAre(leftType.get(), rightType.get(), BaseType.BOOLEAN,
+                                    BaseType.INTEGER),
+                            errorAccumulator,
+                            "Type mismatch at %s: expected equal non-void types, but got %s and %s.",
+                            operation.getLocationDescriptor(), leftType.get(), rightType.get());
                 }
                 return Optional.of(BaseType.BOOLEAN);
             case GREATER_THAN:
@@ -371,7 +453,8 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
 
         // Check that the two expressions have the same type (SR15).
-        if (!trueResultType.equals(falseResultType)) {
+        if (!bothAre(trueResultType.get(), falseResultType.get(), BaseType.BOOLEAN,
+                BaseType.INTEGER)) {
             Utils.check(false, errorAccumulator,
                     "Type mismatch at %s: Expected same types, but got %s and %s.",
                     operation.getTrueResult().getLocationDescriptor(),
@@ -510,4 +593,40 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
         return true;
     }
+
+    /**
+     * Lookup the method in the global methods table.
+     *
+     * <p>Do NOT report an error if it's not found.
+     *
+     * <p>Do NOT look through the callouts table.
+     */
+    private Optional<Method> lookupMethodWithName(String name) {
+        for (Method method : program.getMethods()) {
+            if (method.getName().equals(name)) {
+                return Optional.of(method);
+            }
+        }
+        return Optional.absent();
+    }
+    
+    private boolean isCallout(String name) {
+        for (Callout callout : program.getCallouts()) {
+            if (callout.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /** Return whether there's some option such that one.isA(option) and other.isA(option), too. */
+    private boolean bothAre(BaseType one, BaseType other, BaseType... options) {
+        for (BaseType option : options) {
+            if (one.isA(option) && other.isA(option)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

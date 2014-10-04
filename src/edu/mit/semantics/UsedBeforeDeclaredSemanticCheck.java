@@ -5,7 +5,29 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 
-import edu.mit.compilers.ast.*;
+import edu.mit.compilers.ast.ArrayLocation;
+import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.BinaryOperation;
+import edu.mit.compilers.ast.Block;
+import edu.mit.compilers.ast.BreakStatement;
+import edu.mit.compilers.ast.ContinueStatement;
+import edu.mit.compilers.ast.ForLoop;
+import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.IfStatement;
+import edu.mit.compilers.ast.Location;
+import edu.mit.compilers.ast.Method;
+import edu.mit.compilers.ast.MethodCall;
+import edu.mit.compilers.ast.NativeExpression;
+import edu.mit.compilers.ast.NativeLiteral;
+import edu.mit.compilers.ast.Program;
+import edu.mit.compilers.ast.ReturnStatement;
+import edu.mit.compilers.ast.ScalarLocation;
+import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.ast.Statement;
+import edu.mit.compilers.ast.StringLiteral;
+import edu.mit.compilers.ast.TernaryOperation;
+import edu.mit.compilers.ast.UnaryOperation;
+import edu.mit.compilers.ast.WhileLoop;
 import edu.mit.compilers.ir.EvaluateCheck;
 import edu.mit.semantics.errors.SemanticError;
 import edu.mit.semantics.errors.UsedBeforeDeclaredSemanticError;
@@ -97,8 +119,7 @@ public class UsedBeforeDeclaredSemanticCheck implements SemanticCheck {
      * Recurses through the general expressions in the method call.
      */
     private void checkMethodCall(MethodCall mc, Scope scope) {
-        @SuppressWarnings("unchecked")
-        Iterable<GeneralExpression> geItr = (Iterable<GeneralExpression>) ((MethodCall) mc).getChildren();
+        Iterable<GeneralExpression> geItr = mc.getParameterValues();
         for (GeneralExpression ge : geItr) {
             checkGeneralExpression(ge, scope);
         }
