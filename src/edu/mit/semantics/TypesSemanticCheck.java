@@ -238,8 +238,16 @@ public class TypesSemanticCheck implements SemanticCheck {
      */
     private void checkReturnStatement(ReturnStatement returnStatement, Scope scope,
             List<SemanticError> errorAccumulator, BaseType returnType) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        Optional<NativeExpression> value = returnStatement.getValue();
+        if (returnType == BaseType.VOID) {
+            // There should be no return value at all (SR8).
+            Utils.check(!value.isPresent(), errorAccumulator,
+                    "Improper return at %s: return argument in a void method.",
+                    returnStatement.getLocationDescriptor());
+        } else {
+            // The return value should match (SR9).
+            checkTypedExpression(returnType, value.get(), scope, errorAccumulator);
+        }
     }
 
     private void checkWhileLoop(WhileLoop whileLoop, Scope scope,
