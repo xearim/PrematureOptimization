@@ -9,9 +9,11 @@ import edu.mit.semantics.errors.SemanticError;
 
 public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
     private final static String HEX_START = "0x";
-    private final static String NEGATIVE_START = "-";
+    private final static String NEG_HEX_DIGIT = "[89ABCDEFabcdef]";
+    private final static String HEX_DIGIT = "[0123456789ABCDEFabcdef]";
+    private final static String REPEATED = new String(new char[15]).replace("\0", HEX_DIGIT);
+    private final static String NEGATIVE_DECIMAL_START = "-";
     private final static String ZERO = "(0)+";
-    private final static String NegativeHexStart = "89ABCDEF";
     Program prog;
     List<SemanticError> errors = new ArrayList<SemanticError>();
 
@@ -53,10 +55,11 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
                  * "0x00"
                  * "000"
                  */
-                if (length.startsWith(NEGATIVE_START) ||
-                        isNegativeHex(length) ||
-                        length.matches(HEX_START + ZERO) ||
-                        length.matches(ZERO)) {
+//                if (length.startsWith(NEGATIVE_START) ||
+//                        isNegativeHex(length) ||
+//                        length.matches(HEX_START + ZERO) ||
+//                        length.matches(ZERO)) {
+                if (isNonPositiveIntLiteral(length)) {
                     errors.add(new NonPositiveArrayLengthSemanticError(
                             field.getLocationDescriptor(), this.prog.getName(),
                             field.getName(), length));
@@ -66,12 +69,15 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
     }
     
     /**
-     * Returns true if length in the range 0x8000 - 0xFFFF
+     * Doesn't do boundary checking
      */
-    private boolean isNegativeHex(String length) {
-        return length.startsWith(HEX_START) &&
-                (NegativeHexStart.indexOf(
-                        length.charAt(HEX_START.length())) != -1);
+    public static boolean isNonPositiveIntLiteral(String i) {
+        // TODO(Manny) implement
+        return i.startsWith(NEGATIVE_DECIMAL_START) ||  // ie. -7
+                i.matches(HEX_START + NEG_HEX_DIGIT + REPEATED) || // ie. 0xFEDCBA9876543210
+                i.matches(HEX_START+ZERO) || // ie. 0x000
+                i.matches(ZERO); // ie. 000
+                
     }
     
     private void checkMethods(Iterable<Method> methods) {
