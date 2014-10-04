@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 
+import antlr.ASTFactory;
 import antlr.CharStreamException;
 import antlr.RecognitionException;
 import antlr.Token;
@@ -163,6 +164,10 @@ class Main {
       DecafScanner scanner =
               new DecafScanner(new DataInputStream(inputStream));
           DecafParser parser = new DecafParser(scanner);
+          // Need a custom ASTFactory with replaced nodes to actually get line info
+          ASTFactory factory = new ASTFactory();                         
+          factory.setASTNodeClass(AntlrASTWithLines.class);
+          parser.setASTFactory(factory);
           parser.setTrace(CLI.debug);
           parser.program();
           return parser;
