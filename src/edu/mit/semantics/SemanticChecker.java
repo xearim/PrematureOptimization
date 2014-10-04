@@ -22,11 +22,14 @@ public class SemanticChecker {
         errors.addAll(new UsedBeforeDeclaredSemanticCheck(this.prog).doCheck()); // 2
         errors.addAll(new MissingMainSemanticCheck(this.prog).doCheck()); // 3
         errors.addAll(new NonPositiveArrayLengthSemanticCheck(this.prog).doCheck()); // 4
-        errors.addAll(new SignatureMismatchSemanticCheck(this.prog).doCheck()); // 5
         
         errors.addAll(new IncompatableArgumentsSemanticCheck(this.prog).doCheck()); // 7
         
         errors.addAll(new BreakContinueSemanticCheck(this.prog).doCheck()); // 23
+
+        // The following check does (nearly) all type-related checks: 5,6, 8, 9,
+        // and 11-22.
+        errors.addAll(new TypesSemanticCheck(prog).doCheck());
 
         return errors;
     }
