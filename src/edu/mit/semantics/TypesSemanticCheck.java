@@ -16,10 +16,12 @@ import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.BooleanLiteral;
 import edu.mit.compilers.ast.BreakStatement;
+import edu.mit.compilers.ast.Callout;
 import edu.mit.compilers.ast.CharLiteral;
 import edu.mit.compilers.ast.ContinueStatement;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.ForLoop;
+import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.IfStatement;
 import edu.mit.compilers.ast.IntLiteral;
 import edu.mit.compilers.ast.Location;
@@ -116,7 +118,7 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
 
         // All assignments must have the same type on each side (SR19).
-        Utils.check(expected.equals(actual), errorAccumulator,
+        Utils.check(actual.get().isA(expected.get()), errorAccumulator,
                 "Type mismatch in assignment at %s: expected %s but got %s.",
                 assignment.getLocationDescriptor(), expected.get(), actual.get());
     }
@@ -155,7 +157,7 @@ public class TypesSemanticCheck implements SemanticCheck {
             // Give up on this check.
             return;
         }
-        Utils.check(actualType.get().equals(type), errorAccumulator,
+        Utils.check(actualType.get().isA(type), errorAccumulator,
                 "Type mismatch at %s: expected %s but got %s.", expression.getLocationDescriptor(),
                 type, actualType.get());
     }
@@ -191,7 +193,7 @@ public class TypesSemanticCheck implements SemanticCheck {
 
         // Condition statements must have boolean conditions (SR13).
         if (conditionType.isPresent()) {
-            Utils.check(conditionType.get().equals(BaseType.BOOLEAN), errorAccumulator,
+            Utils.check(conditionType.get().isA(BaseType.BOOLEAN), errorAccumulator,
                     "Type mismatch in condition at %s: expected boolean but got $s.",
                     condition.getLocationDescriptor(), conditionType.get());
         }
@@ -207,12 +209,41 @@ public class TypesSemanticCheck implements SemanticCheck {
      */
     private Optional<BaseType> validMethodCallType(MethodCall methodCall, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Check signature.
 
-        // TODO(jasonpr): Remove this global-ish reference, if possible?
         String methodName = methodCall.getName();
         Optional<Method> calledMethod = lookupMethodWithName(methodName);
-        if (calledMethod.isPresent()) {
+        boolean isMethod = calledMethod.isPresent();
+
+        if (!isMethod && !isCallout(methodName)) {
+            Utils.check(false, errorAccumulator,
+                    "Failed lookup: Could not find method or callout %s at %s", methodName,
+                    methodCall.getLocationDescriptor());
+            return Optional.absent();
+        }
+
+        int parameterNumber = 0;
+        for (GeneralExpression expression : methodCall.getParameterValues()) {
+            if (expression instanceof NativeExpression) {
+                NativeExpression nativeExpression = (NativeExpression) expression;
+                if (isMethod) {
+                    checkTypedExpression(calledMethod.get().getSignature().get(parameterNumber),
+                            nativeExpression, scope, errorAccumulator);
+                } else {
+                    // Just make sure it evaluates.
+                    validNativeExpressionType(nativeExpression, scope, errorAccumulator);
+                }
+            }
+            // Otherwise, the expression is non-native.
+            // If this is a method, the SR7 check takes care of this
+            // case, so we don't have to.
+            // If it's a callout, we don't need to check it, because non-native
+            // expressions don't fit into the type system.
+            // So, for non-native expressions, we do nothing!
+            parameterNumber++;
+        }
+
+        // TODO(jasonpr): Remove this global-ish reference, if possible?
+        if (isMethod) {
             ReturnType type = calledMethod.get().getReturnType();
             // TODO(jasonpr): Remove the Optional, which was a holdover from the time when
             // void was the absense of a type.  (Or, hold off on that.  That time may come back.)
@@ -220,13 +251,10 @@ public class TypesSemanticCheck implements SemanticCheck {
             // The evaluation type of a method is its return type (stronger
             // version of SR06).
             return type.getReturnType();
+        } else {
+            // It's a callout.
+            return Optional.of(BaseType.WILDCARD);
         }
-
-        // TODO(jasonpr): Handle callouts.
-
-        Utils.check(false, errorAccumulator, "Failed lookup at %s: No method with name %s found.",
-                methodCall.getLocationDescriptor(), methodName);
-        return Optional.absent();
     }
     
     /**
@@ -382,15 +410,12 @@ public class TypesSemanticCheck implements SemanticCheck {
                 Optional<BaseType> rightType = validNativeExpressionType(
                         operation.getRightArgument(), scope, errorAccumulator);
                 if (allPresent(leftType, rightType)) {
-                    Utils.check(leftType.equals(rightType), errorAccumulator,
-                            "Type mismatch at %s: expected equal types, but got %s and %s.",
-                            operation.getLocationDescriptor(), leftType.get(), rightType.get());
-                    // No need to check rightType: it's equal to leftType.
                     Utils.check(
-                            leftType.get().equals(BaseType.BOOLEAN)
-                                    || leftType.get().equals(BaseType.INTEGER), errorAccumulator,
-                            "Type mismatch at %s: expected an integer or a boolean, but got %s",
-                            operation.getLocationDescriptor(), leftType.get());
+                            bothAre(leftType.get(), rightType.get(), BaseType.BOOLEAN,
+                                    BaseType.INTEGER),
+                            errorAccumulator,
+                            "Type mismatch at %s: expected equal non-void types, but got %s and %s.",
+                            operation.getLocationDescriptor(), leftType.get(), rightType.get());
                 }
                 return Optional.of(BaseType.BOOLEAN);
             case GREATER_THAN:
@@ -423,7 +448,8 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
 
         // Check that the two expressions have the same type (SR15).
-        if (!trueResultType.equals(falseResultType)) {
+        if (!bothAre(trueResultType.get(), falseResultType.get(), BaseType.BOOLEAN,
+                BaseType.INTEGER)) {
             Utils.check(false, errorAccumulator,
                     "Type mismatch at %s: Expected same types, but got %s and %s.",
                     operation.getTrueResult().getLocationDescriptor(),
@@ -570,4 +596,24 @@ public class TypesSemanticCheck implements SemanticCheck {
         }
         return Optional.absent();
     }
+    
+    private boolean isCallout(String name) {
+        for (Callout callout : program.getCallouts()) {
+            if (callout.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /** Return whether there's some option such that one.isA(option) and other.isA(option), too. */
+    private boolean bothAre(BaseType one, BaseType other, BaseType... options) {
+        for (BaseType option : options) {
+            if (one.isA(option) && other.isA(option)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
