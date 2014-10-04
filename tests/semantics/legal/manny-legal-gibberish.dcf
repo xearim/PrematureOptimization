@@ -1,0 +1,118 @@
+callout a;
+callout b;
+int c;
+int c2;
+boolean d;
+
+void conditionallyReturns() {
+  // What am I doing?
+  boolean d;
+  int emptyArray[4];
+  a("foo",emptyArray);
+  if (d) {
+    d = false;
+  } else {
+    d = true;
+    return;
+  }
+}
+
+int conditionalInt() {
+  conditionallyReturns();
+  int k;
+  k = c%9;
+  if (d == false) { // please save me from myself
+    d = true;
+    return c;
+  } else {
+    d = false;
+    return k; 
+  }
+}
+
+boolean conditionalBool(boolean j, boolean k) {
+  int ehhh[0x8];
+  int larceny;
+  ehhh[0] = c;
+  ehhh[2] = ehhh[0x1];
+  ehhh[4] = ehhh[conditionalInt() % @ehhh;
+  larceny = conditionalInt();
+  if (larceny == c) {
+    // oh dear god, what have i done
+    c = -ehhh[0];
+    d = j;
+    return true;
+  } else{
+    if (larceny > c) {
+      d = (k || j) c <= c2 : c >= c2;
+      c -= 0x3;
+      return false;
+    } else {
+      c += (k && j) 2 : 3;
+      return false;
+    }
+  }
+}
+
+void returns() {
+  if (c2 > c) {
+    conditionalBool(true,false);
+  } // where did i go wrong
+  if (c2 < c) {
+    conditionalInt();
+  }
+  return;
+}
+
+void doesNotReturn () {
+  int k;
+  k = 3;
+  if (k == 4) {
+    int f; // this must be karma for something
+    boolean g;
+    d = false;
+  }
+}
+
+int f(int k, boolean l) {
+  int b; // I must atone for my sins somehow
+  boolean h;
+  int i[3];
+  boolean j[4];
+  returns();
+  b = (j[2] != false) 0x8765 : -1;
+  
+  return 35+(2-7)*4/2;
+}
+
+boolean g() {
+  int i;
+  while (g()) {
+    if (i == 0) {
+      continue;
+    } else {
+      break;
+    }
+  }
+  d = !(d);
+  return d;
+
+}
+
+boolean one_more_time() {
+  int loop_var;
+  while (g()) : 4 {
+    c += 1;
+  }
+  for (loop_var = 3, f(2,true) {
+    break;
+  }
+  return (c > 0) g() : false;
+}
+
+void main ( ) {
+  boolean jazz;
+  jazz = one_more_time();
+  d = jazz;
+  doesNotReturn();
+}
