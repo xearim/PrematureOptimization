@@ -1,6 +1,7 @@
 package edu.mit.semantics;
 
 import static com.google.common.base.Preconditions.checkState;
+import static edu.mit.semantics.NonPositiveArrayLengthSemanticCheck.isNonPositiveIntLiteral;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -285,7 +286,11 @@ public class TypesSemanticCheck implements SemanticCheck {
         Optional<IntLiteral> maxRepetitions = whileLoop.getMaxRepetitions();
         if (maxRepetitions.isPresent()) {
             // maxRepetitions must be a positive integer (SR22).
-            // TODO(jasonpr): Tie in manny's positive-checking code.
+            Utils.check(isNonPositiveIntLiteral(maxRepetitions.get().getName()),
+                    errorAccumulator,
+                    "Invalid upper bound for while loop at %s: expected a positive integer, but got %s",
+                    maxRepetitions.get().getLocationDescriptor(), maxRepetitions.get().getName());
+            
             throw new RuntimeException("Not yet implemented!");
         }
 
