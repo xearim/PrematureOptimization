@@ -8,13 +8,17 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 
+import edu.mit.compilers.ast.ArrayLocation;
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BaseType;
 import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.Block;
+import edu.mit.compilers.ast.BooleanLiteral;
 import edu.mit.compilers.ast.BreakStatement;
+import edu.mit.compilers.ast.CharLiteral;
 import edu.mit.compilers.ast.ContinueStatement;
+import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.ForLoop;
 import edu.mit.compilers.ast.IfStatement;
 import edu.mit.compilers.ast.IntLiteral;
@@ -131,23 +135,26 @@ public class TypesSemanticCheck implements SemanticCheck {
                     loopVariableType.get());
         }
         checkBlock(Iterables.getOnlyElement(forLoop.getBlocks()), errorAccumulator);
-        checkIntegerExpression(forLoop.getRangeStart(), scope, errorAccumulator);
-        checkIntegerExpression(forLoop.getRangeEnd(), scope, errorAccumulator);
+        // For loops must have integer bounds (SR21).
+        checkTypedExpression(BaseType.INTEGER, forLoop.getRangeStart(), scope, errorAccumulator);
+        checkTypedExpression(BaseType.INTEGER, forLoop.getRangeEnd(), scope, errorAccumulator);
     }
 
-    private void checkIntegerExpression(NativeExpression expression, Scope scope,
+    private void checkTypedExpression(BaseType type, NativeExpression expression, Scope scope,
             List<SemanticError> errorAccumulator) {
-        Optional<BaseType> type = validNativeExpressionType(expression, scope, errorAccumulator);
-        if (!type.isPresent()) {
+        Optional<BaseType> actualType = validNativeExpressionType(expression, scope,
+                errorAccumulator);
+        if (!actualType.isPresent()) {
             // There was an error below that makes it impossible to check
-            // whether this is an int.
+            // whether its type.
             // Give up on this check.
             return;
         }
-        Utils.check(type.get().equals(BaseType.INTEGER), errorAccumulator,
-                "Type mismatch at %s: expected integer but got %s.",
-                expression.getLocationDescriptor(), type.get());
+        Utils.check(actualType.get().equals(type), errorAccumulator,
+                "Type mismatch at %s: expected %s but got %s.", expression.getLocationDescriptor(),
+                type, actualType.get());
     }
+
 
     /**
      * Check that the types are all semantically correct in an if statement, recursively.
@@ -218,6 +225,7 @@ public class TypesSemanticCheck implements SemanticCheck {
         checkBlock(Iterables.getOnlyElement(whileLoop.getBlocks()), errorAccumulator);
         Optional<IntLiteral> maxRepetitions = whileLoop.getMaxRepetitions();
         if (maxRepetitions.isPresent()) {
+            // maxRepetitions must be a positive integer (SR22).
             // TODO(jasonpr): Tie in manny's positive-checking code.
             throw new RuntimeException("Not yet implemented!");
         }
@@ -255,6 +263,23 @@ public class TypesSemanticCheck implements SemanticCheck {
             checkWhileLoop((WhileLoop) statement, scope, errorAccumulator);
         } else {
             throw new AssertionError("Unexpected Statement type for " + statement);
+        }
+    }
+
+    // TODO(jasonpr): Modify the grammar so that array names are not interpreted
+    // as locations.
+    /**
+     * Assert that this Location actually points to an array variable.
+     */
+    private void checkArray(ScalarLocation location, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // Reports an error if the name is not found.
+        Optional<FieldDescriptor> descriptor = lookup(location, scope, errorAccumulator);
+        if (descriptor.isPresent()) {
+            // Make sure it's an array.
+            Utils.check(descriptor.get().getLength().isPresent(), errorAccumulator,
+                    "Type mismatch for %s at %s: expected an array, but got ",
+                    location.getVariableName(), location.getLocationDescriptor());
         }
     }
 
@@ -298,43 +323,196 @@ public class TypesSemanticCheck implements SemanticCheck {
     /** See validNativeExpressionType. */
     private Optional<BaseType> validBinaryOperationType(
             BinaryOperation operation, Scope scope, List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        switch (operation.getOperator()) {
+            case AND:
+            case OR:
+                // Boolean binary operations must take booleans (binary part of
+                // SR18).
+                for (NativeExpression expression : operation.getChildren()) {
+                    checkTypedExpression(BaseType.BOOLEAN, expression, scope, errorAccumulator);
+                }
+                return Optional.of(BaseType.BOOLEAN);
+            case PLUS:
+            case MINUS:
+            case DIVIDED_BY:
+            case TIMES:
+            case MODULO:
+                // Arithmetic binary operations must take integers (half of
+                // SR16).
+                for (NativeExpression expression : operation.getChildren()) {
+                    checkTypedExpression(BaseType.INTEGER, expression, scope, errorAccumulator);
+                }
+                return Optional.of(BaseType.INTEGER);
+            case DOUBLE_EQUALS:
+            case NOT_EQUALS:
+                // Equality operators must take two ints or two booleans (SR17).
+                Optional<BaseType> leftType = validNativeExpressionType(
+                        operation.getLeftArgument(), scope, errorAccumulator);
+                Optional<BaseType> rightType = validNativeExpressionType(
+                        operation.getRightArgument(), scope, errorAccumulator);
+                if (allPresent(leftType, rightType)) {
+                    Utils.check(leftType.equals(rightType), errorAccumulator,
+                            "Type mismatch at %s: expected equal types, but got %s and %s.",
+                            operation.getLocationDescriptor(), leftType.get(), rightType.get());
+                    // No need to check rightType: it's equal to leftType.
+                    Utils.check(
+                            leftType.get().equals(BaseType.BOOLEAN)
+                                    || leftType.get().equals(BaseType.INTEGER), errorAccumulator,
+                            "Type mismatch at %s: expected an integer or a boolean, but got %s",
+                            operation.getLocationDescriptor(), leftType.get());
+                }
+                return Optional.of(BaseType.BOOLEAN);
+            case GREATER_THAN:
+            case GREATER_THAN_OR_EQUAL:
+            case LESS_THAN:
+            case LESS_THAN_OR_EQUAL:
+                // Relative binary operations must take integers (half of SR16).
+                for (NativeExpression expression : operation.getChildren()) {
+                    checkTypedExpression(BaseType.INTEGER, expression, scope, errorAccumulator);
+                }
+                return Optional.of(BaseType.BOOLEAN);
+            default:
+                throw new AssertionError("Got unexpected operator " + operation.getOperator());
+        }
     }
 
     /** See validNativeExpressionType. */
     private Optional<BaseType> validTernaryOperationType(
-            TernaryOperation opeartion, Scope scope, List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+            TernaryOperation operation, Scope scope, List<SemanticError> errorAccumulator) {
+        // Check that the ternary condition is, in fact, a condition (SR14).
+        checkCondition(operation.getCondition(), scope, errorAccumulator);
+        Optional<BaseType> trueResultType = validNativeExpressionType(
+                operation.getTrueResult(), scope, errorAccumulator);
+        Optional<BaseType> falseResultType = validNativeExpressionType(
+                operation.getFalseResult(), scope, errorAccumulator);
+
+        if (!allPresent(trueResultType, falseResultType)) {
+            // We can't tell what it returns!
+            return Optional.absent();
+        }
+
+        // Check that the two expressions have the same type (SR15).
+        if (!trueResultType.equals(falseResultType)) {
+            Utils.check(false, errorAccumulator,
+                    "Type mismatch at %s: Expected same types, but got %s and %s.",
+                    operation.getTrueResult().getLocationDescriptor(),
+                    trueResultType.get(), falseResultType.get());
+            return Optional.absent();
+        }
+        return trueResultType;
     }
 
     /** See validNativeExpressionType. */
     private Optional<BaseType> validUnaryOperationType(
             UnaryOperation operation, Scope scope, List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        NativeExpression argument = operation.getArgument();
+        switch (operation.getOperator()) {
+            case ARRAY_LENGTH:
+                // This is true, but very strange.
+                // TODO(jasonpr): Modify grammar so this isn't the case.
+                checkState(argument instanceof ScalarLocation);
+
+                // The argument of the "@" operator must be an array (SR12).
+                // We don't actually care about its type, or whether it
+                // succeeded! Discard the result.
+                checkArray((ScalarLocation) operation.getArgument(), scope, errorAccumulator);
+
+                return Optional.of(BaseType.INTEGER);
+            case NEGATIVE:
+                checkTypedExpression(
+                        BaseType.INTEGER, operation.getArgument(), scope, errorAccumulator);
+                return Optional.of(BaseType.INTEGER);
+            case NOT:
+                // Logical not must have a boolean argument (half of SR18).
+                checkTypedExpression(
+                        BaseType.BOOLEAN, operation.getArgument(), scope, errorAccumulator);
+                return Optional.of(BaseType.BOOLEAN);
+            default:
+                throw new AssertionError("Got unexpected operator: " + operation.getOperator());
+        }
     }
 
     /** See validNativeExpressionType. */
     private Optional<BaseType> validNativeLiteralType(
             NativeLiteral literal, Scope scope, List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        if (literal instanceof BooleanLiteral) {
+            return Optional.of(BaseType.BOOLEAN);
+        } else if (literal instanceof IntLiteral) {
+            return Optional.of(BaseType.INTEGER);
+        } else if (literal instanceof CharLiteral) {
+            // TODO(jasonpr): Make parser reject misplaced char literals, so it doesn't need to
+            // extend NativeLiteral... it's not really native, after all!
+            Utils.check(false, errorAccumulator,
+                    "Type mismatch at %s: expected an integer or a boolean, but got a char, %s",
+                    literal.getLocationDescriptor(), literal.getName());
+            return Optional.absent();
+        } else {
+            throw new AssertionError("Unexpected NativeLiteral " + literal);
+        }
     }
 
     /** See validNativeExpressionType. */
     private Optional<BaseType> validLocationType(Location location, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented.");
+        if (location instanceof ArrayLocation) {
+            return validArrayLocationType((ArrayLocation) location, scope, errorAccumulator);
+        } else if (location instanceof ScalarLocation) {
+            return validScalarLocationType((ScalarLocation) location, scope, errorAccumulator);
+        } else {
+            throw new AssertionError("Unexpected Location type for " + location);
+        }
+    }
+
+    /** See validNativeExpressionType. */
+    private Optional<BaseType> validArrayLocationType(ArrayLocation location, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        // All array locations must have an integer index (second half of SR11).
+        checkTypedExpression(BaseType.INTEGER, location.getIndex(), scope, errorAccumulator);
+
+        // All array location must be for an array variable (first half of
+        // SR11).
+        Optional<FieldDescriptor> descriptor = lookup(location, scope, errorAccumulator);
+        if (!descriptor.isPresent()) {
+            return Optional.absent();
+        }
+        if (!descriptor.get().getLength().isPresent()) {
+            Utils.check(false, errorAccumulator,
+                    "Type mismatch: expected an array location for varialbe %s at %s, but got a scalar.",
+                    location.getName(), location.getLocationDescriptor());
+            return Optional.absent();
+        }
+        return Optional.of(descriptor.get().getType());
     }
 
     /** See validNativeExpressionType. */
     private Optional<BaseType> validScalarLocationType(ScalarLocation location, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented.");
+        Optional<FieldDescriptor> descriptor = lookup(location, scope, errorAccumulator);
+        if (!descriptor.isPresent()) {
+            return Optional.absent();
+        }
+        if (descriptor.get().getLength().isPresent()) {
+            Utils.check(false, errorAccumulator,
+                    "Type mismatch: expected a scalar location for variable %s at %s, but got an array.",
+                    location.getVariableName(), location.getLocationDescriptor());
+            return Optional.absent();
+        }
+        return Optional.of(descriptor.get().getType());
+    }
+
+    /** Get the descriptor for a variable, and log an error if it's not found. */
+    private Optional<FieldDescriptor> lookup(Location location, Scope scope,
+            List<SemanticError> errorAccumulator) {
+        Optional<FieldDescriptor> descriptor = scope.getFromScope(location.getVariableName());
+        if (descriptor.isPresent()) {
+            return descriptor;
+        } else {
+            Utils.check(false, errorAccumulator,
+                    "Failed lookup: could not find variable named %s at %s.",
+                    location.getVariableName(), location.getLocationDescriptor());
+            return Optional.absent();
+        }
+
     }
 
     private static boolean allPresent(Optional<?>... optionals) {

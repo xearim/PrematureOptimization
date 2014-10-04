@@ -18,7 +18,7 @@ public class BinaryOperation implements NativeExpression {
     }
     
     @Override
-    public Iterable<? extends Node> getChildren() {
+    public Iterable<NativeExpression> getChildren() {
         return ImmutableList.of(leftArgument, rightArgument);
     }
 
@@ -33,6 +33,14 @@ public class BinaryOperation implements NativeExpression {
 
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
+    }
+
+    public NativeExpression getLeftArgument() {
+        return leftArgument;
+    }
+
+    public NativeExpression getRightArgument() {
+        return rightArgument;
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.
