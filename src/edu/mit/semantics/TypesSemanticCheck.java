@@ -29,6 +29,7 @@ import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.NativeLiteral;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.ast.ReturnStatement;
+import edu.mit.compilers.ast.ReturnType;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.Statement;
@@ -202,8 +203,24 @@ public class TypesSemanticCheck implements SemanticCheck {
      */
     private Optional<BaseType> validMethodCallType(MethodCall methodCall, Scope scope,
             List<SemanticError> errorAccumulator) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+        // TODO(jasonpr): Check signature.
+
+        // TODO(jasonpr): Remove this global-ish reference, if possible?
+        String methodName = methodCall.getName();
+        Optional<Method> calledMethod = lookupMethodWithName(methodName);
+        if (calledMethod.isPresent()) {
+            ReturnType type = calledMethod.get().getReturnType();
+            // TODO(jasonpr): Remove the Optional, which was a holdover from the time when
+            // void was the absense of a type.  (Or, hold off on that.  That time may come back.)
+            checkState(type.getReturnType().isPresent());
+            return type.getReturnType();
+        }
+
+        // TODO(jasonpr): Handle callouts.
+
+        Utils.check(false, errorAccumulator, "Failed lookup at %s: No method with name %s found.",
+                methodCall.getLocationDescriptor(), methodName);
+        return Optional.absent();
     }
     
     /**
