@@ -8,34 +8,9 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 
-import edu.mit.compilers.ast.ArrayLocation;
-import edu.mit.compilers.ast.Assignment;
-import edu.mit.compilers.ast.AssignmentOperation;
-import edu.mit.compilers.ast.BaseType;
-import edu.mit.compilers.ast.BinaryOperation;
-import edu.mit.compilers.ast.Block;
-import edu.mit.compilers.ast.BooleanLiteral;
-import edu.mit.compilers.ast.BreakStatement;
-import edu.mit.compilers.ast.CharLiteral;
-import edu.mit.compilers.ast.ContinueStatement;
-import edu.mit.compilers.ast.FieldDescriptor;
-import edu.mit.compilers.ast.ForLoop;
-import edu.mit.compilers.ast.IfStatement;
-import edu.mit.compilers.ast.IntLiteral;
-import edu.mit.compilers.ast.Location;
-import edu.mit.compilers.ast.Method;
-import edu.mit.compilers.ast.MethodCall;
-import edu.mit.compilers.ast.NativeExpression;
-import edu.mit.compilers.ast.NativeLiteral;
-import edu.mit.compilers.ast.Program;
-import edu.mit.compilers.ast.ReturnStatement;
-import edu.mit.compilers.ast.ScalarLocation;
-import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.ast.Statement;
-import edu.mit.compilers.ast.TernaryOperation;
-import edu.mit.compilers.ast.UnaryOperation;
-import edu.mit.compilers.ast.WhileLoop;
+import edu.mit.compilers.ast.*;
 import edu.mit.semantics.errors.SemanticError;
+import static edu.mit.semantics.NonPositiveArrayLengthSemanticCheck.isNonPositiveIntLiteral;
 
 public class TypesSemanticCheck implements SemanticCheck {
 
@@ -226,7 +201,11 @@ public class TypesSemanticCheck implements SemanticCheck {
         Optional<IntLiteral> maxRepetitions = whileLoop.getMaxRepetitions();
         if (maxRepetitions.isPresent()) {
             // maxRepetitions must be a positive integer (SR22).
-            // TODO(jasonpr): Tie in manny's positive-checking code.
+            Utils.check(isNonPositiveIntLiteral(maxRepetitions.get().getName()),
+                    errorAccumulator,
+                    "Invalid upper bound for while loop at %s: expected a positive integer, but got %s",
+                    maxRepetitions.get().getLocationDescriptor(), maxRepetitions.get().getName());
+            
             throw new RuntimeException("Not yet implemented!");
         }
 
