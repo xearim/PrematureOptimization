@@ -211,7 +211,7 @@ public class TypesSemanticCheck implements SemanticCheck {
     private Optional<BaseType> validMethodCallType(MethodCall methodCall, Scope scope,
             List<SemanticError> errorAccumulator) {
 
-        String methodName = methodCall.getName();
+        String methodName = methodCall.getMethodName();
         Optional<Method> calledMethod = lookupMethodWithName(methodName);
         boolean isMethod = calledMethod.isPresent();
 
