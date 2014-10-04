@@ -48,17 +48,6 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
                  */ 
                 String length = field.getLength().get().getName();
 
-                /*
-                 * Examples of invalid int literals for array indices:
-                 * "-3"
-                 * "0x8000
-                 * "0x00"
-                 * "000"
-                 */
-//                if (length.startsWith(NEGATIVE_START) ||
-//                        isNegativeHex(length) ||
-//                        length.matches(HEX_START + ZERO) ||
-//                        length.matches(ZERO)) {
                 if (isNonPositiveIntLiteral(length)) {
                     errors.add(new NonPositiveArrayLengthSemanticError(
                             field.getLocationDescriptor(), this.prog.getName(),
@@ -67,7 +56,7 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
             }
         }
     }
-    
+
     /**
      * Doesn't do boundary checking
      */
@@ -77,9 +66,8 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
                 i.matches(HEX_START + NEG_HEX_DIGIT + REPEATED) || // ie. 0xFEDCBA9876543210
                 i.matches(HEX_START+ZERO) || // ie. 0x000
                 i.matches(ZERO); // ie. 000
-                
     }
-    
+
     private void checkMethods(Iterable<Method> methods) {
         for (Method method : methods) {
             // Parameters
@@ -88,17 +76,17 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
             checkBlock(method.getBlock());
         }
     }
-    
+
     private void checkBlock(Block block) {
         // Local
         checkScope(block.getScope());
-        
+
         // Check statements for sublocal fields
         Iterable<Statement> statements = block.getStatements();
-        
+
         for (Statement statement : statements) {
             Iterable<Block> subBlocks = statement.getBlocks();
-            
+
             for (Block subBlock: subBlocks) {
                 // recurse on sub-blocks
                 checkBlock(subBlock);
