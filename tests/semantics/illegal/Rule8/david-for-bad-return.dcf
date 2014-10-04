@@ -1,0 +1,9 @@
+void foo ( int i, boolean b ) {
+  for( x = 0, 10 ){
+    return 4;
+  }
+  return;
+  // should not return value, even if unreachable;
+}
+void main ( ) {
+}

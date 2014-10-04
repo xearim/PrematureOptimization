@@ -24,6 +24,8 @@ public class SemanticChecker {
         errors.addAll(new NonPositiveArrayLengthSemanticCheck(this.prog).doCheck()); // 4
         errors.addAll(new SignatureMismatchSemanticCheck(this.prog).doCheck()); // 5
         
+        errors.addAll(new IncompatableArgumentsSemanticCheck(this.prog).doCheck()); // 7
+        
         errors.addAll(new BreakContinueSemanticCheck(this.prog).doCheck()); // 23
 
         return errors;

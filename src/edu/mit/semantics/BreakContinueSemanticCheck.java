@@ -42,6 +42,10 @@ public class BreakContinueSemanticCheck implements SemanticCheck{
         return errors;
 	}
 	
+	// Valid is a handoff boolean, it starts off false as a method begins not in a for/while loop
+	// then it is changed to true when recursing in a for/while loop, and just handed forward for
+	// and if block.  Thus if you get to a break or continue and valid != true, then you are not recursing
+	// inside a for/while and you should error
 	private void checkBlock(Block block, boolean valid) {
 
 		// recurse down blocks, making valid if in a while/for loop
@@ -82,8 +86,6 @@ public class BreakContinueSemanticCheck implements SemanticCheck{
                 for (Block subBlock: subBlocks){
                     checkBlock(subBlock, true);
                 }
-            } else {
-                // TODO(Manny) throw error
             }
         }
     }

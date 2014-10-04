@@ -1,0 +1,4 @@
+// Duplicate on the same line of declaration
+int x, x;
+void main ( ) {
+}

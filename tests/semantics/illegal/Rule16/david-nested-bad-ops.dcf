@@ -1,0 +1,6 @@
+int b;
+int c[10];
+int e;
+void main ( ) {
+  b = (3 + 5) * c;
+}

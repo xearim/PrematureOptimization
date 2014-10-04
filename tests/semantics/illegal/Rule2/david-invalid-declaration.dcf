@@ -1,0 +1,9 @@
+void foo ( ) {
+ int b;
+}
+
+void main ( ) {
+  int a;
+  a = b;
+  // identifier declared above, but should be out of scope
+}

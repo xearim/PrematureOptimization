@@ -1,0 +1,6 @@
+void main ( ) {
+  if( true ){
+    continue;
+  }
+  // continue must be in while or for loop
+}
