@@ -11,7 +11,6 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
     private final static String HEX_START = "0x";
     private final static String NEG_HEX_DIGIT = "[89ABCDEFabcdef]";
     private final static String HEX_DIGIT = "[0123456789ABCDEFabcdef]";
-    private final static String REPEATED = new String(new char[15]).replace("\0", HEX_DIGIT);
     private final static String NEGATIVE_DECIMAL_START = "-";
     private final static String ZERO = "(0)+";
     Program prog;
@@ -63,7 +62,7 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
     public static boolean isNonPositiveIntLiteral(String i) {
         // TODO(Manny) implement
         return i.startsWith(NEGATIVE_DECIMAL_START) ||  // ie. -7
-                i.matches(HEX_START + NEG_HEX_DIGIT + REPEATED) || // ie. 0xFEDCBA9876543210
+                i.matches(HEX_START + NEG_HEX_DIGIT + HEX_DIGIT+"{15}") || // ie. 0xFEDCBA9876543210
                 i.matches(HEX_START+ZERO) || // ie. 0x000
                 i.matches(ZERO); // ie. 000
     }
