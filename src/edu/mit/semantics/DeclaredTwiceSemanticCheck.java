@@ -42,13 +42,9 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
         HashMap<String, List<LocationDescriptor>> nameToLocations =
                 new HashMap<String, List<LocationDescriptor>>();
 
-        // Get names of methods
+        // Process names of methods, callouts, and globals
         processMethodNames(methods,nameToLocations);
-
-        // Get names of callouts
         processCallouts(callouts,nameToLocations);
-
-        // Get names of globals
         processScope(globals, nameToLocations);
 
         // Generate errors for each duplicate
@@ -76,7 +72,8 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
      */
     private void checkMethod(String methodName, Scope paramScope,
             Block block) {
-        HashMap<String, List<LocationDescriptor>> nameToLocations = new HashMap<String, List<LocationDescriptor>>();
+        HashMap<String, List<LocationDescriptor>> nameToLocations =
+                new HashMap<String, List<LocationDescriptor>>();
 
         // Get names and locations
         processScope(paramScope, nameToLocations);
@@ -115,7 +112,8 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
      */
     private void checkScope(LocationType type, Scope scope,
             String methodName){
-        HashMap<String, List<LocationDescriptor>> nameToLocations = new HashMap<String, List<LocationDescriptor>>();
+        HashMap<String, List<LocationDescriptor>> nameToLocations =
+                new HashMap<String, List<LocationDescriptor>>();
 
         // Get duplicates and record line numbers each field goes to
         processScope(scope, nameToLocations);
