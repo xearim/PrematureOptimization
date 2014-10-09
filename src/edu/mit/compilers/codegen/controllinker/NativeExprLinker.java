@@ -7,10 +7,9 @@ import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.NativeLiteral;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
-import edu.mit.compilers.codegen.ControlFlowNode;
 
 /** A ControlLinker that delegates to any NativeExpression's custom linker. */
-public class NativeExprLinker implements ControlLinker {
+public class NativeExprLinker implements GraphFactory {
 
     private final NativeExpression expr;
 
@@ -19,13 +18,13 @@ public class NativeExprLinker implements ControlLinker {
     }
 
     @Override
-    public ControlFlowNode linkTo(ControlFlowNode sink) {
-        return getDelegate().linkTo(sink);
+    public TerminaledGraph getGraph() {
+        return getDelegate().getGraph();
     }
 
-    private ControlLinker getDelegate() {
+    private GraphFactory getDelegate() {
         if (expr instanceof BinaryOperation) {
-            return new BinOpLinker((BinaryOperation) expr);
+            return new BinOpGraphFactory((BinaryOperation) expr);
         } else if (expr instanceof MethodCall) {
             // TODO(jasonpr): Implement.
             throw new RuntimeException("Not yet implemented.");
