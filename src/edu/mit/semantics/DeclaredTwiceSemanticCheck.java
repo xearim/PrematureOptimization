@@ -179,7 +179,7 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
      * Checks which names have been used multiple times in the global scope.
      * 
      * Helper function for globals, which do not have a methodName for the
-     * full generateDuplucateErrors function.
+     * full generateDuplicateErrors function.
      */
     private void generateDuplicateErrors(HashMap<String,
             List<LocationDescriptor>> nameToLocations, LocationType type) {
