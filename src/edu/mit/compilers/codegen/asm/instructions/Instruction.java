@@ -1,4 +1,4 @@
-package edu.mit.compilers.codegen.asm;
+package edu.mit.compilers.codegen.asm.instructions;
 
 // TODO(manny): Figure out if we need to separate this into "PseudoInstruction"
 // and "RealInstruction."
