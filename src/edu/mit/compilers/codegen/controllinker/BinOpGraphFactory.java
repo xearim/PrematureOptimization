@@ -61,8 +61,8 @@ public class BinOpGraphFactory implements GraphFactory {
                 .contains(operator));
 
         return TerminaledGraph.sequenceOf(
-                new NativeExprLinker(binOp.getLeftArgument()).getGraph(),
-                new NativeExprLinker(binOp.getRightArgument()).getGraph(),
+                new NativeExprGraphFactory(binOp.getLeftArgument()).getGraph(),
+                new NativeExprGraphFactory(binOp.getRightArgument()).getGraph(),
                 TerminaledGraph.ofInstructions(
                         // TODO(manny): Make this work!
                         //pop(R10),

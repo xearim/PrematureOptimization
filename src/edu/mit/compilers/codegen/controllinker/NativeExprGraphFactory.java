@@ -8,12 +8,12 @@ import edu.mit.compilers.ast.NativeLiteral;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
 
-/** A ControlLinker that delegates to any NativeExpression's custom linker. */
-public class NativeExprLinker implements GraphFactory {
+/** A GraphFactory that delegates to any NativeExpression's custom factory. */
+public class NativeExprGraphFactory implements GraphFactory {
 
     private final NativeExpression expr;
 
-    public NativeExprLinker(NativeExpression expr) {
+    public NativeExprGraphFactory(NativeExpression expr) {
         this.expr = expr;
     }
 

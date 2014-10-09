@@ -8,28 +8,33 @@ import com.google.common.collect.Lists;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 
+// TODO(jasonpr): Determine whether we need to specify this begin/end fact.
+// I'm not sure we're ever going to represent any graph that doesn't satisfy that condition.
+/** A control flow graph with a a beginning node and and end node. */
 public class TerminaledGraph {
-    private final Terminals terminals;
-    
-    public TerminaledGraph(Terminals terminals) {
-        this.terminals = terminals;
-    }
-    
+    private final SequentialControlFlowNode beginning;
+    private final SequentialControlFlowNode end;
+
     public TerminaledGraph(SequentialControlFlowNode beginning, SequentialControlFlowNode end) {
-        this(new Terminals(beginning, end));
+        this.beginning = beginning;
+        this.end = end;
     }
 
-    public Terminals getTerminals() {
-        return terminals;
+    public SequentialControlFlowNode getBeginning() {
+        return beginning;
+    }
+    
+    public SequentialControlFlowNode getEnd() {
+        return end;
     }
     
     public static TerminaledGraph sequenceOf(TerminaledGraph first, TerminaledGraph... rest) {
-        SequentialControlFlowNode beginning = first.getTerminals().getBeginning();
+        SequentialControlFlowNode beginning = first.getBeginning();
         
-        SequentialControlFlowNode end = first.getTerminals().getBeginning();
+        SequentialControlFlowNode end = first.getBeginning();
         for (TerminaledGraph graph : rest) {
-            end.setNext(graph.getTerminals().getBeginning());
-            end = graph.getTerminals().getEnd();
+            end.setNext(graph.getBeginning());
+            end = graph.getEnd();
         }
         
         return new TerminaledGraph(beginning, end);
