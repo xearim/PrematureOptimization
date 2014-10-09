@@ -28,15 +28,20 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
     public List<SemanticError> doCheck() {
         checkCalloutsAndGlobals(prog.getMethods(), prog.getCallouts(),
                 prog.getGlobals());
-        checkMethods(prog.getMethods());
+        checkMethods(prog.getMethods(), prog.getName());
 
         return this.errors;
     }
 
+    /**
+     * Given the methods, callouts and globals, compares the names of all three
+     * groups together and generates errors for duplicate names.
+     */
     private void checkCalloutsAndGlobals(NodeSequence<Method> methods,
             NodeSequence<Callout> callouts, Scope globals) {
         HashMap<String, List<LocationDescriptor>> nameToLocations = new HashMap<String, List<LocationDescriptor>>();
-        
+
+        // Get names of methods
         @SuppressWarnings("unchecked")
         Iterable<Method> methodItr = (Iterable<Method>) methods.getChildren();
 
@@ -47,7 +52,8 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
             }
             nameToLocations.get(name).add(method.getLocationDescriptor());
         }
-        
+
+        // Get names of callouts
         @SuppressWarnings("unchecked")
         Iterable<Callout> calloutItr = (Iterable<Callout>) callouts.getChildren();
 
@@ -59,7 +65,7 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
             nameToLocations.get(name).add(callout.getLocationDescriptor());
         }
 
-        // Add globals
+        // Get names of globals
         List<FieldDescriptor> globalItr = globals.getVariables();
         for (FieldDescriptor global : globalItr) {
             String name = global.getName();
@@ -80,11 +86,11 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
     }
 
     /**
-     * Methods check
-     *
-     * Checks each scope in each method
+     * Checks each scope in each method for variables with the same name.
+     * The parameters and immediate local fields are considered in the same
+     * scope.
      */
-    private void checkMethods(NodeSequence<Method> methods) {
+    private void checkMethods(NodeSequence<Method> methods, String programName) {
         /*
          * The cast is necessary, because we need to access elements that are
          * in specifically in Method.
@@ -95,12 +101,39 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
 
         // Iterate through each method
         for (Method method : methodItr) {
-            // Param scope
-            checkScope(LocationType.PARAM, this.prog.getName(),
-                    method.getParameters(), method.getName());
-            // Recurse on Local scope
-            checkBlock(method.getBlock(), method.getName());
+//            // Param scope
+//            checkScope(LocationType.PARAM, this.prog.getName(),
+//                    method.getParameters(), method.getName());
+//            // Recurse on Local scope
+//            checkBlock(method.getBlock(), method.getName());
+            checkMethod(method.getName(), method.getParameters(),
+                    method.getBlock(), programName);
+//            checKStatements(method.getName(), method.getBlock());
+        }
+    }
+    
+    private void checkMethod(String methodName, Scope paramScope,
+            Block block, String programName) {
+        HashMap<String, List<LocationDescriptor>> nameToLocations = new HashMap<String, List<LocationDescriptor>>();
+        
+        // Get names of parameters
+        
+        
+        // Get names of immediate
+        
+        // Generate errors for duplicates
+        generateDuplicateErrors(nameToLocations, LocationType.PARAM, programName, methodName);
 
+        
+        // Check sublocal fields
+        Iterable<Statement> statements = block.getStatements();
+
+        for (Statement statement : statements) {
+            Iterable<Block> subblocks = statement.getBlocks();
+
+            for (Block subblock : subblocks) {
+                checkBlock(subblock, methodName);
+            }
         }
     }
 
@@ -144,6 +177,27 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
         }
 
         // Generate errors for each duplicate
+//        for (String fieldName : nameToLocations.keySet()) {
+//            List<LocationDescriptor> locs = nameToLocations.get(fieldName);
+//            if (locs.size() > 1) {
+//                this.errors.add(new DeclaredTwiceSemanticError(type, locs,
+//                        programName, fieldName, methodName));
+//            }
+//        }
+        generateDuplicateErrors(nameToLocations, type, programName, methodName);
+    }
+    
+    /**
+     * Takes in a preprocessed hashmap of string to lists of location
+     * descriptors. Checks for which names have been used multiple times and
+     * generates errors for those names.
+     * 
+     * The rest of the parameters are necessary for the generation of the
+     * error message.
+     */
+    private void generateDuplicateErrors(HashMap<String,
+            List<LocationDescriptor>> nameToLocations, LocationType type,
+            String programName, String methodName) {
         for (String fieldName : nameToLocations.keySet()) {
             List<LocationDescriptor> locs = nameToLocations.get(fieldName);
             if (locs.size() > 1) {

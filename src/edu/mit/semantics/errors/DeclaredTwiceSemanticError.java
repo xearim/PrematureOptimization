@@ -11,8 +11,8 @@ import edu.mit.compilers.ast.LocationDescriptor;
  */
 public class DeclaredTwiceSemanticError implements SemanticError {
     private static final String ERRORNAME="DeclaredTwiceSemanticError",
-            GLOBALSCOPE = "global", PARAMSCOPE = "parameter",
-            LOCALSCOPE = "local";
+            GLOBALSCOPE = "global", PARAMSCOPE = "parameter and immediate local scope",
+            LOCALSCOPE = "sublocal";
     private final LocationType type;
     private final List<LocationDescriptor> locations;
     private final String name,methodName,programName;
