@@ -25,8 +25,7 @@ public class NativeExprLinker implements ControlLinker {
 
     private ControlLinker getDelegate() {
         if (expr instanceof BinaryOperation) {
-            // TODO(jasonpr): Implement.
-            throw new RuntimeException("Not yet implemented.");
+            return new BinOpLinker((BinaryOperation) expr);
         } else if (expr instanceof MethodCall) {
             // TODO(jasonpr): Implement.
             throw new RuntimeException("Not yet implemented.");
