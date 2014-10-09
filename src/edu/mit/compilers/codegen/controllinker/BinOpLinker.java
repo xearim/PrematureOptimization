@@ -18,7 +18,7 @@ import edu.mit.compilers.codegen.ControlFlowNode;
 public class BinOpLinker implements ControlLinker {
 
     private final BinaryOperation binOp;
-    
+
     public BinOpLinker(BinaryOperation binOp) {
         this.binOp = binOp;
     }
@@ -46,7 +46,7 @@ public class BinOpLinker implements ControlLinker {
                 throw new AssertionError("Unexpected operator: " + binOp.getOperator());
         }
     }
-    
+
     private ControlFlowNode arithmeticLinker(ControlFlowNode sink) {
         BinaryOperator operator = binOp.getOperator();
         checkState(ImmutableList.of(PLUS, MINUS, TIMES, DIVIDED_BY, MODULO)
@@ -56,7 +56,7 @@ public class BinOpLinker implements ControlLinker {
         .append(new NativeExprLinker(binOp.getLeftArgument()))
         .append(new NativeExprLinker(binOp.getRightArgument()))
         .append(InstructionControlLinker.of(
-                // TODO(jasonpr): Make this work! 
+                // TODO(jasonpr): Make this work!
                 //pop(R10),
                 //pop(R11),
                 //mathOp(binOp.getOperator(), R10, R11),
@@ -64,20 +64,20 @@ public class BinOpLinker implements ControlLinker {
                 ))
         .linkTo(sink);
     }
-    
+
     private ControlFlowNode logicLinker(ControlFlowNode sink) {
         BinaryOperator operator = binOp.getOperator();
         checkState(ImmutableList.of(AND, OR).contains(operator));
-        
+
         // TODO(jasonpr): Implement.
         throw new RuntimeException("Not yet implemented.");
     }
-    
+
     private ControlFlowNode comparisonLinker(ControlFlowNode sink) {
         BinaryOperator operator = binOp.getOperator();
         checkState(ImmutableList.of(DOUBLE_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUAL,
                 LESS_THAN, LESS_THAN_OR_EQUAL, NOT_EQUALS).contains(operator));
-        
+
         // TODO(jasonpr): Implement.
         throw new RuntimeException("Not yet implemented.");
     }

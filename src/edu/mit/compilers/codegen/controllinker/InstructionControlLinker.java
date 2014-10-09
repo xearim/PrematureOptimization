@@ -13,7 +13,7 @@ import edu.mit.compilers.codegen.asm.instructions.Instruction;
 /** An immutable plan to sequentially execute some instructions. */
 public class InstructionControlLinker implements ControlLinker{
     private final ImmutableList<Instruction> instructions;
-    
+
     private InstructionControlLinker(List<Instruction> instructions) {
         this.instructions = ImmutableList.copyOf(instructions);
     }

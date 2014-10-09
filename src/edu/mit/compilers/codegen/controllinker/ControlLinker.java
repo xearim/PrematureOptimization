@@ -12,7 +12,7 @@ import edu.mit.compilers.codegen.ControlFlowNode;
  * gets linked up, and then actually make that graph all at once, at the end.
  *
  * <p>This allows to keep the benefits of an immutable Control Flow Graph
- * representation, but frees us from the awkwardness of "building it up backwards".  
+ * representation, but frees us from the awkwardness of "building it up backwards".
  */
 public interface ControlLinker {
 

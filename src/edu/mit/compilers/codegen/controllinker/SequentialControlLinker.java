@@ -10,7 +10,7 @@ import edu.mit.compilers.codegen.ControlFlowNode;
 /** A plan to sequentially execute some sequences of instructions. */
 public class SequentialControlLinker implements ControlLinker{
     private final List<ControlLinker> steps;
-    
+
     public SequentialControlLinker() {
         this.steps = new ArrayList<ControlLinker>();
     }
@@ -19,7 +19,7 @@ public class SequentialControlLinker implements ControlLinker{
     public SequentialControlLinker append(ControlLinker step) {
         steps.add(step);
         return this;
-    }   
+    }
 
     @Override
     public ControlFlowNode linkTo(ControlFlowNode sink) {
