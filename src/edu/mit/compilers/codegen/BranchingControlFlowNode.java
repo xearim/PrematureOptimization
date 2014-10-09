@@ -45,6 +45,4 @@ public class BranchingControlFlowNode implements ControlFlowNode {
     public List<ControlFlowNode> getSinks() {
         return ImmutableList.of(trueBranch,falseBranch);
     }
-
-    // TODO(manny): getters and getSinks
 }
