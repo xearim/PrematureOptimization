@@ -26,7 +26,7 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
     }
 
     public List<SemanticError> doCheck() {
-        checkCalloutsAndGlobals(, prog.getMethods(),
+        checkCalloutsAndGlobals(prog.getMethods(),
                 prog.getCallouts(), prog.getGlobals());
         checkMethods(prog.getMethods());
 
