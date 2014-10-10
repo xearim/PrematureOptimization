@@ -11,11 +11,8 @@ import edu.mit.compilers.codegen.asm.instructions.Instruction;
 public class SequentialControlFlowNode implements ControlFlowNode {
 
     private final Optional<Instruction> instruction;
-    private final Optional<ControlFlowNode> next;
+    private Optional<ControlFlowNode> next;
 
-    // TODO(manny): Figure out if it's feasible to pass "next" as a parameter.
-    // It would force us to build up sequences of nodes "backwards", which may
-    // or may not be ugly.
     private SequentialControlFlowNode(Optional<Instruction> instruction,
             Optional<ControlFlowNode> next) {
         this.instruction = instruction;
@@ -60,6 +57,15 @@ public class SequentialControlFlowNode implements ControlFlowNode {
     public boolean hasInstruction() {
         return instruction.isPresent();
     }
+    
+    public void setNext(ControlFlowNode next) {
+        this.next = Optional.of(next);
+    }
+    
+    public void clearNext() {
+        this.next = Optional.absent();
+    }
+    
 
     public Instruction getInstruction() {
         return instruction.get();
