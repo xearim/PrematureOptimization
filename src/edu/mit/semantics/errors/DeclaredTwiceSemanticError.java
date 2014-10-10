@@ -10,9 +10,7 @@ import edu.mit.compilers.ast.LocationDescriptor;
  * This includes 'callout' identifiers, which exist in the global scope.
  */
 public class DeclaredTwiceSemanticError implements SemanticError {
-    private static final String ERRORNAME="DeclaredTwiceSemanticError",
-            GLOBALSCOPE = "global", PARAMSCOPE = "parameter and immediate local scope",
-            LOCALSCOPE = "sublocal";
+    private static final String ERRORNAME="DeclaredTwiceSemanticError";
     private final LocationType type;
     private final List<LocationDescriptor> locations;
     private final String name,methodName,programName;
@@ -41,20 +39,16 @@ public class DeclaredTwiceSemanticError implements SemanticError {
         switch (this.type){
             case GLOBAL:
                 returnString = String.format("%s: %s %s %s variable \"%s\" used multiple times.",
-                        ERRORNAME, this.programName, getLocationsString(), GLOBALSCOPE, this.name);
+                        ERRORNAME, this.programName, getLocationsString(), type, this.name);
                 break;
             case LOCAL:
-                returnString = String.format("%s: %s %s %s variable \"%s\" used multiple times in method \"%s\".",
-                        ERRORNAME, this.programName, getLocationsString(), LOCALSCOPE, this.name, this.methodName);
-                break;
             case PARAM:
                 returnString = String.format("%s: %s %s %s variable \"%s\" used multiple times in method \"%s\".",
-                        ERRORNAME, this.programName, getLocationsString(), PARAMSCOPE, this.name, this.methodName);
+                        ERRORNAME, this.programName, getLocationsString(), type, this.name, this.methodName);
                 break;
-            default: // Should never hit this, might want to through exception instead
-                // TODO(Manny) throw error
-                returnString = "";
-                break;
+            default: // Should never hit this
+                // TODO(Manny): get better error message
+                throw new RuntimeException("DeclaredTwiceSemanticError: Invalid LocationType");
         }
         return returnString;
     }

@@ -3,6 +3,7 @@ package edu.mit.semantics;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.mit.compilers.ast.*;
 import edu.mit.semantics.errors.DeclaredTwiceSemanticError;
@@ -14,8 +15,7 @@ import edu.mit.semantics.errors.SemanticError;
  *
  * 1) No identifier is declared twice in the same scope.
  * This includes 'callout' identifiers, which exist in the global scope.
- * 
- * TODO(Manny): refactor for FieldDescriptors now having LocationDescriptors
+ * Parameters and immediate local variables are included in the same scope.
  */
 public class DeclaredTwiceSemanticCheck implements SemanticCheck {
     private List<SemanticError> errors = new ArrayList<SemanticError>();
@@ -39,15 +39,21 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
      */
     private void checkCalloutsAndGlobals(NodeSequence<Method> methods,
             NodeSequence<Callout> callouts, Scope globals) {
-        HashMap<String, List<LocationDescriptor>> nameToLocations =
+        Map<String, List<LocationDescriptor>> nameToLocations =
                 new HashMap<String, List<LocationDescriptor>>();
 
-        // Process names of methods, callouts, and globals
+        /*
+         * Map names to lists of location descriptors. Append each location
+         * descriptor to the list mapped to that name.
+         */ 
         processMethodNames(methods,nameToLocations);
         processCallouts(callouts,nameToLocations);
         processScope(globals, nameToLocations);
 
-        // Generate errors for each duplicate
+        /*
+         * Generate errors if for each name that maps to a list with multiple
+         * location descriptors
+         */
         generateDuplicateErrors(nameToLocations, LocationType.GLOBAL);
     }
 
@@ -57,10 +63,8 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
      * scope.
      */
     private void checkMethods(NodeSequence<Method> methods) {
-        Iterable<Method> methodItr = (Iterable<Method>) methods.getChildren();
-
         // Iterate through each method
-        for (Method method : methodItr) {
+        for (Method method : methods.getChildren()) {
             checkMethod(method.getName(), method.getParameters(),
                     method.getBlock());
         }
@@ -72,7 +76,7 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
      */
     private void checkMethod(String methodName, Scope paramScope,
             Block block) {
-        HashMap<String, List<LocationDescriptor>> nameToLocations =
+        Map<String, List<LocationDescriptor>> nameToLocations =
                 new HashMap<String, List<LocationDescriptor>>();
 
         // Get names and locations
@@ -92,15 +96,13 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
      * Does not check the direct scope of the block.
      */
     private void checkBlock(Block block, String methodName) {
-        // Go through each Statement in a Block and find subblocks
-        Iterable<Statement> statements = block.getStatements();
-        for (Statement statement : statements) {
-            // For each subblock, perform the semantic check and recurse
-            Iterable<Block> subblocks = statement.getBlocks();
-
-            for (Block subblock : subblocks) {
-                checkScope(LocationType.LOCAL,
-                        subblock.getScope(),methodName);
+        /*
+         * Go through each Statement in a Block and find subblocks. For each
+         * subblock, perform the semantic check and recurse.
+         */
+        for (Statement statement : block.getStatements()) {
+            for (Block subblock : statement.getBlocks()) {
+                checkScope(LocationType.LOCAL,subblock.getScope(),methodName);
                 checkBlock(subblock, methodName);
             }
         }
@@ -112,10 +114,13 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
      */
     private void checkScope(LocationType type, Scope scope,
             String methodName){
-        HashMap<String, List<LocationDescriptor>> nameToLocations =
+        Map<String, List<LocationDescriptor>> nameToLocations =
                 new HashMap<String, List<LocationDescriptor>>();
 
-        // Get duplicates and record line numbers each field goes to
+        /*
+         * Map names to lists of location descriptors. Append each location
+         * descriptor to the list mapped to that name.
+         */ 
         processScope(scope, nameToLocations);
 
         // Generate errors for each duplicate
@@ -123,65 +128,69 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
     }
 
     /**
-     * Takes all the method names and their locations and processes them into
-     * the hashmap.
+     * For each method name, appends the LocationDescriptor of that method to a
+     * list that has been hashed to the method name.
+     *
+     * @param nameToLocations accumulates the LocationDescriptors for each
+     * name
      */
     private void processMethodNames(NodeSequence<Method> methods,
-            HashMap<String, List<LocationDescriptor>> n2locs) {
-        Iterable<Method> methodItr = (Iterable<Method>) methods.getChildren();
-
-        for (Method method : methodItr) {
+            Map<String, List<LocationDescriptor>> nameToLocations) {
+        for (Method method : methods.getChildren()) {
             String name = method.getName();
-            if (!n2locs.containsKey(name)) {
-                n2locs.put(name, new ArrayList<LocationDescriptor>());
+            if (!nameToLocations.containsKey(name)) {
+                nameToLocations.put(name, new ArrayList<LocationDescriptor>());
             }
-            n2locs.get(name).add(method.getLocationDescriptor());
+            nameToLocations.get(name).add(method.getLocationDescriptor());
         }
     }
 
     /**
-     * Takes all the callout names and their locations and processes them into
-     * the hashmap.
+     * For each callout name, appends the LocationDescriptor of that callout to
+     * a list that has been hashed to the callout name.
+     *
+     * @param nameToLocations accumulates the LocationDescriptors for each
+     * name.
      */
     private void processCallouts(NodeSequence<Callout> callouts,
-            HashMap<String, List<LocationDescriptor>> n2locs) {
-        Iterable<Callout> calloutItr = (Iterable<Callout>) callouts.getChildren();
+            Map<String, List<LocationDescriptor>> nameToLocations) {
 
-        for (Callout callout : calloutItr) {
+        for (Callout callout : callouts.getChildren()) {
             String name = callout.getName();
-            if (!n2locs.containsKey(name)) {
-                n2locs.put(name, new ArrayList<LocationDescriptor>());
+            if (!nameToLocations.containsKey(name)) {
+                nameToLocations.put(name, new ArrayList<LocationDescriptor>());
             }
-            n2locs.get(name).add(callout.getLocationDescriptor());
+            nameToLocations.get(name).add(callout.getLocationDescriptor());
         }
     }
 
     /**
-     * Takes all the names of a scope and their locations and processes them into
-     * the hashmap.
+     * For each field name in the scope, appends the LocationDescriptor of
+     * that variable to a list that has been hashed to the field name.
+     *
+     * @param nameToLocations accumulates the LocationDescriptors for each
+     * name.
      */
-    private void processScope(Scope scope, 
-            HashMap<String, List<LocationDescriptor>> n2locs){
-        List<FieldDescriptor> fields = scope.getVariables();
-
+    private void processScope(Scope scope,
+            Map<String, List<LocationDescriptor>> nameToLocations){
         // Add the locations of each name to the hashmap
-        for (FieldDescriptor field : fields) {
+        for (FieldDescriptor field : scope.getVariables()) {
             String fieldName = field.getName();
 
-            if (!n2locs.containsKey(fieldName)) {
-                n2locs.put(fieldName, new ArrayList<LocationDescriptor>());
+            if (!nameToLocations.containsKey(fieldName)) {
+                nameToLocations.put(fieldName, new ArrayList<LocationDescriptor>());
             }
-            n2locs.get(fieldName).add(field.getLocationDescriptor());
+            nameToLocations.get(fieldName).add(field.getLocationDescriptor());
         }
     }
 
     /**
      * Checks which names have been used multiple times in the global scope.
-     * 
+     *
      * Helper function for globals, which do not have a methodName for the
      * full generateDuplicateErrors function.
      */
-    private void generateDuplicateErrors(HashMap<String,
+    private void generateDuplicateErrors(Map<String,
             List<LocationDescriptor>> nameToLocations, LocationType type) {
         generateDuplicateErrors(nameToLocations,type, null);
     }
@@ -192,8 +201,13 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
      * 
      * The rest of the parameters are necessary for the generation of the
      * error message.
+     *
+     * @param nameToLocations gets duplicates by checking this parameter.
+     * @param type specifies if global, parameter, or local
+     * @param methodName name of the method that these names were extracted
+     * from. It expects a null if in the global scope
      */
-    private void generateDuplicateErrors(HashMap<String,
+    private void generateDuplicateErrors(Map<String,
             List<LocationDescriptor>> nameToLocations, LocationType type,
             String methodName) {
         for (String fieldName : nameToLocations.keySet()) {
