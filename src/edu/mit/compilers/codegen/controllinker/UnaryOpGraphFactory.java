@@ -1,5 +1,8 @@
 package edu.mit.compilers.codegen.controllinker;
 
+import static edu.mit.compilers.codegen.asm.Register.R10;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.negate;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.IntLiteral;
@@ -42,8 +45,12 @@ public class UnaryOpGraphFactory implements GraphFactory {
     }
 
     private TerminaledGraph calculateNegativeOperation() {
-        // TODO(jasonpr): Implement
-        throw new RuntimeException("Not yet implemented.");
+        return TerminaledGraph.sequenceOf(
+                new NativeExprGraphFactory(operation.getArgument()).getGraph(),
+                TerminaledGraph.ofInstructions(
+                        pop(R10),
+                        negate(R10),
+                        push(R10)));
     }
 
     private TerminaledGraph calculateNotOperation() {

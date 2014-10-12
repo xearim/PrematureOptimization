@@ -46,4 +46,9 @@ public final class Instructions {
     public static Instruction modulo(Register operand, Register target) {
         return new PlaceHolder("MODULO " + operand + " " + target);
     }
+
+    /** Do target = -target. */
+    public static Instruction negate(Register target) {
+        return new PlaceHolder("NEG " + target);
+    }
 }
