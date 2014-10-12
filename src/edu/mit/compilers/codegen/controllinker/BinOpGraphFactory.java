@@ -14,11 +14,18 @@ import static edu.mit.compilers.ast.BinaryOperator.NOT_EQUALS;
 import static edu.mit.compilers.ast.BinaryOperator.OR;
 import static edu.mit.compilers.ast.BinaryOperator.PLUS;
 import static edu.mit.compilers.ast.BinaryOperator.TIMES;
+import static edu.mit.compilers.codegen.asm.Register.R10;
+import static edu.mit.compilers.codegen.asm.Register.R11;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
 
 import com.google.common.collect.ImmutableList;
 
 import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.BinaryOperator;
+import edu.mit.compilers.codegen.asm.Register;
+import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.codegen.asm.instructions.Instructions;
 
 public class BinOpGraphFactory implements GraphFactory {
 
@@ -64,12 +71,28 @@ public class BinOpGraphFactory implements GraphFactory {
                 new NativeExprGraphFactory(binOp.getLeftArgument()).getGraph(),
                 new NativeExprGraphFactory(binOp.getRightArgument()).getGraph(),
                 TerminaledGraph.ofInstructions(
-                        // TODO(manny): Make this work!
-                        //pop(R10),
-                        //pop(R11),
-                        //mathOp(binOp.getOperator(), R10, R11),
-                        //push(R11)
+                        pop(R10),
+                        pop(R11),
+                        arithmeticOperator(binOp.getOperator(), R10, R11),
+                        push(R11)
                         ));
+    }
+
+    private Instruction arithmeticOperator(BinaryOperator operator, Register operand, Register target) {
+        switch (operator) {
+            case DIVIDED_BY:
+                return Instructions.divide(operand, target);
+            case MINUS:
+                return Instructions.subtract(operand, target);
+            case MODULO:
+                return Instructions.modulo(operand, target);
+            case PLUS:
+                return Instructions.add(operand, target);
+            case TIMES:
+                return Instructions.multiply(operand, target);
+            default:
+                throw new AssertionError("Unexpected arithmetic operator: " + operator);
+        }
     }
 
     private TerminaledGraph calculateLogicOperation() {
