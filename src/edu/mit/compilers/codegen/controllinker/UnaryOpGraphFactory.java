@@ -28,9 +28,9 @@ public class UnaryOpGraphFactory implements GraphFactory {
             case ARRAY_LENGTH:
                 return calculateLengthOperation(scope);
             case NEGATIVE:
-                return calculateNegativeOperation();
+                return calculateNegativeOperation(scope);
             case NOT:
-                return calculateNotOperation();
+                return calculateNotOperation(scope);
             default:
                 throw new AssertionError("Unexpected unary operator " + operation.getOperator());
         }
@@ -45,20 +45,20 @@ public class UnaryOpGraphFactory implements GraphFactory {
         return TerminaledGraph.ofInstructions(push(new Literal(length)));
     }
 
-    private TerminaledGraph calculateNegativeOperation() {
+    private TerminaledGraph calculateNegativeOperation(Scope scope) {
         return TerminaledGraph.sequenceOf(
-                new NativeExprGraphFactory(operation.getArgument()).getGraph(),
+                new NativeExprGraphFactory(operation.getArgument(), scope).getGraph(),
                 TerminaledGraph.ofInstructions(
                         pop(R10),
                         negate(R10),
                         push(R10)));
     }
 
-    private TerminaledGraph calculateNotOperation() {
+    private TerminaledGraph calculateNotOperation(Scope scope) {
         // We represent true as 0x1 and false as 0x0. So, boolean NOT is just
         // x = -x + 1.
         return TerminaledGraph.sequenceOf(
-                new NativeExprGraphFactory(operation.getArgument()).getGraph(),
+                new NativeExprGraphFactory(operation.getArgument(), scope).getGraph(),
                 TerminaledGraph.ofInstructions(
                         pop(R10),
                         negate(R10),

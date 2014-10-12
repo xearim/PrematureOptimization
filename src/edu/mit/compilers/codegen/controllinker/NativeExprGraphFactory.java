@@ -5,6 +5,7 @@ import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.NativeLiteral;
+import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
 
@@ -12,9 +13,11 @@ import edu.mit.compilers.ast.UnaryOperation;
 public class NativeExprGraphFactory implements GraphFactory {
 
     private final NativeExpression expr;
+    private final Scope scope;
 
-    public NativeExprGraphFactory(NativeExpression expr) {
+    public NativeExprGraphFactory(NativeExpression expr, Scope scope) {
         this.expr = expr;
+        this.scope = scope;
     }
 
     @Override
@@ -24,7 +27,7 @@ public class NativeExprGraphFactory implements GraphFactory {
 
     private GraphFactory getDelegate() {
         if (expr instanceof BinaryOperation) {
-            return new BinOpGraphFactory((BinaryOperation) expr);
+            return new BinOpGraphFactory((BinaryOperation) expr, scope);
         } else if (expr instanceof MethodCall) {
             // TODO(jasonpr): Implement.
             throw new RuntimeException("Not yet implemented.");
@@ -32,8 +35,7 @@ public class NativeExprGraphFactory implements GraphFactory {
             // TODO(jasonpr): Implement.
             throw new RuntimeException("Not yet implemented.");
         } else if (expr instanceof UnaryOperation) {
-            // TODO(jasonpr): Implement.
-            throw new RuntimeException("Not yet implemented.");
+            return new UnaryOpGraphFactory((UnaryOperation) expr, scope);
         } else if (expr instanceof Location) {
             // TODO(jasonpr): Implement.
             throw new RuntimeException("Not yet implemented.");

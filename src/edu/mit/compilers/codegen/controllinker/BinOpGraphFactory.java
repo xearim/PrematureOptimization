@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 
 import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.BinaryOperator;
+import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.asm.instructions.Instructions;
@@ -30,11 +31,12 @@ import edu.mit.compilers.codegen.asm.instructions.Instructions;
 public class BinOpGraphFactory implements GraphFactory {
 
     private final BinaryOperation binOp;
-
+    private final Scope scope;
     private final TerminaledGraph graph;
     
-    public BinOpGraphFactory(BinaryOperation binOp) {
+    public BinOpGraphFactory(BinaryOperation binOp, Scope scope) {
         this.binOp = binOp;
+        this.scope = scope;
         this.graph = calculateOperation();
     }
     
@@ -68,8 +70,8 @@ public class BinOpGraphFactory implements GraphFactory {
                 .contains(operator));
 
         return TerminaledGraph.sequenceOf(
-                new NativeExprGraphFactory(binOp.getLeftArgument()).getGraph(),
-                new NativeExprGraphFactory(binOp.getRightArgument()).getGraph(),
+                new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
+                new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
                 TerminaledGraph.ofInstructions(
                         pop(R10),
                         pop(R11),
