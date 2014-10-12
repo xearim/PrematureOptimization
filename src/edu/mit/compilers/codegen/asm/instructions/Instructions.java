@@ -51,4 +51,9 @@ public final class Instructions {
     public static Instruction negate(Register target) {
         return new PlaceHolder("NEG " + target);
     }
+
+    /** Do target += 1. */
+    public static Instruction increment(Register target) {
+        return new PlaceHolder("INC " + target);
+    }
 }
