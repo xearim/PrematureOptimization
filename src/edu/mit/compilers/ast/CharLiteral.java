@@ -27,6 +27,11 @@ public class CharLiteral implements NativeLiteral {
         return locationDescriptor;
     }
 
+    @Override
+    public long get64BitValue() {
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented.");
+    }
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }
