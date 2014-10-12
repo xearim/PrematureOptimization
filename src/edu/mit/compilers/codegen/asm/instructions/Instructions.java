@@ -29,17 +29,17 @@ public final class Instructions {
 
     /** Do target -= operand. */
     public static Instruction subtract(Register operand, Register target) {
-        return new PlaceHolder("SUB " + operand + " " + target);
+        return new Subtract(operand, target);
     }
 
     /** Do target *= operand. */
     public static Instruction multiply(Register operand, Register target) {
-        return new PlaceHolder("MUL " + operand + " " + target);
+        return new SignedMultiply(operand, target);
     }
 
     /** Do target /= operand. */
     public static Instruction divide(Register operand, Register target) {
-        return new PlaceHolder("DIVIDE " + operand + " " + target);
+        return new SignedDivide(operand, target);
     }
 
     /** Do target %= operand. */
