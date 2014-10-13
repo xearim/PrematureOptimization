@@ -1,5 +1,9 @@
 package edu.mit.compilers.codegen.controllinker;
 
+import static edu.mit.compilers.codegen.asm.Register.R10;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.increment;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.negate;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.IntLiteral;
@@ -24,9 +28,9 @@ public class UnaryOpGraphFactory implements GraphFactory {
             case ARRAY_LENGTH:
                 return calculateLengthOperation(scope);
             case NEGATIVE:
-                return calculateNegativeOperation();
+                return calculateNegativeOperation(scope);
             case NOT:
-                return calculateNotOperation();
+                return calculateNotOperation(scope);
             default:
                 throw new AssertionError("Unexpected unary operator " + operation.getOperator());
         }
@@ -41,14 +45,25 @@ public class UnaryOpGraphFactory implements GraphFactory {
         return TerminaledGraph.ofInstructions(push(new Literal(length)));
     }
 
-    private TerminaledGraph calculateNegativeOperation() {
-        // TODO(jasonpr): Implement
-        throw new RuntimeException("Not yet implemented.");
+    private TerminaledGraph calculateNegativeOperation(Scope scope) {
+        return TerminaledGraph.sequenceOf(
+                new NativeExprGraphFactory(operation.getArgument(), scope).getGraph(),
+                TerminaledGraph.ofInstructions(
+                        pop(R10),
+                        negate(R10),
+                        push(R10)));
     }
 
-    private TerminaledGraph calculateNotOperation() {
-        // TODO(jasonpr): Implement
-        throw new RuntimeException("Not yet implemented.");
+    private TerminaledGraph calculateNotOperation(Scope scope) {
+        // We represent true as 0x1 and false as 0x0. So, boolean NOT is just
+        // x = -x + 1.
+        return TerminaledGraph.sequenceOf(
+                new NativeExprGraphFactory(operation.getArgument(), scope).getGraph(),
+                TerminaledGraph.ofInstructions(
+                        pop(R10),
+                        negate(R10),
+                        increment(R10),
+                        push(R10)));
     }
 
     @Override
