@@ -12,12 +12,13 @@ public class Register implements Value {
     public static final Register R10 = new Register(RegisterId.R10);
     public static final Register R11 = new Register(RegisterId.R11);
     public static final Register RSP = new Register(RegisterId.RSP);
+    public static final Register RBP = new Register(RegisterId.RBP);
 
     private final RegisterId id;
 
     private static enum RegisterId {
         // TODO(manny): Add remaining registers.
-        RAX, RBX, RCX, RDX, RDI, RSI, R8, R9, R10, R11, RSP;
+        RAX, RBX, RCX, RDX, RDI, RSI, R8, R9, R10, R11, RSP, RBP;
     }
 
     // Private constructor: The only way to get a reference to a Register
