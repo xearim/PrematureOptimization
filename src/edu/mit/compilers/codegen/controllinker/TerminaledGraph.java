@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+import edu.mit.compilers.codegen.ControlFlowNode;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 
@@ -12,15 +13,15 @@ import edu.mit.compilers.codegen.asm.instructions.Instruction;
 // I'm not sure we're ever going to represent any graph that doesn't satisfy that condition.
 /** A control flow graph with a a beginning node and and end node. */
 public class TerminaledGraph {
-    private final SequentialControlFlowNode beginning;
+    private final ControlFlowNode beginning;
     private final SequentialControlFlowNode end;
 
-    public TerminaledGraph(SequentialControlFlowNode beginning, SequentialControlFlowNode end) {
+    public TerminaledGraph(ControlFlowNode beginning, SequentialControlFlowNode end) {
         this.beginning = beginning;
         this.end = end;
     }
 
-    public SequentialControlFlowNode getBeginning() {
+    public ControlFlowNode getBeginning() {
         return beginning;
     }
     
@@ -29,9 +30,9 @@ public class TerminaledGraph {
     }
     
     public static TerminaledGraph sequenceOf(TerminaledGraph first, TerminaledGraph... rest) {
-        SequentialControlFlowNode beginning = first.getBeginning();
-        
-        SequentialControlFlowNode end = first.getBeginning();
+        ControlFlowNode beginning = first.getBeginning();
+        SequentialControlFlowNode end = first.getEnd();
+
         for (TerminaledGraph graph : rest) {
             end.setNext(graph.getBeginning());
             end = graph.getEnd();
