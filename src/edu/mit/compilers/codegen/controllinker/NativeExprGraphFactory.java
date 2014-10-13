@@ -37,8 +37,7 @@ public class NativeExprGraphFactory implements GraphFactory {
         } else if (expr instanceof UnaryOperation) {
             return new UnaryOpGraphFactory((UnaryOperation) expr, scope);
         } else if (expr instanceof Location) {
-            // TODO(jasonpr): Implement.
-            throw new RuntimeException("Not yet implemented.");
+            return new VariableLoadGraphFactory((Location) expr, scope);
         } else if (expr instanceof NativeLiteral) {
             // TODO(jasonpr): Implement.
             throw new RuntimeException("Not yet implemented.");
