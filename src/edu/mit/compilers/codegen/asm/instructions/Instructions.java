@@ -69,4 +69,10 @@ public final class Instructions {
     public static Instruction moveVariable(VariableReference reference, Register target) {
         return new PlaceHolder("MOV " + reference + " " + target);
     }
+
+    /** Does `cmp RHS, LHS` (AT&T syntax). Yes, RHS and LHS look backwards in AT&T syntax! */
+    public static Instruction cmp(Value lhs, Value rhs) {
+        return new PlaceHolder("CMP " + rhs + ", " + lhs);
+    }
+
 }
