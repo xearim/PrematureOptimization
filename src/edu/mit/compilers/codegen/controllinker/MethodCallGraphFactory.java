@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.MethodCall;
-import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
 import edu.mit.compilers.codegen.asm.Literal;
@@ -57,11 +56,8 @@ public class MethodCallGraphFactory implements GraphFactory {
         // Setup args for call.
         int argNumber = args.size() - 1;
         while (argNumber >= 0) {
-            // TODO(jasonpr): Allow handling of GeneralExpressions.
-            // Currently, this will just crash if we try to pass a string!
             TerminaledGraph argEvaluator =
-                    new NativeExprGraphFactory((NativeExpression) args.get(argNumber), scope)
-                            .getGraph();
+                    new GeneralExprGraphFactory(args.get(argNumber), scope).getGraph();
 
             TerminaledGraph argSetup;
             if (argNumber >= ARG_REGISTERS.size()) {
