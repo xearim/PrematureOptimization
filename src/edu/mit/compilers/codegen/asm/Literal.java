@@ -1,15 +1,16 @@
 package edu.mit.compilers.codegen.asm;
 
-// TODO(jasonpr): Figure out if we want to separate int and boolean. 
-public class Literal implements Value {
-    private final long value;
+import edu.mit.compilers.ast.NativeLiteral;
 
-    public Literal(long value) {
+public class Literal implements Value {
+    private final NativeLiteral value;
+
+    public Literal(NativeLiteral value) {
         this.value = value;
     }
 
     public long getValue() {
-        return value;
+        return value.get64BitValue();
     }
 
     @Override
