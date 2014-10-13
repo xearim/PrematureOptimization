@@ -19,7 +19,9 @@ import static edu.mit.compilers.codegen.asm.Register.R11;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
 
-import com.google.common.collect.ImmutableList;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.BinaryOperator;
@@ -29,6 +31,13 @@ import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.asm.instructions.Instructions;
 
 public class BinOpGraphFactory implements GraphFactory {
+
+    private static final Set<BinaryOperator> ARITHMETIC_OPS =
+            ImmutableSet.of(PLUS, MINUS, TIMES, DIVIDED_BY, MODULO);
+    private static final Set<BinaryOperator> LOGIC_OPS = ImmutableSet.of(AND, OR);
+    private static final Set<BinaryOperator> COMPARISON_OPS =
+            ImmutableSet.of(DOUBLE_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUAL,
+                    LESS_THAN, LESS_THAN_OR_EQUAL, NOT_EQUALS);
 
     private final BinaryOperation binOp;
     private final Scope scope;
@@ -66,8 +75,7 @@ public class BinOpGraphFactory implements GraphFactory {
  
     private TerminaledGraph calculateArithmeticOperation() {
         BinaryOperator operator = binOp.getOperator();
-        checkState(ImmutableList.of(PLUS, MINUS, TIMES, DIVIDED_BY, MODULO)
-                .contains(operator));
+        checkState(ARITHMETIC_OPS.contains(operator));
 
         return TerminaledGraph.sequenceOf(
                 new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
@@ -99,7 +107,7 @@ public class BinOpGraphFactory implements GraphFactory {
 
     private TerminaledGraph calculateLogicOperation() {
         BinaryOperator operator = binOp.getOperator();
-        checkState(ImmutableList.of(AND, OR).contains(operator));
+        checkState(LOGIC_OPS.contains(operator));
 
         // TODO(jasonpr): Implement.
         throw new RuntimeException("Not yet implemented.");
@@ -107,8 +115,7 @@ public class BinOpGraphFactory implements GraphFactory {
 
     private TerminaledGraph calculateComparisonOperation() {
         BinaryOperator operator = binOp.getOperator();
-        checkState(ImmutableList.of(DOUBLE_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUAL,
-                LESS_THAN, LESS_THAN_OR_EQUAL, NOT_EQUALS).contains(operator));
+        checkState(COMPARISON_OPS.contains(operator));
 
         // TODO(jasonpr): Implement.
         throw new RuntimeException("Not yet implemented.");
