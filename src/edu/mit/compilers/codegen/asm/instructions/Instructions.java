@@ -2,6 +2,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
+import edu.mit.compilers.codegen.asm.VariableReference;
 
 /**
  * A million static factory methods for creating assembly instructions.
@@ -55,5 +56,17 @@ public final class Instructions {
     /** Do target += 1. */
     public static Instruction increment(Register target) {
         return new PlaceHolder("INC " + target);
+    }
+
+    /** Does "mov referenceOffset(referenceBase, multipliedOffset, multiplier), target" */
+    public static Instruction moveVariable(VariableReference reference, Value multipliedOffset,
+            long multiplier, Register target) {
+        return new PlaceHolder("MOV " + reference + " " + multipliedOffset + "*" + multiplier
+                + " to " + target);
+    }
+
+    /** Does "mov referenceOffset(referenceBase), target". */
+    public static Instruction moveVariable(VariableReference reference, Register target) {
+        return new PlaceHolder("MOV " + reference + " " + target);
     }
 }
