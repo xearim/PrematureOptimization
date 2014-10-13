@@ -11,7 +11,7 @@ public class Literal implements Value {
         this(value.get64BitValue());
     }
 
-    private Literal(long value) {
+    public Literal(long value) {
         this.value = value;
     }
 
