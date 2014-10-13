@@ -29,8 +29,7 @@ public class NativeExprGraphFactory implements GraphFactory {
         if (expr instanceof BinaryOperation) {
             return new BinOpGraphFactory((BinaryOperation) expr, scope);
         } else if (expr instanceof MethodCall) {
-            // TODO(jasonpr): Implement.
-            throw new RuntimeException("Not yet implemented.");
+            return new MethodCallGraphFactory((MethodCall) expr, scope);
         } else if (expr instanceof TernaryOperation) {
             return new TernaryOpGraphFactory((TernaryOperation) expr, scope);
         } else if (expr instanceof UnaryOperation) {
