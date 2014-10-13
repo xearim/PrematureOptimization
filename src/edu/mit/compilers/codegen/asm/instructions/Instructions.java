@@ -24,7 +24,7 @@ public final class Instructions {
     }
 
     /** Do target += operand. */
-    public static Instruction add(Register operand, Register target) {
+    public static Instruction add(Value operand, Register target) {
         return new Add(operand, target);
     }
 
