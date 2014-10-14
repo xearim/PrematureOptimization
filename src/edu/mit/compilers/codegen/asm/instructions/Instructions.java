@@ -1,5 +1,7 @@
 package edu.mit.compilers.codegen.asm.instructions;
 
+import edu.mit.compilers.codegen.asm.Label;
+import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
 import edu.mit.compilers.codegen.asm.VariableReference;
@@ -24,7 +26,7 @@ public final class Instructions {
     }
 
     /** Do target += operand. */
-    public static Instruction add(Register operand, Register target) {
+    public static Instruction add(Value operand, Register target) {
         return new Add(operand, target);
     }
 
@@ -73,6 +75,12 @@ public final class Instructions {
     /** Does `cmp RHS, LHS` (AT&T syntax). Yes, RHS and LHS look backwards in AT&T syntax! */
     public static Instruction cmp(Value lhs, Value rhs) {
         return new PlaceHolder("CMP " + rhs + ", " + lhs);
+    }
+
+    /** Does `call .m_methodName`. */
+    public static Instruction call(String methodName) {
+        Label methodLabel = new Label(LabelType.METHOD, methodName);
+        return new PlaceHolder("CALL " + methodLabel);
     }
 
 }
