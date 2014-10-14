@@ -10,7 +10,7 @@ public class IntLiteral implements NativeLiteral {
 
     public IntLiteral(String value, LocationDescriptor locationDescriptor) {
         this.value = value;
-	this.locationDescriptor = locationDescriptor;
+        this.locationDescriptor = locationDescriptor;
     }
 
     @Override
