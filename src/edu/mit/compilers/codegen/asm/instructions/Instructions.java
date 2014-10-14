@@ -21,54 +21,54 @@ public final class Instructions {
         return new PlaceHolder("PUSH " + value);
     }
 
-    public static Instruction pop(Register register) {
-        return new PlaceHolder("POP " + register);
+    public static Instruction pop(Value target) {
+        return new PlaceHolder("POP " + target);
     }
 
     /** Do target += operand. */
-    public static Instruction add(Value operand, Register target) {
+    public static Instruction add(Value operand, Value target) {
         return new Add(operand, target);
     }
 
     /** Do target -= operand. */
-    public static Instruction subtract(Register operand, Register target) {
+    public static Instruction subtract(Value operand, Value target) {
         return new Subtract(operand, target);
     }
 
     /** Do target *= operand. */
-    public static Instruction multiply(Register operand, Register target) {
+    public static Instruction multiply(Value operand, Value target) {
         return new SignedMultiply(operand, target);
     }
 
     /** Do target /= operand. */
-    public static Instruction divide(Register operand, Register target) {
+    public static Instruction divide(Value operand, Value target) {
         return new SignedDivide(operand, target);
     }
 
     /** Do target %= operand. */
-    public static Instruction modulo(Register operand, Register target) {
+    public static Instruction modulo(Value operand, Value target) {
         return new PlaceHolder("MODULO " + operand + " " + target);
     }
 
     /** Do target = -target. */
-    public static Instruction negate(Register target) {
+    public static Instruction negate(Value target) {
         return new PlaceHolder("NEG " + target);
     }
 
     /** Do target += 1. */
-    public static Instruction increment(Register target) {
+    public static Instruction increment(Value target) {
         return new PlaceHolder("INC " + target);
     }
 
     /** Does "mov referenceOffset(referenceBase, multipliedOffset, multiplier), target" */
     public static Instruction moveVariable(VariableReference reference, Value multipliedOffset,
-            long multiplier, Register target) {
+            long multiplier, Value target) {
         return new PlaceHolder("MOV " + reference + " " + multipliedOffset + "*" + multiplier
                 + " to " + target);
     }
 
     /** Does "mov referenceOffset(referenceBase), target". */
-    public static Instruction moveVariable(VariableReference reference, Register target) {
+    public static Instruction moveVariable(VariableReference reference, Value target) {
         return new PlaceHolder("MOV " + reference + " " + target);
     }
     
