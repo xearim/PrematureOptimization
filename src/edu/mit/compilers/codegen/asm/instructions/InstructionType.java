@@ -21,6 +21,8 @@ public enum InstructionType {
     IDIV ("IDIV"),
     // IMUL signed multiply
     IMUL ("IMUL"),
+    // MODULO, not a standard instr but we support it i guess
+    MODULO ("MODULO"),
     // INC increment by 1
     INC ("INC"),
     JMP ("JMP"),

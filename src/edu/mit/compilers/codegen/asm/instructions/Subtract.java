@@ -14,8 +14,10 @@ public class Subtract implements Instruction {
 
     @Override
     public String inAttSyntax() {
-        // TODO Auto-generated method stub
-        return null;
+    	String syntax = "sub ";
+    	// sub left arg into right arg, result is stored there
+    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax();
+    	return syntax;
     }
 
 }

@@ -19,8 +19,10 @@ public class Add implements Instruction {
 
     @Override
     public String inAttSyntax() {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+    	String syntax = "add ";
+    	// Add left arg into right arg, result is stored there
+    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax();
+    	return syntax;
     }
 
 }
