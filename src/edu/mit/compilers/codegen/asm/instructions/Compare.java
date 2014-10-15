@@ -22,10 +22,10 @@ public class Compare implements Instruction {
     	String syntax = "";
     	// compare the arguments for a flag set
     	syntax += Instructions.compareFlagged(leftArgument, rightArgument);
-    	// We are going to start stupid, assume that we are wrong, put false in R10
-    	// And load the possible true into R11
-    	syntax += Instructions.move(Literal.FALSE, Register.R10);
-    	syntax += Instructions.move(Literal.TRUE, Register.R11);
+    	// We are going to start stupid, assume that we are wrong, put false in R11
+    	// And load the possible true into R10
+    	syntax += Instructions.move(Literal.FALSE, Register.R11);
+    	syntax += Instructions.move(Literal.TRUE, Register.R10);
     	switch(op){
 		case DOUBLE_EQUALS:
 			syntax += "cmove ";
@@ -48,9 +48,9 @@ public class Compare implements Instruction {
 		default:
 			throw new AssertionError("Bad CMP instruction, unsupported comparitor: " + op.getSymbol());
     	}
-    	syntax += Register.R11.inAttSyntax() + ", " + Register.R10.inAttSyntax() + "\n";
+    	syntax += Register.R10.inAttSyntax() + ", " + Register.R11.inAttSyntax() + "\n";
     	// now write out the resultant value back to our expected output location
-    	syntax += Instructions.move(Register.R10, rightArgument);
+    	syntax += Instructions.move(Register.R11, rightArgument);
     	return syntax;
     }
 

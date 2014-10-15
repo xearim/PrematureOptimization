@@ -18,6 +18,7 @@ import static edu.mit.compilers.codegen.asm.Register.R10;
 import static edu.mit.compilers.codegen.asm.Register.R11;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.compare;
 
 import java.util.Set;
 
@@ -117,8 +118,16 @@ public class BinOpGraphFactory implements GraphFactory {
         BinaryOperator operator = binOp.getOperator();
         checkState(COMPARISON_OPS.contains(operator));
 
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+
+        return TerminaledGraph.sequenceOf(
+	        new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
+	        new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
+	        TerminaledGraph.ofInstructions(
+	                pop(R10),
+	                pop(R11),
+	                compare(binOp.getOperator(), R10, R11),
+	                push(R11)
+	                ));
     }
 
     @Override

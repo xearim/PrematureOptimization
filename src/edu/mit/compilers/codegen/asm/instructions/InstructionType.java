@@ -32,13 +32,9 @@ public enum InstructionType {
     IMUL ("IMUL"),
     // MODULO, not a standard instr but we support it i guess
     MODULO ("MODULO"),
-    // SAL signed shift left
-    SAL ("SAL"),
-    // SAR signed shift right
-    SAR ("SAR"),
-    // SHL unsigned shift left
+    // SHL shift left
     SHL ("SHL"),
-    // SHR unsigned shift right
+    // SHR shift right
     SHR ("SHR"),
     // Unconditional Jump
     JMP ("JMP"),

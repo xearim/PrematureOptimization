@@ -68,12 +68,12 @@ public final class Instructions {
     
     /** Does a compare that produces flags */
     public static Instruction compareFlagged(Value lhs, Value rhs) {
-        return new PlaceHolder("CMP " + rhs + ", " + lhs);
+        return new CompareFlagged(lhs, rhs);
     }
     
     /** Does a compare that produces an output */
     public static Instruction compare(BinaryOperator cmp, Value lhs, Value rhs) {
-        return new PlaceHolder("CMP " + rhs + ", " + lhs);
+        return new Compare(cmp, lhs, rhs);
     }
 
     /** Does "mov referenceOffset(referenceBase, multipliedOffset, multiplier), target" */
