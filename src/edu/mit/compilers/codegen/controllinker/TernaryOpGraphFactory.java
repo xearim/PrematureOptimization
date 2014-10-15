@@ -14,8 +14,8 @@ public class TernaryOpGraphFactory implements GraphFactory {
     private TerminaledGraph calculateGraph(TernaryOperation operation, Scope scope) {
         return new BranchGraphFactory(
                 new NativeExprGraphFactory(operation.getCondition(), scope).getGraph(),
-                new NativeExprGraphFactory(operation.getCondition(), scope).getGraph(),
-                new NativeExprGraphFactory(operation.getCondition(), scope).getGraph())
+                new NativeExprGraphFactory(operation.getTrueResult(), scope).getGraph(),
+                new NativeExprGraphFactory(operation.getFalseResult(), scope).getGraph())
                 .getGraph();
     }
 
