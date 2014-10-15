@@ -47,17 +47,27 @@ public final class Instructions {
 
     /** Do target %= operand. */
     public static Instruction modulo(Value operand, Value target) {
-        return new PlaceHolder("MODULO " + operand + " " + target);
+        return new Modulo(operand, target);
     }
 
     /** Do target = -target. */
     public static Instruction negate(Value target) {
-        return new PlaceHolder("NEG " + target);
+        return new Negate(target);
     }
 
     /** Do target += 1. */
     public static Instruction increment(Value target) {
-        return new PlaceHolder("INC " + target);
+        return new Increment(target);
+    }
+    
+    /** Do target -= 1. */
+    public static Instruction decrement(Value target) {
+        return new Decrement(target);
+    }
+    
+    /** Does `cmp RHS, LHS` (AT&T syntax). Yes, RHS and LHS look backwards in AT&T syntax! */
+    public static Instruction cmp(Value lhs, Value rhs) {
+        return new PlaceHolder("CMP " + rhs + ", " + lhs);
     }
 
     /** Does "mov referenceOffset(referenceBase, multipliedOffset, multiplier), target" */
@@ -75,11 +85,6 @@ public final class Instructions {
     /** Does "mov reference, target". */
     public static Instruction move(Value reference, Value target) {
         return new PlaceHolder("MOV " + reference + " " + target);
-    }
-
-    /** Does `cmp RHS, LHS` (AT&T syntax). Yes, RHS and LHS look backwards in AT&T syntax! */
-    public static Instruction cmp(Value lhs, Value rhs) {
-        return new PlaceHolder("CMP " + rhs + ", " + lhs);
     }
 
     /** Does `call .m_methodName`. */
