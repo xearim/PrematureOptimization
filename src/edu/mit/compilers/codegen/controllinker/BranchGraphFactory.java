@@ -1,7 +1,7 @@
 package edu.mit.compilers.codegen.controllinker;
 
 import static edu.mit.compilers.codegen.asm.Register.R10;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.cmp;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.compareFlagged;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import edu.mit.compilers.codegen.BranchingControlFlowNode;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
@@ -24,7 +24,7 @@ public class BranchGraphFactory implements GraphFactory {
         // instructions to be able to jump in response to its value.
         TerminaledGraph conditionEvaluator = TerminaledGraph.ofInstructions(
                 pop(R10),
-                cmp(R10, Literal.TRUE));
+                compareFlagged(R10, Literal.TRUE));
 
         // Setup the branching node.
         BranchingControlFlowNode branch = new BranchingControlFlowNode(
