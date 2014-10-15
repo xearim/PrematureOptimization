@@ -314,8 +314,6 @@ public class TypesSemanticCheck implements SemanticCheck {
                     errorAccumulator,
                     "Invalid upper bound for while loop at %s: expected a positive integer, but got %s",
                     maxRepetitions.get().getLocationDescriptor(), maxRepetitions.get().getName());
-            
-            throw new RuntimeException("Not yet implemented!");
         }
 
     }
