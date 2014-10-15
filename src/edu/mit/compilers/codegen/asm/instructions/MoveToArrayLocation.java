@@ -35,9 +35,9 @@ public class MoveToArrayLocation implements Instruction {
     	// move the desired array location into our target
     	// assuming that this type of array access is valid stuff
     	syntax += "mov "; 
-    	syntax += target.inAttSyntax() + ", ";
-    	syntax += "(" + Long.toString(-8 + -8*target.getScope().offsetFromBasePointer(target.getName())) + " + " +
-    			   offset.inAttSyntax() + "*" + Long.toString(elementSize) + " + " + Register.RBP.inAttSyntax() + ")" + "\n";
+    	syntax += source.inAttSyntax() + ", ";
+    	syntax += "(" + offset.inAttSyntax() + "*" + Long.toString(elementSize) + " + " + 
+    			   target.inAttSyntax() +  ")" + "\n";
     	return syntax;
     }
 
