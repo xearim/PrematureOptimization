@@ -137,7 +137,7 @@ public class Scope {
      * @param variableName
      * @return
      */
-    public long offsetFromBasePointer(String variableName) {
+    private long offsetFromBasePointer(String variableName) {
         checkState(getScopeType().equals(ScopeType.LOCAL));
         if (isInScopeImmediately(variableName)) {
             return offset(variableName) + effectiveBasePointerOffset();
