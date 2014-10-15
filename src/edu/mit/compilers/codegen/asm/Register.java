@@ -17,8 +17,28 @@ public class Register implements Value {
     private final RegisterId id;
 
     private static enum RegisterId {
-        // TODO(manny): Add remaining registers.
-        RAX, RBX, RCX, RDX, RDI, RSI, R8, R9, R10, R11, RSP, RBP;
+        RAX("rax"), 
+        RBX("rbx"), 
+        RCX("rcx"), 
+        RDX("rdx"), 
+        RDI("rdi"), 
+        RSI("rsi"), 
+        R8("r8"), 
+        R9("r9"), 
+        R10("r10"), 
+        R11("r11"), 
+        RSP("rsp"), 
+        RBP("rbp");
+        
+        String name;
+        
+        RegisterId(String name){
+        	this.name = name;
+        }
+        
+        public String getName(){
+        	return this.name;
+        }
     }
 
     // Private constructor: The only way to get a reference to a Register
@@ -29,7 +49,6 @@ public class Register implements Value {
 
     @Override
     public String inAttSyntax() {
-        // TODO(manny): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        return "%" + this.id.getName();
     }
 }

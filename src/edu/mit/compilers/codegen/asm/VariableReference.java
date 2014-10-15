@@ -23,16 +23,6 @@ public class VariableReference implements Value{
 
     @Override
     public String inAttSyntax() {
-        switch(scope.getScopeType()){
-		case GLOBAL:
-			return name;
-		case LOCAL:
-			return Long.toString(scope.offsetFromBasePointer(name)) + "(" + Register.RBP.inAttSyntax() + ")";
-		case PARAMETER:
-			// TODO(xearim): Make lookup to what register or offset the parameter is at, return that
-			return "$0";
-		default:
-			throw new AssertionError("Invalid Scope for Variable Reference: " + scope.getScopeType());
-        }
+        return scope.getLocation(name);
     }
 }

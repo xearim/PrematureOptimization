@@ -7,6 +7,8 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.codegen.asm.Register;
+
 public class Scope {
 	
 	private Optional<Scope> parent;
@@ -66,6 +68,63 @@ public class Scope {
                 ? ScopeType.LOCAL
                 : ScopeType.GLOBAL;
     }
+    
+    /**
+     * Produces the x86-64 reference location for a given variable
+     * according to our decided stack management scheme plus the calling
+     * convention for functions
+     * 
+     * Asserts that the variable must actually be present
+     * 
+     * @param variableName - the variable you want to access in memory
+     */
+    public String getLocation(String variableName){
+    	checkState(isInScope(variableName));
+    	if(!isInScopeImmediately(variableName)){
+    		// Since the variable must be in scope
+    		// this recursion will always succeed because you must find
+    		// the variable before you run out of scopes
+    		return parent.get().getLocation(variableName);
+    	} else {
+    		switch(getScopeType()){
+			case GLOBAL:
+				// Globals are their name
+				// TODO(jasonpr): whatever schema we want for enumerating/nameing variables needs to be extended to here
+				return ".g_" + variableName;
+			case LOCAL:
+				// Locals are some offset of the base pointer
+				return Long.toString(-8 + -8*offsetFromBasePointer(variableName)) + "(" + Register.RBP.inAttSyntax() + ")";
+			case PARAMETER:
+				// Parameters are either a register or a base pointer offset
+				// dont know if i love this cast
+				switch((int) offset(variableName)){
+				case 1:
+					// Holds the first arg
+					return Register.RDI.inAttSyntax();
+				case 2:
+					// Holds the second arg
+					return Register.RSI.inAttSyntax();
+				case 3:
+					// Holds the third arg
+					return Register.RDX.inAttSyntax();
+				case 4:
+					// Holds the fourth arg
+					return Register.RCX.inAttSyntax();
+				case 5:
+					// Holds the fifth arg
+					return Register.R8.inAttSyntax();
+				case 6:
+					// Holds the sixth arg
+					return Register.R9.inAttSyntax();
+				default:
+					// All other args are at some offset to the base pointer
+					return Long.toString(16 + 8*(7-offset(variableName))) + "(" + Register.RBP.inAttSyntax() + ")";
+				}
+			default:
+				throw new AssertionError("Unexpected scope type for " + this);
+    		}
+    	}
+    }
 
     /** Get the offset of a variable from the base pointer.
      * 
@@ -101,7 +160,7 @@ public class Scope {
      * 
      * <p>Requires that the variable is in this immediate scope.
      */
-    public long offset(String variableName) {
+    private long offset(String variableName) {
         long offset = 0;
         for (FieldDescriptor field : variables) {
             if (variableName.equals(field.name)) {
@@ -112,7 +171,7 @@ public class Scope {
         throw new AssertionError("Could not find " + variableName + " in scope " + this);
     }
 
-    public long effectiveBasePointerOffset() {
+    private long effectiveBasePointerOffset() {
         switch (getScopeType()) {
             case GLOBAL:
                 return 0;
@@ -136,7 +195,7 @@ public class Scope {
      *
      * <p>For locals this is the size of this scope's sub-frame on the stack.
      */
-    public long size() {
+    private long size() {
         int offset = 0;
         for (FieldDescriptor field : variables) {
             offset += field.getSize();

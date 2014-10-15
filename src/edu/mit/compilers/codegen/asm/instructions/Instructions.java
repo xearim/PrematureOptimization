@@ -92,15 +92,15 @@ public final class Instructions {
     }
 
     /** Does "mov referenceOffset(referenceBase, multipliedOffset, multiplier), target" */
-    public static Instruction moveVariable(VariableReference reference, Value multipliedOffset,
+    public static Instruction moveFromArray(VariableReference reference, Value multipliedOffset,
             long multiplier, Value target) {
-        return new PlaceHolder("MOV " + reference + " " + multipliedOffset + "*" + multiplier
-                + " to " + target);
+        return new MoveFromArrayLocation(reference, multipliedOffset, multiplier, target);
     }
-
-    /** Does "mov referenceOffset(referenceBase), target". */
-    public static Instruction moveVariable(VariableReference reference, Value target) {
-        return new PlaceHolder("MOV " + reference + " " + target);
+    
+    /** Does "mov target, referenceOffset(referenceBase, multipliedOffset, multiplier)" */
+    public static Instruction moveToArray(Value source, Value multipliedOffset,
+            long multiplier, VariableReference target) {
+        return new MoveToArrayLocation(source, multipliedOffset, multiplier, target);
     }
     
     /** Does "mov reference, target". */
@@ -112,6 +112,16 @@ public final class Instructions {
     public static Instruction call(String methodName) {
         Label methodLabel = new Label(LabelType.METHOD, methodName);
         return new Call(methodLabel);
+    }
+    
+    /** Does `jmp label.inAttSyntax`. */
+    public static Instruction jump(Label target) {
+    	return new PlaceHolder("jump" + target);
+    }
+    
+    /** Does `jmp(type) label.inAttSyntax`. */
+    public static Instruction jumpTyped(JumpType type, Label target) {
+    	return new PlaceHolder("jump of type" + type + "to " + target);
     }
 
 }
