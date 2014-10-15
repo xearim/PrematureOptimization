@@ -19,11 +19,11 @@ public final class Instructions {
     private Instructions() {}
 
     public static Instruction push(Value value) {
-        return new PlaceHolder("PUSH " + value);
+        return new Push(value);
     }
 
     public static Instruction pop(Value target) {
-        return new PlaceHolder("POP " + target);
+        return new Pop(target);
     }
 
     /** Do target += operand. */
@@ -105,13 +105,13 @@ public final class Instructions {
     
     /** Does "mov reference, target". */
     public static Instruction move(Value reference, Value target) {
-        return new PlaceHolder("MOV " + reference + " " + target);
+        return new Move(reference, target);
     }
 
     /** Does `call .m_methodName`. */
     public static Instruction call(String methodName) {
         Label methodLabel = new Label(LabelType.METHOD, methodName);
-        return new PlaceHolder("CALL " + methodLabel);
+        return new Call(methodLabel);
     }
 
 }
