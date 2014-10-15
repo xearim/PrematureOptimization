@@ -6,10 +6,12 @@ public class IntLiteral implements NativeLiteral {
     // Yes, a string.  We want the value that the user typed in.  We don't even care how Java
     // would represent it.
     private final String value;
+    private final long longValue;
     private final LocationDescriptor locationDescriptor;
 
     public IntLiteral(String value, LocationDescriptor locationDescriptor) {
         this.value = value;
+        this.longValue = Long.parseLong(value);
         this.locationDescriptor = locationDescriptor;
     }
 
@@ -29,10 +31,15 @@ public class IntLiteral implements NativeLiteral {
 
     @Override
     public long get64BitValue() {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        return longValue;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
+    public boolean equals(IntLiteral il) {
+        return this.value.equals(il.getName())
+                && this.get64BitValue() == il.get64BitValue()
+                && this.getLocationDescriptor().equals(il.getLocationDescriptor());
+    }
+
+    // TODO(jasonpr): Implement hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }
