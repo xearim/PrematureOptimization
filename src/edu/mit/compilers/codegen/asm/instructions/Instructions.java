@@ -71,6 +71,21 @@ public final class Instructions {
         return new CompareFlagged(lhs, rhs);
     }
     
+    /** Does a logical AND */
+    public static Instruction and(Value operand, Value target) {
+        return new And(operand, target);
+    }
+    
+    /** Does a logical OR */
+    public static Instruction or(Value operand, Value target) {
+        return new Or(operand, target);
+    }
+    
+    /** Does a logical NOT */
+    public static Instruction not(Value target) {
+        return new Not(target);
+    }
+    
     /** Does a compare that produces an output */
     public static Instruction compare(BinaryOperator cmp, Value lhs, Value rhs) {
         return new Compare(cmp, lhs, rhs);

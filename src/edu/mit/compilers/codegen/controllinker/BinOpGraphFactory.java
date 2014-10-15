@@ -110,8 +110,26 @@ public class BinOpGraphFactory implements GraphFactory {
         BinaryOperator operator = binOp.getOperator();
         checkState(LOGIC_OPS.contains(operator));
 
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        return TerminaledGraph.sequenceOf(
+                new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
+                new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
+                TerminaledGraph.ofInstructions(
+                        pop(R10),
+                        pop(R11),
+                        logicalOperator(binOp.getOperator(), R10, R11),
+                        push(R11)
+                        ));
+    }
+    
+    private Instruction logicalOperator(BinaryOperator operator, Register operand, Register target) {
+        switch (operator) {
+            case AND:
+                return Instructions.and(operand, target);
+            case OR:
+                return Instructions.or(operand, target);
+            default:
+                throw new AssertionError("Unexpected logical operator: " + operator);
+        }
     }
 
     private TerminaledGraph calculateComparisonOperation() {
