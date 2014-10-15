@@ -116,12 +116,12 @@ public final class Instructions {
     
     /** Does `jmp label.inAttSyntax`. */
     public static Instruction jump(Label target) {
-    	return new PlaceHolder("jump" + target);
+    	return new Jump(target);
     }
     
     /** Does `jmp(type) label.inAttSyntax`. */
     public static Instruction jumpTyped(JumpType type, Label target) {
-    	return new PlaceHolder("jump of type" + type + "to " + target);
+    	return new JumpTyped(type, target);
     }
 
 }
