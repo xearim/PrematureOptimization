@@ -16,7 +16,7 @@ public class SignedMultiply implements Instruction {
     public String inAttSyntax() {
     	String syntax = "imul ";
     	// mul left arg into right arg, result is stored there
-    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax();
+    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax() + "\n";
     	return syntax;
     }
 

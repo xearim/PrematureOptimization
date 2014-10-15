@@ -1,5 +1,6 @@
 package edu.mit.compilers.codegen.asm.instructions;
 
+import edu.mit.compilers.ast.BinaryOperator;
 import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.Register;
@@ -65,8 +66,13 @@ public final class Instructions {
         return new Decrement(target);
     }
     
-    /** Does `cmp RHS, LHS` (AT&T syntax). Yes, RHS and LHS look backwards in AT&T syntax! */
-    public static Instruction cmp(Value lhs, Value rhs) {
+    /** Does a compare that produces flags */
+    public static Instruction compareFlagged(Value lhs, Value rhs) {
+        return new PlaceHolder("CMP " + rhs + ", " + lhs);
+    }
+    
+    /** Does a compare that produces an output */
+    public static Instruction compare(BinaryOperator cmp, Value lhs, Value rhs) {
         return new PlaceHolder("CMP " + rhs + ", " + lhs);
     }
 

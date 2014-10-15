@@ -23,7 +23,7 @@ public class Modulo implements Instruction {
     	// Zero out %rdx just in case (it shouldn't hold any values)
     	syntax += Instructions.move(Literal.FALSE, Register.RDX);
     	// Divide
-    	syntax += "idiv " + rightArgument.inAttSyntax();
+    	syntax += "idiv " + rightArgument.inAttSyntax() + "\n";
     	// Return the resultant remainder into the rightArgument as we expect
     	syntax += Instructions.move(Register.RDX, rightArgument);
     	return syntax;

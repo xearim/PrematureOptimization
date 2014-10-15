@@ -21,7 +21,7 @@ public class Add implements Instruction {
     public String inAttSyntax() {
     	String syntax = "add ";
     	// Add left arg into right arg, result is stored there
-    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax();
+    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax() + "\n";
     	return syntax;
     }
 

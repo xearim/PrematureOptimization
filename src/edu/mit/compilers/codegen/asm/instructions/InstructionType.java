@@ -8,34 +8,30 @@ package edu.mit.compilers.codegen.asm.instructions;
  */
 // TODO(Manny): ask team for clarification on which ones are necessary
 public enum InstructionType {
-    ADD ("ADD"),
-    AND ("AND"),
     CALL ("CALL"),
-    // CMP comparison using SUB
+    POP ("POP"),
+    PUSH ("PUSH"),
+    // CMP comparison that sets flags
+    CMPF ("CMPF"),
+    // CMP comparison produces values
     CMP ("CMP"),
+    AND ("AND"),
+    OR ("OR"),
+    // NEG two's complement negation
+    NOT ("NOT"),
     // DEC decrement by 1
     DEC ("DEC"),
-    // DIV unsigned divide
-    // Don't think we need this one
+    // INC increment by 1
+    INC ("INC"),
+    ADD ("ADD"),
+    SUB ("SUB"),
+    NEG ("NEG"),
     // IDIV signed divide
     IDIV ("IDIV"),
     // IMUL signed multiply
     IMUL ("IMUL"),
     // MODULO, not a standard instr but we support it i guess
     MODULO ("MODULO"),
-    // INC increment by 1
-    INC ("INC"),
-    JMP ("JMP"),
-    MOV ("MOV"),
-    // MUL unsigned multiply
-    // Don't think we need this one
-    // NEG two's complement negation
-    NEG ("NEG"),
-    NOT ("NOT"),
-    POP ("POP"),
-    PUSH ("PUSH"),
-    //PUSHF push FLAGS onto stack
-    PUSHF ("PUSHF"),
     // SAL signed shift left
     SAL ("SAL"),
     // SAR signed shift right
@@ -44,11 +40,9 @@ public enum InstructionType {
     SHL ("SHL"),
     // SHR unsigned shift right
     SHR ("SHR"),
-    SUB ("SUB"),
-    // TEST comparison using AND
-    TEST ("TEST"),
-    // XOR exclusive or
-    XOR ("XOR");
+    // Unconditional Jump
+    JMP ("JMP"),
+    MOV ("MOV");
 
     private String instructionName;
 
