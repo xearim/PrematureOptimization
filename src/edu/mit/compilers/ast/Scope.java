@@ -7,8 +7,6 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-import edu.mit.compilers.codegen.asm.Register;
-
 public class Scope {
 	
 	private Optional<Scope> parent;
@@ -49,7 +47,7 @@ public class Scope {
 		return (parent.isPresent() && parent.get().isInScope(identifier));
 	}
 	
-	    /**
+	   /**
      * Return whether this scope has an entry for the given variable name. 
      *
      * <p>This method ignores any parent scopes. 
@@ -70,13 +68,10 @@ public class Scope {
     }
     
     /**
-     * Produces the x86-64 reference location for a given variable
-     * according to our decided stack management scheme plus the calling
-     * convention for functions
-     * 
+     * Returns the scope that directly contains a given variable
      * Asserts that the variable must actually be present
      * 
-     * @param variableName - the variable you want to access in memory
+     * @param variableName - the variable you want to access
      */
     public Scope getLocation(String variableName){
     	checkState(isInScope(variableName));
