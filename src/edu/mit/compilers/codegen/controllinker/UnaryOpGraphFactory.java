@@ -16,14 +16,14 @@ import edu.mit.compilers.codegen.asm.Literal;
 public class UnaryOpGraphFactory implements GraphFactory {
 
     private final UnaryOperation operation;
-    private final TerminaledGraph graph;
+    private final BiTerminalGraph graph;
 
     public UnaryOpGraphFactory(UnaryOperation operation, Scope scope) {
         this.operation = operation;
         this.graph = calculateOperation(scope);
     }
 
-    private TerminaledGraph calculateOperation(Scope scope) {
+    private BiTerminalGraph calculateOperation(Scope scope) {
         switch (operation.getOperator()) {
             case ARRAY_LENGTH:
                 return calculateLengthOperation(scope);
@@ -36,35 +36,35 @@ public class UnaryOpGraphFactory implements GraphFactory {
         }
     }
 
-    private TerminaledGraph calculateLengthOperation(Scope scope) {
+    private BiTerminalGraph calculateLengthOperation(Scope scope) {
         // TODO(jasonpr): Eliminate the need for this cast.
         Location targetLocation = (Location) operation.getArgument();
         // If these get()s fails, our semantic checker is broken.
         FieldDescriptor descriptor = scope.getFromScope(targetLocation.getVariableName()).get();
         IntLiteral length = descriptor.getLength().get();
-        return TerminaledGraph.ofInstructions(push(new Literal(length)));
+        return BiTerminalGraph.ofInstructions(push(new Literal(length)));
     }
 
-    private TerminaledGraph calculateNegativeOperation(Scope scope) {
-        return TerminaledGraph.sequenceOf(
+    private BiTerminalGraph calculateNegativeOperation(Scope scope) {
+        return BiTerminalGraph.sequenceOf(
                 new NativeExprGraphFactory(operation.getArgument(), scope).getGraph(),
-                TerminaledGraph.ofInstructions(
+                BiTerminalGraph.ofInstructions(
                         pop(R10),
                         negate(R10),
                         push(R10)));
     }
 
-    private TerminaledGraph calculateNotOperation(Scope scope) {
-        return TerminaledGraph.sequenceOf(
+    private BiTerminalGraph calculateNotOperation(Scope scope) {
+        return BiTerminalGraph.sequenceOf(
                 new NativeExprGraphFactory(operation.getArgument(), scope).getGraph(),
-                TerminaledGraph.ofInstructions(
+                BiTerminalGraph.ofInstructions(
                         pop(R10),
                         not(R10),
                         push(R10)));
     }
 
     @Override
-    public TerminaledGraph getGraph() {
+    public BiTerminalGraph getGraph() {
         return graph;
     }
 

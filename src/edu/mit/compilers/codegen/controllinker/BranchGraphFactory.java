@@ -10,19 +10,19 @@ import edu.mit.compilers.codegen.asm.instructions.JumpType;
 
 public class BranchGraphFactory implements GraphFactory {
 
-    private final TerminaledGraph graph;
+    private final BiTerminalGraph graph;
 
-    public BranchGraphFactory(TerminaledGraph condition, TerminaledGraph trueBranch,
-            TerminaledGraph falseBranch) {
+    public BranchGraphFactory(BiTerminalGraph condition, BiTerminalGraph trueBranch,
+            BiTerminalGraph falseBranch) {
         this.graph = constructGraph(condition, trueBranch, falseBranch);
     }
 
-    private TerminaledGraph constructGraph(TerminaledGraph condition, TerminaledGraph trueBranch,
-            TerminaledGraph falseBranch) {
+    private BiTerminalGraph constructGraph(BiTerminalGraph condition, BiTerminalGraph trueBranch,
+            BiTerminalGraph falseBranch) {
 
         // When we have the boolean result of a condition on the stack, we must execute these
         // instructions to be able to jump in response to its value.
-        TerminaledGraph conditionEvaluator = TerminaledGraph.ofInstructions(
+        BiTerminalGraph conditionEvaluator = BiTerminalGraph.ofInstructions(
                 pop(R10),
                 compareFlagged(R10, Literal.TRUE));
 
@@ -37,14 +37,14 @@ public class BranchGraphFactory implements GraphFactory {
         trueBranch.getEnd().setNext(sink);
         falseBranch.getEnd().setNext(sink);
 
-        return TerminaledGraph.sequenceOf(
+        return BiTerminalGraph.sequenceOf(
                 condition,
                 conditionEvaluator,
-                new TerminaledGraph(branch, sink));
+                new BiTerminalGraph(branch, sink));
     }
 
     @Override
-    public TerminaledGraph getGraph() {
+    public BiTerminalGraph getGraph() {
         return graph;
     }
 }

@@ -17,7 +17,7 @@ public class GeneralExprGraphFactory implements GraphFactory {
     }
 
     @Override
-    public TerminaledGraph getGraph() {
+    public BiTerminalGraph getGraph() {
         return getDelegate().getGraph();
     }
 

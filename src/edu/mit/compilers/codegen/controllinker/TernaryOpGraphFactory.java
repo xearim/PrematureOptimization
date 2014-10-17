@@ -5,13 +5,13 @@ import edu.mit.compilers.ast.TernaryOperation;
 
 public class TernaryOpGraphFactory implements GraphFactory {
 
-    private final TerminaledGraph graph;
+    private final BiTerminalGraph graph;
     
     public TernaryOpGraphFactory(TernaryOperation operation, Scope scope) {
         this.graph = calculateGraph(operation, scope);
     }
 
-    private TerminaledGraph calculateGraph(TernaryOperation operation, Scope scope) {
+    private BiTerminalGraph calculateGraph(TernaryOperation operation, Scope scope) {
         return new BranchGraphFactory(
                 new NativeExprGraphFactory(operation.getCondition(), scope).getGraph(),
                 new NativeExprGraphFactory(operation.getTrueResult(), scope).getGraph(),
@@ -20,7 +20,7 @@ public class TernaryOpGraphFactory implements GraphFactory {
     }
 
     @Override
-    public TerminaledGraph getGraph() {
+    public BiTerminalGraph getGraph() {
         return graph;
     }
 }
