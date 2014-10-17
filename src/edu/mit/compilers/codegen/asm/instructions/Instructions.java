@@ -3,7 +3,6 @@ package edu.mit.compilers.codegen.asm.instructions;
 import edu.mit.compilers.ast.BinaryOperator;
 import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
-import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
 import edu.mit.compilers.codegen.asm.VariableReference;
 
@@ -122,6 +121,11 @@ public final class Instructions {
     /** Does `jmp(type) label.inAttSyntax`. */
     public static Instruction jumpTyped(JumpType type, Label target) {
     	return new JumpTyped(type, target);
+    }
+
+    /** Exits with some error code. */
+    public static Instruction errorExit() {
+        return new PlaceHolder("Halt and catch fire.");
     }
 
 }
