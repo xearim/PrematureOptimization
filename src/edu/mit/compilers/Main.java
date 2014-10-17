@@ -27,6 +27,7 @@ import edu.mit.compilers.grammar.DecafScannerTokenTypes;
 import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
+import edu.mit.compilers.tools.ControlFlowGraphPrinter;
 import edu.mit.semantics.ErrorPrinter;
 import edu.mit.semantics.SemanticChecker;
 import edu.mit.semantics.errors.SemanticError;
@@ -148,8 +149,7 @@ class Main {
         // TODO(jasonpr): Do it for everything, not just main.
         Method main = methods.get(MAIN_METHOD_NAME);
         TerminaledGraph controlFlowGraph = new MethodGraphFactory(main).getGraph();
-        // TODO(jasonpr): Implement printing!
-        throw new RuntimeException("Not yet implemented.");
+        new ControlFlowGraphPrinter(outputStream).print(controlFlowGraph.getBeginning());
     }
 
     /**
