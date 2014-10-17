@@ -11,8 +11,15 @@ import antlr.RecognitionException;
 import antlr.Token;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
+
+import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.NodeMaker;
 import edu.mit.compilers.ast.Program;
+import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
+import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.grammar.DecafParser;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.grammar.DecafScanner;
@@ -20,11 +27,15 @@ import edu.mit.compilers.grammar.DecafScannerTokenTypes;
 import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
+import edu.mit.compilers.tools.ControlFlowGraphPrinter;
 import edu.mit.semantics.ErrorPrinter;
 import edu.mit.semantics.SemanticChecker;
 import edu.mit.semantics.errors.SemanticError;
 
 class Main {
+
+  private static final String MAIN_METHOD_NAME = "main";
+
   public static void main(String[] args) {
     try {
       // Setup in and out files.
@@ -40,6 +51,8 @@ class Main {
         printAst(inputStream, outputStream);
       } else if (CLI.target == Action.INTER) {
         semanticCheck(inputStream, outputStream);
+      } else if (CLI.target == Action.CFG) {
+          controlFlowGraph(inputStream, outputStream);
       } else if (CLI.target == Action.PARSE ||
                  CLI.target == Action.DEFAULT) {
         parse(inputStream, outputStream);
@@ -118,18 +131,25 @@ class Main {
 
     private static void semanticCheck(InputStream inputStream, PrintStream outputStream)
             throws RecognitionException, TokenStreamException {
-        DecafParser parser = programmedParser(inputStream, outputStream);
-        if (parser.getError()) {
-            // It didn't even parse!
+        Optional<Program> validProgram = semanticallyValidProgram(inputStream, outputStream);
+        if (!validProgram.isPresent()) {
             System.exit(1);
         }
-        AST ast = parser.getAST();
-        Program program = NodeMaker.program(ast);
+    }
 
-        if (!isSemanticallyValid(program, outputStream)) {
-            // The program is semantically invalid.
-            System.exit(1);
+    /** Print the unoptimized Control Flow Graph to outputStream in DOT format. */
+    private static void controlFlowGraph(InputStream inputStream, PrintStream outputStream)
+            throws RecognitionException, TokenStreamException {
+        Program validProgram = semanticallyValidProgram(inputStream, outputStream).get();
+        ImmutableMap.Builder<String, Method> methodsBuilder = ImmutableMap.builder();
+        for (Method method : validProgram.getMethods()) {
+            methodsBuilder.put(method.getName(), method);
         }
+        ImmutableMap<String, Method> methods = methodsBuilder.build();
+        // TODO(jasonpr): Do it for everything, not just main.
+        Method main = methods.get(MAIN_METHOD_NAME);
+        BiTerminalGraph controlFlowGraph = new MethodGraphFactory(main).getGraph();
+        new ControlFlowGraphPrinter(outputStream).print(controlFlowGraph.getBeginning());
     }
 
     /**
@@ -154,7 +174,7 @@ class Main {
 
 
   /**
-   * Make a DecafParser, use it to parse the program from inputStream, and return that it.
+   * Makes a DecafParser, use it to parse the program from inputStream, and return that it.
    *
    * <p>The returned parser might be in an error state.  This function does not react to any
    * parser errors.
@@ -173,4 +193,24 @@ class Main {
           return parser;
   }
 
+  /**
+   * Gets the semantically valid Program AST Node for the program on the inputStream.
+   *
+   * <p>Returns Optional.absent() for an invalid program.
+   */
+  private static Optional<Program>
+          semanticallyValidProgram(InputStream inputStream, PrintStream outputStream)
+          throws RecognitionException, TokenStreamException {
+      DecafParser parser = programmedParser(inputStream, outputStream);
+      if (parser.getError()) {
+          // It didn't even parse!
+          return Optional.absent();
+      }
+      AST ast = parser.getAST();
+      Program program = NodeMaker.program(ast);
+
+      return isSemanticallyValid(program, outputStream)
+              ? Optional.of(program)
+              : Optional.<Program>absent();
+      }
 }

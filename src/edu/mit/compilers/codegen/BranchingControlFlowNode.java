@@ -45,4 +45,9 @@ public class BranchingControlFlowNode implements ControlFlowNode {
     public List<ControlFlowNode> getSinks() {
         return ImmutableList.of(trueBranch,falseBranch);
     }
+
+    @Override
+    public String nodeText() {
+        return type.toString();
+    }
 }
