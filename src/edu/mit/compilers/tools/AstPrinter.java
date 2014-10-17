@@ -36,26 +36,12 @@ public class AstPrinter {
      */
     private int printNode(AST ast) {
         int nodeId = id++;
-        drawNode(nodeId, ast.getText());
+        printStream.println(Dot.node(nodeId, ast.getText()));
         for (AST child = ast.getFirstChild(); child != null; child = child.getNextSibling()) {
             int childId = printNode(child);
             // Draw an edge to the child, now that we have its id.
-            drawEdge(nodeId, childId);
+            printStream.println(Dot.edge(nodeId, childId));
         }
         return nodeId;
     }
-
-    private void drawNode(int nodeId, String label) {
-        // We prepend a backslash to any backslash or quote.
-        // We need four backslashes to make it propogate through the Java String literal definition
-        // and through the regex system.
-        String escapedBackslashes = label.replaceAll("(\\\\)", "\\\\$1");
-        String escapedQuotes = escapedBackslashes.replaceAll("(\")","\\\\$1");
-        printStream.println(nodeId + "[label=\"" + escapedQuotes + "\"];");
-    }
-
-    private void drawEdge(int sourceId, int destinationId) {
-        printStream.println(sourceId + " -> " + destinationId + ";");
-    }
-
 }
