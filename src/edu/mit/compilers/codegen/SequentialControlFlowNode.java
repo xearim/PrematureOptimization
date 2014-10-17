@@ -77,4 +77,11 @@ public class SequentialControlFlowNode implements ControlFlowNode {
                 ? ImmutableList.<ControlFlowNode>of(getNext())
                 : ImmutableList.<ControlFlowNode>of();
     }
+
+    @Override
+    public String nodeText() {
+        return instruction.isPresent()
+                ? instruction.get().inAttSyntax()
+                : "NOP";
+    }
 }
