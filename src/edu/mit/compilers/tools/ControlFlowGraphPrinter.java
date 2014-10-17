@@ -45,7 +45,7 @@ public class ControlFlowGraphPrinter {
         } else {
             int nodeId = nextId++;
             nodeIds.put(node, nodeId);
-            printStream.println(Dot.node(nodeId, node.toString()));
+            printStream.println(Dot.node(nodeId, node.nodeText()));
             for (ControlFlowNode sink : node.getSinks()) {
                 int childId = printGraphFrom(sink);
                 // Draw an edge to the child, now that we have its id.
