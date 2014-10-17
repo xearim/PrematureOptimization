@@ -32,8 +32,8 @@ public class MethodGraphFactory implements GraphFactory {
 
         boolean isVoid = !method.getReturnType().getReturnType().isPresent();
         BiTerminalGraph fallThroughChecker = isVoid
-                ? BiTerminalGraph.ofInstructions(errorExit())
-                : BiTerminalGraph.ofInstructions();
+                ? BiTerminalGraph.ofInstructions()
+                : BiTerminalGraph.ofInstructions(errorExit());
 
         // TODO(jasonpr): Connect break and continue to an explicit error thrower.
         // The semantic checker should ensure that we'll never have one in a method's block,
