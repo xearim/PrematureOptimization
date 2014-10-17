@@ -41,13 +41,13 @@ public class MethodCallGraphFactory implements GraphFactory {
     private static final List<Register> ARG_REGISTERS =
             ImmutableList.of(RDI, RSI, RDX, RCX, R8, R9);
 
-    private final TerminaledGraph graph;
+    private final BiTerminalGraph graph;
 
     public MethodCallGraphFactory(MethodCall methodCall, Scope scope) {
         this.graph = calculateGraph(methodCall, scope);
     }
 
-    private TerminaledGraph calculateGraph(MethodCall methodCall, Scope scope) {
+    private BiTerminalGraph calculateGraph(MethodCall methodCall, Scope scope) {
         List<GeneralExpression> args = ImmutableList.copyOf(methodCall.getParameterValues());
 
         SequentialControlFlowNode preCallStart = SequentialControlFlowNode.nopTerminal();
@@ -56,17 +56,17 @@ public class MethodCallGraphFactory implements GraphFactory {
         // Setup args for call.
         int argNumber = args.size() - 1;
         while (argNumber >= 0) {
-            TerminaledGraph argEvaluator =
+            BiTerminalGraph argEvaluator =
                     new GeneralExprGraphFactory(args.get(argNumber), scope).getGraph();
 
-            TerminaledGraph argSetup;
+            BiTerminalGraph argSetup;
             if (argNumber >= ARG_REGISTERS.size()) {
                 // Once it's on the stack, we leave it there for the function call.
                 argSetup = argEvaluator;
             } else {
                 // Take if off the stack and put it in a register for the function call.
-                argSetup = TerminaledGraph.sequenceOf(argEvaluator,
-                        TerminaledGraph.ofInstructions(pop(ARG_REGISTERS.get(argNumber))));
+                argSetup = BiTerminalGraph.sequenceOf(argEvaluator,
+                        BiTerminalGraph.ofInstructions(pop(ARG_REGISTERS.get(argNumber))));
             }
 
             // Hook this arg setup into the graph.
@@ -75,24 +75,24 @@ public class MethodCallGraphFactory implements GraphFactory {
 
             argNumber--;
         }
-        TerminaledGraph preCall = new TerminaledGraph(preCallStart, preCallEnd);
+        BiTerminalGraph preCall = new BiTerminalGraph(preCallStart, preCallEnd);
 
-        TerminaledGraph call = TerminaledGraph.ofInstructions(call(methodCall.getMethodName()));
+        BiTerminalGraph call = BiTerminalGraph.ofInstructions(call(methodCall.getMethodName()));
 
         int numOverflowingArgs = args.size() - ARG_REGISTERS.size();
-        TerminaledGraph postCall = (numOverflowingArgs > 0)
-                ? TerminaledGraph.ofInstructions(
+        BiTerminalGraph postCall = (numOverflowingArgs > 0)
+                ? BiTerminalGraph.ofInstructions(
                         // Remove the pushed arguments from the stack.
                         add(new Literal(numOverflowingArgs * 8L), RSP),
                         push(RAX))
-                : TerminaledGraph.ofInstructions(push(RAX));
+                : BiTerminalGraph.ofInstructions(push(RAX));
 
         // TODO(jasonpr): Do 16-byte alignment.
-        return TerminaledGraph.sequenceOf(preCall, call, postCall);
+        return BiTerminalGraph.sequenceOf(preCall, call, postCall);
     }
 
     @Override
-    public TerminaledGraph getGraph() {
+    public BiTerminalGraph getGraph() {
         return graph;
     }
 }

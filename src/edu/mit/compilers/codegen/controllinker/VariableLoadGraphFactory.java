@@ -16,13 +16,13 @@ import edu.mit.compilers.codegen.asm.VariableReference;
 
 public class VariableLoadGraphFactory implements GraphFactory {
 
-    private final TerminaledGraph graph;
+    private final BiTerminalGraph graph;
 
     public VariableLoadGraphFactory(Location location, Scope scope) {
         this.graph = calculateLoad(location, scope);
     }
 
-    private TerminaledGraph calculateLoad(Location location, Scope scope) {
+    private BiTerminalGraph calculateLoad(Location location, Scope scope) {
         if (location instanceof ArrayLocation) {
             return calculateLoadFromArray((ArrayLocation) location, scope);
         } else if (location instanceof ScalarLocation) {
@@ -32,29 +32,29 @@ public class VariableLoadGraphFactory implements GraphFactory {
         }
     }
 
-    private TerminaledGraph calculateLoadFromArray(ArrayLocation location, Scope scope) {
+    private BiTerminalGraph calculateLoadFromArray(ArrayLocation location, Scope scope) {
         String name = location.getVariableName();
         NativeExpression index = location.getIndex();
         long bytesPerEntry = 8;
 
-        return TerminaledGraph.sequenceOf(
+        return BiTerminalGraph.sequenceOf(
                 new NativeExprGraphFactory(index, scope).getGraph(),
-                TerminaledGraph.ofInstructions(
+                BiTerminalGraph.ofInstructions(
                         pop(R10),
                         moveFromArray(new VariableReference(name, scope),
                                 R10, bytesPerEntry, R11),
                         push(R11)));
     }
 
-    private TerminaledGraph calculateLoadFromScalar(ScalarLocation location, Scope scope) {
+    private BiTerminalGraph calculateLoadFromScalar(ScalarLocation location, Scope scope) {
         String name = location.getName();
-        return TerminaledGraph.ofInstructions(
+        return BiTerminalGraph.ofInstructions(
                 move(new VariableReference(name, scope), R11),
                 push(R11));
     }
 
     @Override
-    public TerminaledGraph getGraph() {
+    public BiTerminalGraph getGraph() {
         return graph;
     }
 }

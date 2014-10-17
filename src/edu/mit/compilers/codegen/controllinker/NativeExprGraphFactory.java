@@ -21,7 +21,7 @@ public class NativeExprGraphFactory implements GraphFactory {
     }
 
     @Override
-    public TerminaledGraph getGraph() {
+    public BiTerminalGraph getGraph() {
         return getDelegate().getGraph();
     }
 

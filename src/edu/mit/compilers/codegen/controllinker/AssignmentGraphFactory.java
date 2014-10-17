@@ -31,7 +31,7 @@ public class AssignmentGraphFactory implements GraphFactory {
 		this.scope = scope;
 	}
 	
-	private TerminaledGraph calculateStore(Location target, Scope scope){
+	private BiTerminalGraph calculateStore(Location target, Scope scope){
 		if (target instanceof ArrayLocation) {
             return calculateStoreToArray((ArrayLocation) target, scope);
         } else if (target instanceof ScalarLocation) {
@@ -41,14 +41,14 @@ public class AssignmentGraphFactory implements GraphFactory {
         }
 	}
 	
-	private TerminaledGraph calculateStoreToArray(ArrayLocation target, Scope scope){
+	private BiTerminalGraph calculateStoreToArray(ArrayLocation target, Scope scope){
 		String name = target.getVariableName();
         NativeExpression index = target.getIndex();
         long bytesPerEntry = 8;
 
-        return TerminaledGraph.sequenceOf(
+        return BiTerminalGraph.sequenceOf(
                 new NativeExprGraphFactory(index, scope).getGraph(),
-                TerminaledGraph.ofInstructions(
+                BiTerminalGraph.ofInstructions(
                         pop(R10),
                         pop(R11),
                         moveToArray(R10, R11, bytesPerEntry, 
@@ -56,22 +56,22 @@ public class AssignmentGraphFactory implements GraphFactory {
                         ));
 	}
 	
-	private TerminaledGraph calculateStoreToScalar(ScalarLocation target, Scope scope){
+	private BiTerminalGraph calculateStoreToScalar(ScalarLocation target, Scope scope){
 		String name = target.getName();
-        return TerminaledGraph.ofInstructions(
+        return BiTerminalGraph.ofInstructions(
         		pop(R11),
                 move(R11, new VariableReference(name, scope))
                 );
 	}
 	
 	@Override
-	public TerminaledGraph getGraph() {
+	public BiTerminalGraph getGraph() {
 		switch(op){
 		case MINUS_EQUALS:
-			return TerminaledGraph.sequenceOf(
+			return BiTerminalGraph.sequenceOf(
 					new VariableLoadGraphFactory(target, scope).getGraph(),
 					new NativeExprGraphFactory(expr, scope).getGraph(),
-					TerminaledGraph.ofInstructions(
+					BiTerminalGraph.ofInstructions(
 							pop(R10),
 							pop(R11),
 							subtract(R11, R10),
@@ -80,10 +80,10 @@ public class AssignmentGraphFactory implements GraphFactory {
 					calculateStore(target, scope)
 					);
 		case PLUS_EQUALS:
-			return TerminaledGraph.sequenceOf(
+			return BiTerminalGraph.sequenceOf(
 					new VariableLoadGraphFactory(target, scope).getGraph(),
 					new NativeExprGraphFactory(expr, scope).getGraph(),
-					TerminaledGraph.ofInstructions(
+					BiTerminalGraph.ofInstructions(
 							pop(R10),
 							pop(R11),
 							add(R11, R10),
@@ -92,7 +92,7 @@ public class AssignmentGraphFactory implements GraphFactory {
 					calculateStore(target, scope)
 					);
 		case SET_EQUALS:
-			return TerminaledGraph.sequenceOf(
+			return BiTerminalGraph.sequenceOf(
 						new NativeExprGraphFactory(expr, scope).getGraph(),
 						calculateStore(target, scope)
 						);

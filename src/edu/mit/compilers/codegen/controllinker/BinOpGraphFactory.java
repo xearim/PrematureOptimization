@@ -42,7 +42,7 @@ public class BinOpGraphFactory implements GraphFactory {
 
     private final BinaryOperation binOp;
     private final Scope scope;
-    private final TerminaledGraph graph;
+    private final BiTerminalGraph graph;
     
     public BinOpGraphFactory(BinaryOperation binOp, Scope scope) {
         this.binOp = binOp;
@@ -50,7 +50,7 @@ public class BinOpGraphFactory implements GraphFactory {
         this.graph = calculateOperation();
     }
     
-    private TerminaledGraph calculateOperation() {
+    private BiTerminalGraph calculateOperation() {
         switch(binOp.getOperator()) {
             // TODO(manny): Factor this enum out from ast package into a compilers.common package.
             case PLUS:
@@ -74,14 +74,14 @@ public class BinOpGraphFactory implements GraphFactory {
         }
     }
  
-    private TerminaledGraph calculateArithmeticOperation() {
+    private BiTerminalGraph calculateArithmeticOperation() {
         BinaryOperator operator = binOp.getOperator();
         checkState(ARITHMETIC_OPS.contains(operator));
 
-        return TerminaledGraph.sequenceOf(
+        return BiTerminalGraph.sequenceOf(
                 new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
                 new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
-                TerminaledGraph.ofInstructions(
+                BiTerminalGraph.ofInstructions(
                         pop(R10),
                         pop(R11),
                         arithmeticOperator(binOp.getOperator(), R10, R11),
@@ -106,14 +106,14 @@ public class BinOpGraphFactory implements GraphFactory {
         }
     }
 
-    private TerminaledGraph calculateLogicOperation() {
+    private BiTerminalGraph calculateLogicOperation() {
         BinaryOperator operator = binOp.getOperator();
         checkState(LOGIC_OPS.contains(operator));
 
-        return TerminaledGraph.sequenceOf(
+        return BiTerminalGraph.sequenceOf(
                 new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
                 new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
-                TerminaledGraph.ofInstructions(
+                BiTerminalGraph.ofInstructions(
                         pop(R10),
                         pop(R11),
                         logicalOperator(binOp.getOperator(), R10, R11),
@@ -132,15 +132,15 @@ public class BinOpGraphFactory implements GraphFactory {
         }
     }
 
-    private TerminaledGraph calculateComparisonOperation() {
+    private BiTerminalGraph calculateComparisonOperation() {
         BinaryOperator operator = binOp.getOperator();
         checkState(COMPARISON_OPS.contains(operator));
 
 
-        return TerminaledGraph.sequenceOf(
+        return BiTerminalGraph.sequenceOf(
 	        new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
 	        new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
-	        TerminaledGraph.ofInstructions(
+	        BiTerminalGraph.ofInstructions(
 	                pop(R10),
 	                pop(R11),
 	                compare(binOp.getOperator(), R10, R11),
@@ -149,7 +149,7 @@ public class BinOpGraphFactory implements GraphFactory {
     }
 
     @Override
-    public TerminaledGraph getGraph() {
+    public BiTerminalGraph getGraph() {
         return graph;
     }
 }
