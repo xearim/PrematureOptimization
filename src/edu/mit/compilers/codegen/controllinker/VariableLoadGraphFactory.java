@@ -2,7 +2,8 @@ package edu.mit.compilers.codegen.controllinker;
 
 import static edu.mit.compilers.codegen.asm.Register.R10;
 import static edu.mit.compilers.codegen.asm.Register.R11;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.moveVariable;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.moveFromArray;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
 import edu.mit.compilers.ast.ArrayLocation;
@@ -40,7 +41,7 @@ public class VariableLoadGraphFactory implements GraphFactory {
                 new NativeExprGraphFactory(index, scope).getGraph(),
                 TerminaledGraph.ofInstructions(
                         pop(R10),
-                        moveVariable(new VariableReference(name, scope),
+                        moveFromArray(new VariableReference(name, scope),
                                 R10, bytesPerEntry, R11),
                         push(R11)));
     }
@@ -48,7 +49,7 @@ public class VariableLoadGraphFactory implements GraphFactory {
     private TerminaledGraph calculateLoadFromScalar(ScalarLocation location, Scope scope) {
         String name = location.getName();
         return TerminaledGraph.ofInstructions(
-                moveVariable(new VariableReference(name, scope), R11),
+                move(new VariableReference(name, scope), R11),
                 push(R11));
     }
 

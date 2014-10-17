@@ -28,4 +28,9 @@ public class ParameterScope extends Scope{
 	return locationDescriptor;
     }
 
+    @Override
+    public ScopeType getScopeType() {
+        return ScopeType.PARAMETER;
+    }
+
 }

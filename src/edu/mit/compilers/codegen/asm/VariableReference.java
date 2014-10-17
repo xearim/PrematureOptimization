@@ -23,7 +23,6 @@ public class VariableReference implements Value{
 
     @Override
     public String inAttSyntax() {
-        // TODO(manny): Figure out how to do this.  Or rearchitect.
-        throw new RuntimeException("Not yet implemented.");
+        return scope.getLocation(name);
     }
 }

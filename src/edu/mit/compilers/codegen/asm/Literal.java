@@ -22,7 +22,6 @@ public class Literal implements Value {
 
     @Override
     public String inAttSyntax() {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
+        return "$" + Long.toString(value);
     }
 }
