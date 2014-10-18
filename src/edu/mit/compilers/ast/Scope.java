@@ -111,6 +111,21 @@ public class Scope {
             return parent.get().offsetFromBasePointer(variableName);
         }
     }
+    
+    /** Get the offset of a variable in the parameter set in the stack.
+     * 
+     * <p>Parameter variable are in the stack iff they are parameter 7 or greater,
+     * thus parameters 1-6 have negative values because they are actually in registers.
+     * 
+     * <p>Requires that this is a parameter scope.
+     *  
+     * @param variableName
+     * @return
+     */
+    public int offsetInParameterSet(String variableName) {
+    	checkState(getScopeType().equals(ScopeType.PARAMETER));
+    	return (int) (7 - offset(variableName));
+    }
 
     /**
      * Get the offset of a variable, in this scope.

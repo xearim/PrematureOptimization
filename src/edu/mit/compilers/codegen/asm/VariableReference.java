@@ -2,6 +2,7 @@ package edu.mit.compilers.codegen.asm;
 
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.asm.Architecture;
+import edu.mit.compilers.codegen.asm.Label.LabelType;
 
 /** A reference to a variable, in a certain scope. */
 public class VariableReference implements Value{
@@ -21,6 +22,7 @@ public class VariableReference implements Value{
     public Scope getScope() {
         return scope;
     }
+    
 
     @Override
     public String inAttSyntax() {
@@ -28,8 +30,7 @@ public class VariableReference implements Value{
 		switch(targetScope.getScopeType()){
 		case GLOBAL:
 			// Globals are their name
-			// TODO(jasonpr): whatever schema we want for enumerating/nameing variables needs to be extended to here
-			return ".g_" + name;
+			return new Label(LabelType.GLOBAL, name).inAttSyntax();
 		case LOCAL:
 			// Locals are some offset of the base pointer
 			// its under the return address, then offset by all the other scopes
@@ -60,11 +61,11 @@ public class VariableReference implements Value{
 			default:
 				// All other args are at some offset to the base pointer
 				// its the old %rbp and %rsp then up to the arg
-				return Long.toString(Architecture.WORD_SIZE*2 + Architecture.WORD_SIZE*(7-targetScope.offset(name))) + 
+				return Long.toString(Architecture.WORD_SIZE*2 + Architecture.WORD_SIZE*targetScope.offsetInParameterSet(name)) + 
 									"(" + Register.RBP.inAttSyntax() + ")";
 			}
 		default:
-			throw new AssertionError("Unexpected scope type for " + this);
+			throw new AssertionError("Variable " + name + " not in scope, this should never happen");
 		}
     }
 }
