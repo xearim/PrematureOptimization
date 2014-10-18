@@ -1,10 +1,11 @@
 package edu.mit.compilers.codegen.controllinker;
 
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.errorExit;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.codegen.ControlFlowNode;
 
 /**
  * Produce a BiTerminalGraph that represents the entire execution of a method.
@@ -27,8 +28,8 @@ public class MethodGraphFactory implements GraphFactory {
 
         ControlTerminalGraph blockGraph = new BlockGraphFactory(block, scope).getGraph();
 
-
-        SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
+        BiTerminalGraph returnInstruction = BiTerminalGraph.ofInstructions(ret());
+        ControlFlowNode sink = returnInstruction.getBeginning();
 
         boolean isVoid = !method.getReturnType().getReturnType().isPresent();
         BiTerminalGraph fallThroughChecker = isVoid
@@ -38,11 +39,11 @@ public class MethodGraphFactory implements GraphFactory {
         // TODO(jasonpr): Connect break and continue to an explicit error thrower.
         // The semantic checker should ensure that we'll never have one in a method's block,
         // but... just in case.
-        blockGraph.getControlNodes().getReturnNode().setNext(end);
+        blockGraph.getControlNodes().getReturnNode().setNext(sink);
         blockGraph.getEnd().setNext(fallThroughChecker.getBeginning());
-        fallThroughChecker.getEnd().setNext(end);
+        fallThroughChecker.getEnd().setNext(sink);
 
-        return new BiTerminalGraph(blockGraph.getBeginning(), end);
+        return new BiTerminalGraph(blockGraph.getBeginning(), returnInstruction.getEnd());
     }
 
     @Override
