@@ -1,7 +1,6 @@
 package edu.mit.compilers.codegen.controllinker;
 
 import edu.mit.compilers.ast.Block;
-import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.Statement;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes;
@@ -10,11 +9,11 @@ import edu.mit.compilers.codegen.controllinker.statements.StatementGraphFactory;
 public class BlockGraphFactory implements ControlTerminalGraphFactory {
     private final ControlTerminalGraph graph;
 
-    public BlockGraphFactory(Block block, Scope scope) {
-        this.graph = calculateGraph(block, scope);
+    public BlockGraphFactory(Block block) {
+        this.graph = calculateGraph(block);
     }
 
-    private ControlTerminalGraph calculateGraph(Block block, Scope scope) {
+    private ControlTerminalGraph calculateGraph(Block block) {
         SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal();
         SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
         SequentialControlFlowNode continueNode = SequentialControlFlowNode.nopTerminal();
@@ -24,7 +23,7 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
         SequentialControlFlowNode currentNode = start;
         for (Statement statement : block.getStatements()) {
             ControlTerminalGraph statementGraph = 
-                    new StatementGraphFactory(statement, scope).getGraph();
+                    new StatementGraphFactory(statement, block.getScope()).getGraph();
 
             // Hook up control flow nodes
             statementGraph.getControlNodes().getContinueNode().setNext(continueNode);
