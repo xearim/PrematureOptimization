@@ -128,6 +128,7 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
                                 ((MethodCall) statement).getLocationDescriptor(),
                                 overshadowLocation);
                     }
+                    scope = scope.getParent().get();
                 }
             }
             else {
