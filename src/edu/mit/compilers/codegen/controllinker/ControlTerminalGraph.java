@@ -50,6 +50,11 @@ public class ControlTerminalGraph {
         this.controlNodes = controlNodes;
     }
 
+    public ControlTerminalGraph(BiTerminalGraph graph) {
+        // TODO(xearim): create ControlTerminalGraph from BiTerminal
+        throw new RuntimeException("Not yet implemented");
+    }
+
     public ControlFlowNode getBeginning() {
         return beginning;
     }

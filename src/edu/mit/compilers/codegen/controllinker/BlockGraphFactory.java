@@ -4,6 +4,7 @@ import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.Statement;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.codegen.controllinker.statements.StatementGraphFactory;
 
 public class BlockGraphFactory implements ControlTerminalGraphFactory {
     private final ControlTerminalGraph graph;
