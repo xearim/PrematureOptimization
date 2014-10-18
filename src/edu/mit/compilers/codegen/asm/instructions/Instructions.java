@@ -97,7 +97,7 @@ public final class Instructions {
         return new MoveFromArrayLocation(reference, multipliedOffset, multiplier, target);
     }
     
-    /** Does "mov target, referenceOffset(referenceBase, multipliedOffset, multiplier)" */
+    /** Does "mov source, targetOffset(targetBase, multipliedOffset, multiplier)" */
     public static Instruction moveToArray(Value source, Value multipliedOffset,
             long multiplier, VariableReference target) {
         return new MoveToArrayLocation(source, multipliedOffset, multiplier, target);
