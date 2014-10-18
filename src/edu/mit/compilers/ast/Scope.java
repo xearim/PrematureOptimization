@@ -147,6 +147,9 @@ public class Scope {
     }
 
     private long effectiveBasePointerOffset() {
+        if (!parent.isPresent()) {
+            return 0;
+        }
         Scope parentScope = parent.get();
         long parentBase = parentScope.effectiveBasePointerOffset();
         long parentExtent = parentScope.getScopeType() == ScopeType.LOCAL

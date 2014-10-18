@@ -15,11 +15,11 @@ import edu.mit.compilers.codegen.controllinker.statements.StatementGraphFactory;
 public class BlockGraphFactory implements ControlTerminalGraphFactory {
     private final ControlTerminalGraph graph;
 
-    public BlockGraphFactory(Block block, Scope scope) {
-        this.graph = calculateGraph(block, scope);
+    public BlockGraphFactory(Block block) {
+        this.graph = calculateGraph(block);
     }
 
-    private ControlTerminalGraph calculateGraph(Block block, Scope scope) {
+    private ControlTerminalGraph calculateGraph(Block block) {
         SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal();
         SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
         SequentialControlFlowNode continueNode = SequentialControlFlowNode.nopTerminal();
@@ -28,15 +28,15 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
 
         SequentialControlFlowNode currentNode = start;
         // Zero out variables
-        for(FieldDescriptor variable: scope.getVariables()){
-        	SequentialControlFlowNode nextNode = zeroOutVariable(variable, scope, currentNode);
+        for(FieldDescriptor variable: block.getScope().getVariables()){
+        	SequentialControlFlowNode nextNode = zeroOutVariable(variable, block.getScope(), currentNode);
         	currentNode.setNext(nextNode);
         	currentNode = nextNode;
         }
         
         for (Statement statement : block.getStatements()) {
             ControlTerminalGraph statementGraph = 
-                    new StatementGraphFactory(statement, scope).getGraph();
+                    new StatementGraphFactory(statement, block.getScope()).getGraph();
 
             // Hook up control flow nodes
             statementGraph.getControlNodes().getContinueNode().setNext(continueNode);

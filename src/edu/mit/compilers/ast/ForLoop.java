@@ -58,7 +58,10 @@ public class ForLoop implements Statement {
     public NativeExpression getRangeEnd() {
         return rangeEnd;
     }
-    
+
+    public Block getBody() {
+        return body;
+    }
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
 }
