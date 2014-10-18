@@ -10,7 +10,7 @@ import edu.mit.compilers.codegen.controllinker.statements.StatementGraphFactory;
 public class BlockGraphFactory implements ControlTerminalGraphFactory {
     private final ControlTerminalGraph graph;
 
-    public BlockGraphFactory(Block block, Scope scope, boolean inLoop) {
+    public BlockGraphFactory(Block block, Scope scope) {
         this.graph = calculateGraph(block, scope);
     }
 

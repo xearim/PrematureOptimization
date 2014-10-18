@@ -25,7 +25,7 @@ public class MethodGraphFactory implements GraphFactory {
         Block block = method.getBlock();
         Scope scope = method.getParameters();
 
-        ControlTerminalGraph blockGraph = new BlockGraphFactory(block, scope, false).getGraph();
+        ControlTerminalGraph blockGraph = new BlockGraphFactory(block, scope).getGraph();
 
 
         SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
