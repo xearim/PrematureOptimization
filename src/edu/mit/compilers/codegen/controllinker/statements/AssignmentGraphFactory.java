@@ -6,6 +6,7 @@ import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.VariableReference;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.GraphFactory;
@@ -47,14 +48,13 @@ public class AssignmentGraphFactory implements GraphFactory {
 	private BiTerminalGraph calculateStoreToArray(ArrayLocation target, Scope scope){
 		String name = target.getVariableName();
         NativeExpression index = target.getIndex();
-        long bytesPerEntry = 8;
 
         return BiTerminalGraph.sequenceOf(
                 new NativeExprGraphFactory(index, scope).getGraph(),
                 BiTerminalGraph.ofInstructions(
                         pop(R11),
                         pop(R10),
-                        moveToArray(R10, R11, bytesPerEntry, 
+                        moveToArray(R10, R11, Architecture.BYTES_PER_ENTRY, 
                         		new VariableReference(name, scope))
                         ));
 	}
