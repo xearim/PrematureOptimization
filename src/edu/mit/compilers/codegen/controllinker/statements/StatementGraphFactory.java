@@ -37,12 +37,12 @@ public class StatementGraphFactory implements ControlTerminalGraphFactory {
         } else if (statement instanceof ForLoop) {
             return new ForLoopGraphFactory((ForLoop) statement, scope).getGraph();
         } else if (statement instanceof IfStatement) {
-            return new IfStatementGraphFactory((IfStatement) statement, scope);
+            return new IfStatementGraphFactory((IfStatement) statement, scope).getGraph();
         } else if (statement instanceof MethodCall) {
             // TODO(xearim): figure out how to retrieve Method from MethodCall
             throw new RuntimeException("MethodCallFactory not implemented");
         } else if (statement instanceof ReturnStatement) {
-            return new ReturnStatementStatementGraphFactory((ReturnStatement) statement, scope).getGraph();
+            return new ReturnStatementGraphFactory((ReturnStatement) statement, scope).getGraph();
         } else if (statement instanceof WhileLoop) {
             return new WhileLoopGraphFactory((WhileLoop) statement, scope).getGraph();
         } else {

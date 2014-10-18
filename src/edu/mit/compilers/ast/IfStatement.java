@@ -11,24 +11,24 @@ public class IfStatement implements Statement {
     private final LocationDescriptor locationDescriptor;
 
     private IfStatement(NativeExpression condition, Block thenBlock,
-	    Optional<Block> elseBlock, LocationDescriptor locationDescriptor) {
+            Optional<Block> elseBlock, LocationDescriptor locationDescriptor) {
         this.condition = condition;
         this.thenBlock = thenBlock;
         this.elseBlock = elseBlock;
-	this.locationDescriptor = locationDescriptor;
+        this.locationDescriptor = locationDescriptor;
     }
-    
+
     public static IfStatement ifThen(NativeExpression condition, Block thenBlock,
             LocationDescriptor locationDescriptor) {
         return new IfStatement(
                 condition, thenBlock, Optional.<Block> absent(), locationDescriptor);
     }
-    
+
     public static IfStatement ifThenElse(NativeExpression condition, Block thenBlock,
             Block elseBlock, LocationDescriptor locationDescriptor) {
         return new IfStatement(condition, thenBlock, Optional.of(elseBlock), locationDescriptor);
     }
-    
+
     @Override
     public Iterable<? extends Node> getChildren() {
         ImmutableList.Builder<Node> builder = ImmutableList.builder();
@@ -45,26 +45,26 @@ public class IfStatement implements Statement {
         return "if" + (elseBlock.isPresent() ? "-else" : "");
     }
 
-	@Override
-	public Iterable<Block> getBlocks() {
-		if(elseBlock.isPresent())
-			return ImmutableList.of(thenBlock, elseBlock.get());
-		return ImmutableList.of(thenBlock);
-	}
+    @Override
+    public Iterable<Block> getBlocks() {
+        if(elseBlock.isPresent())
+            return ImmutableList.of(thenBlock, elseBlock.get());
+        return ImmutableList.of(thenBlock);
+    }
 
-	@Override
-	public boolean canReturn() {
-		for(Statement subStatement: thenBlock.getStatements()){
-			if(subStatement.canReturn())
-				return true;
-		}
-		if(elseBlock.isPresent())
-			for(Statement subStatement: elseBlock.get().getStatements()){
-				if(subStatement.canReturn())
-					return true;
-			}
-		return false;
-	}
+    @Override
+    public boolean canReturn() {
+        for(Statement subStatement: thenBlock.getStatements()){
+            if(subStatement.canReturn())
+                return true;
+        }
+        if(elseBlock.isPresent())
+            for(Statement subStatement: elseBlock.get().getStatements()){
+                if(subStatement.canReturn())
+                    return true;
+            }
+        return false;
+    }
 
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
@@ -73,7 +73,15 @@ public class IfStatement implements Statement {
     public NativeExpression getCondition() {
         return condition;
     }
-    
+
+    public Block getThenBlock() {
+        return thenBlock;
+    }
+
+    public Optional<Block> getElseBlock() {
+        return elseBlock;
+    }
+
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

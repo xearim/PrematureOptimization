@@ -27,7 +27,7 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
          * 3) Hook up the continue, and break nodes for the block correctly
          * 4) uncomment return statement
          */
-        throw new RuntimeException("For loop graph factory unimplemented");
+        throw new RuntimeException("While loop graph factory unimplemented");
 
         //return new ControlTerminalGraph(start, end,
         //        new ControlNodes(breakNode, continueNode, returnNode));
