@@ -1,14 +1,11 @@
 package edu.mit.compilers.codegen.controllinker.statements;
 
 import edu.mit.compilers.ast.Assignment;
-import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BreakStatement;
 import edu.mit.compilers.ast.ContinueStatement;
 import edu.mit.compilers.ast.ForLoop;
 import edu.mit.compilers.ast.IfStatement;
-import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.MethodCall;
-import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.Statement;
@@ -26,7 +23,7 @@ public class StatementGraphFactory implements ControlTerminalGraphFactory {
     private ControlTerminalGraph calculateGraph(Statement statement, Scope scope) {
         if (statement instanceof Assignment) {
             Assignment assignment = (Assignment) statement;
-            return new ControlTerminalGraph(
+            return ControlTerminalGraph.ofBiTerminalGraph(
                     new AssignmentGraphFactory(assignment.getLocation(),
                             assignment.getOperation(), assignment.getExpression(),
                             scope).getGraph());
