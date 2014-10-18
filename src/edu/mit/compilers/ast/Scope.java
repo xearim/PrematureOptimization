@@ -7,8 +7,6 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-import edu.mit.compilers.codegen.asm.Register;
-
 public class Scope {
 	
 	private Optional<Scope> parent;
@@ -49,7 +47,7 @@ public class Scope {
 		return (parent.isPresent() && parent.get().isInScope(identifier));
 	}
 	
-	    /**
+	   /**
      * Return whether this scope has an entry for the given variable name. 
      *
      * <p>This method ignores any parent scopes. 
@@ -70,59 +68,21 @@ public class Scope {
     }
     
     /**
-     * Produces the x86-64 reference location for a given variable
-     * according to our decided stack management scheme plus the calling
-     * convention for functions
-     * 
+     * Returns the scope that directly contains a given variable
      * Asserts that the variable must actually be present
      * 
-     * @param variableName - the variable you want to access in memory
+     * @param variableName - the variable you want to access
      */
-    public String getLocation(String variableName){
+    public Scope getLocation(String variableName){
     	checkState(isInScope(variableName));
-    	if(!isInScopeImmediately(variableName)){
+    	if(isInScopeImmediately(variableName)){
+    		// It must be in this scope, so just return it
+    		return this;
+    	} else {
     		// Since the variable must be in scope
     		// this recursion will always succeed because you must find
     		// the variable before you run out of scopes
     		return parent.get().getLocation(variableName);
-    	} else {
-    		switch(getScopeType()){
-			case GLOBAL:
-				// Globals are their name
-				// TODO(jasonpr): whatever schema we want for enumerating/nameing variables needs to be extended to here
-				return ".g_" + variableName;
-			case LOCAL:
-				// Locals are some offset of the base pointer
-				return Long.toString(-8 + -8*offsetFromBasePointer(variableName)) + "(" + Register.RBP.inAttSyntax() + ")";
-			case PARAMETER:
-				// Parameters are either a register or a base pointer offset
-				// dont know if i love this cast
-				switch((int) offset(variableName)){
-				case 1:
-					// Holds the first arg
-					return Register.RDI.inAttSyntax();
-				case 2:
-					// Holds the second arg
-					return Register.RSI.inAttSyntax();
-				case 3:
-					// Holds the third arg
-					return Register.RDX.inAttSyntax();
-				case 4:
-					// Holds the fourth arg
-					return Register.RCX.inAttSyntax();
-				case 5:
-					// Holds the fifth arg
-					return Register.R8.inAttSyntax();
-				case 6:
-					// Holds the sixth arg
-					return Register.R9.inAttSyntax();
-				default:
-					// All other args are at some offset to the base pointer
-					return Long.toString(16 + 8*(7-offset(variableName))) + "(" + Register.RBP.inAttSyntax() + ")";
-				}
-			default:
-				throw new AssertionError("Unexpected scope type for " + this);
-    		}
     	}
     }
 
@@ -137,7 +97,7 @@ public class Scope {
      * @param variableName
      * @return
      */
-    private long offsetFromBasePointer(String variableName) {
+    public long offsetFromBasePointer(String variableName) {
         checkState(getScopeType().equals(ScopeType.LOCAL));
         if (isInScopeImmediately(variableName)) {
             return offset(variableName) + effectiveBasePointerOffset();
@@ -151,6 +111,21 @@ public class Scope {
             return parent.get().offsetFromBasePointer(variableName);
         }
     }
+    
+    /** Get the offset of a variable in the parameter set in the stack.
+     * 
+     * <p>Parameter variable are in the stack iff they are parameter 7 or greater,
+     * thus parameters 1-6 have negative values because they are actually in registers.
+     * 
+     * <p>Requires that this is a parameter scope.
+     *  
+     * @param variableName
+     * @return
+     */
+    public int offsetInParameterSet(String variableName) {
+    	checkState(getScopeType().equals(ScopeType.PARAMETER));
+    	return (int) (7 - offset(variableName));
+    }
 
     /**
      * Get the offset of a variable, in this scope.
@@ -160,7 +135,7 @@ public class Scope {
      * 
      * <p>Requires that the variable is in this immediate scope.
      */
-    private long offset(String variableName) {
+    public long offset(String variableName) {
         long offset = 0;
         for (FieldDescriptor field : variables) {
             if (variableName.equals(field.name)) {
@@ -172,22 +147,12 @@ public class Scope {
     }
 
     private long effectiveBasePointerOffset() {
-        switch (getScopeType()) {
-            case GLOBAL:
-                return 0;
-            case LOCAL:
-                Scope parentScope = parent.get();
-                long parentBase = parentScope.effectiveBasePointerOffset();
-                long parentExtent = parentScope.getScopeType() == ScopeType.PARAMETER
-                        ? 0 // Parameters come before the base pointer.
-                        : parentScope.size();
-                return parentBase + parentExtent;
-            case PARAMETER:
-                // TODO(jasonpr): Decide if this is crazy.
-                return 0;
-            default:
-                throw new AssertionError("Unexpected scope type for " + this);
-        }
+        Scope parentScope = parent.get();
+        long parentBase = parentScope.effectiveBasePointerOffset();
+        long parentExtent = parentScope.getScopeType() == ScopeType.LOCAL
+                ? parentScope.size() 
+                : 0; // Parameters come before the base pointer.
+        return parentBase + parentExtent;
     }
 
     /**
