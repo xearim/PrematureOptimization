@@ -2,9 +2,12 @@ package edu.mit.compilers.codegen.asm;
 
 public class Label implements Value {
     public static enum LabelType {
-        GLOBAL("g"), // A global variable.
-        METHOD("m"), // The start of a method.
-        CONTROL_FLOW("cf"); // An instruction inside a method.
+        // A global variable.
+        GLOBAL(".g_"),
+        // The start of a method.  Has no prefix, for easy compatibility with callouts.
+        METHOD(""),
+        // An instruction inside a method.
+        CONTROL_FLOW(".cf_");
 
         private final String prefix;
 
@@ -27,6 +30,6 @@ public class Label implements Value {
 
     @Override
     public String inAttSyntax() {
-        return "." + type.getPrefix() + "_" + name;
+        return type.getPrefix() + name;
     }
 }
