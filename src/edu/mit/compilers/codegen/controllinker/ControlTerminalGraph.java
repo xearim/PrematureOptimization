@@ -66,4 +66,10 @@ public class ControlTerminalGraph {
     public ControlNodes getControlNodes() {
         return controlNodes;
     }
+
+    public static ControlTerminalGraph nopTerminal() {
+        // TODO(xearim): implement ControlTerminalGraph equivalent of
+        // SequentialTerminalGraph#nopTerminal
+        throw new RuntimeException("ControlTerminalGraph#nopTerminal not yet implemented");
+    }
 }

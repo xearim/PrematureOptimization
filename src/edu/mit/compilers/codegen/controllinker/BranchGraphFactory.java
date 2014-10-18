@@ -12,7 +12,8 @@ public class BranchGraphFactory implements GraphFactory {
 
     private final BiTerminalGraph graph;
 
-    public BranchGraphFactory(BiTerminalGraph condition, BiTerminalGraph trueBranch,
+    public BranchGraphFactory(BiTerminalGraph condition,
+            BiTerminalGraph trueBranch,
             BiTerminalGraph falseBranch) {
         this.graph = constructGraph(condition, trueBranch, falseBranch);
     }
