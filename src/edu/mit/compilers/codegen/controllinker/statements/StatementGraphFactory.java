@@ -42,7 +42,7 @@ public class StatementGraphFactory implements ControlTerminalGraphFactory {
         } else if (statement instanceof WhileLoop) {
             return new WhileLoopGraphFactory((WhileLoop) statement, scope).getGraph();
         } else {
-            throw new RuntimeException(
+            throw new AssertionError(
                     "Received something that isn't a known statement");
         }
     }
