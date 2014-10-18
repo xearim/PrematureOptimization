@@ -2,7 +2,6 @@ package edu.mit.compilers.codegen.asm;
 
 public class Label implements Value {
     public static enum LabelType {
-    	// I dont believe that we need to have global variables handled separately from any other variable
         GLOBAL("g"), // A global variable.
         METHOD("m"), // The start of a method.
         CONTROL_FLOW("cf"); // An instruction inside a method.
