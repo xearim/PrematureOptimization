@@ -1,6 +1,7 @@
 package edu.mit.compilers.codegen.controllinker;
 
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.errorExit;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.enter;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.Method;
@@ -24,7 +25,11 @@ public class MethodGraphFactory implements GraphFactory {
     private BiTerminalGraph calculateGraph(Method method) {
         Block block = method.getBlock();
 
+        
+        BiTerminalGraph enterInstruction = BiTerminalGraph.ofInstructions(enter(block));
         ControlTerminalGraph blockGraph = new BlockGraphFactory(block).getGraph();
+        // Link the Entry instruction to the start of the block
+        enterInstruction.getEnd().setNext(blockGraph.getBeginning());
 
         BiTerminalGraph returnInstruction = BiTerminalGraph.ofInstructions(ret());
         ControlFlowNode sink = returnInstruction.getBeginning();
@@ -41,7 +46,7 @@ public class MethodGraphFactory implements GraphFactory {
         blockGraph.getEnd().setNext(fallThroughChecker.getBeginning());
         fallThroughChecker.getEnd().setNext(sink);
 
-        return new BiTerminalGraph(blockGraph.getBeginning(), returnInstruction.getEnd());
+        return new BiTerminalGraph(enterInstruction.getBeginning(), returnInstruction.getEnd());
     }
 
     @Override

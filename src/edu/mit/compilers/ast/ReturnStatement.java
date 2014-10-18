@@ -45,6 +45,11 @@ public class ReturnStatement implements Statement {
 	public boolean canReturn() {
 		return true;
 	}
+	
+	@Override
+	public long getMemorySize() {
+		return 0;
+	}
 
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;

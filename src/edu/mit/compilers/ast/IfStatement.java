@@ -65,6 +65,16 @@ public class IfStatement implements Statement {
             }
         return false;
     }
+    
+    @Override
+	public long getMemorySize() {
+    	if(elseBlock.isPresent())
+    		return thenBlock.getMemorySize() > elseBlock.get().getMemorySize()
+    					? thenBlock.getMemorySize()
+    					: elseBlock.get().getMemorySize();
+    	else
+    		return thenBlock.getMemorySize();
+	}
 
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;

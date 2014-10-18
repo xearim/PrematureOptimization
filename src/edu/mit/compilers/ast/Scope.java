@@ -163,7 +163,7 @@ public class Scope {
      *
      * <p>For locals this is the size of this scope's sub-frame on the stack.
      */
-    private long size() {
+    public long size() {
         int offset = 0;
         for (FieldDescriptor field : variables) {
             offset += field.getSize();

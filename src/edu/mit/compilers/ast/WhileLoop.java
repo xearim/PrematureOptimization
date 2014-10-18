@@ -47,6 +47,11 @@ public class WhileLoop implements Statement {
 		}
 		return false;
 	}
+	
+	@Override
+	public long getMemorySize() {
+		return body.getMemorySize();
+	}
 
     public static WhileLoop
 	simple(NativeExpression condition, Block body, LocationDescriptor locationDescriptor) {

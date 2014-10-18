@@ -38,7 +38,9 @@ public enum InstructionType {
     SHR ("SHR"),
     // Unconditional Jump
     JMP ("JMP"),
-    MOV ("MOV");
+    MOV ("MOV"),
+    ENTER ("ENTER"),
+    LEAVE ("LEAVE");
 
     private String instructionName;
 
