@@ -128,4 +128,9 @@ public final class Instructions {
         return new PlaceHolder("Halt and catch fire.");
     }
 
+    /** Issue a return instruction. */
+    public static Instruction ret() {
+        return new PlaceHolder("RET");
+    }
+
 }
