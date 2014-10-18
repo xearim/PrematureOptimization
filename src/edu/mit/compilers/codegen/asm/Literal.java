@@ -5,6 +5,7 @@ import edu.mit.compilers.ast.NativeLiteral;
 public class Literal implements Value {
     public static final Literal TRUE = new Literal(1);
     public static final Literal FALSE = new Literal(0);
+    public static final Literal INITIAL_VALUE = new Literal(0);
 
     private final long value;
 
