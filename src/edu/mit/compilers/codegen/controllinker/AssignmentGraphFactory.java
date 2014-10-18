@@ -49,8 +49,8 @@ public class AssignmentGraphFactory implements GraphFactory {
         return BiTerminalGraph.sequenceOf(
                 new NativeExprGraphFactory(index, scope).getGraph(),
                 BiTerminalGraph.ofInstructions(
-                        pop(R10),
                         pop(R11),
+                        pop(R10),
                         moveToArray(R10, R11, bytesPerEntry, 
                         		new VariableReference(name, scope))
                         ));
