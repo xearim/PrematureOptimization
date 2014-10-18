@@ -27,14 +27,11 @@ public class StatementGraphFactory implements ControlTerminalGraphFactory {
 
     private ControlTerminalGraph calculateGraph(Statement statement, Scope scope) {
         if (statement instanceof Assignment) {
-            // TODO(Manny): fjawlkgjawl;
             Assignment assignment = (Assignment) statement;
             return new ControlTerminalGraph(
                     new AssignmentGraphFactory(assignment.getLocation(),
                     assignment.getOperation(), assignment.getExpression(),
                     scope).getGraph());
-            throw new RuntimeException("ControlTerminalGraph");
-            return new AssignmentGraphFactory((Assignment) statement, scope);
         } else if (statement instanceof BreakStatement) {
             return new BreakStatementGraphFactory((BreakStatement) statement, scope);
         } else if (statement instanceof ContinueStatement) {
@@ -44,8 +41,9 @@ public class StatementGraphFactory implements ControlTerminalGraphFactory {
         } else if (statement instanceof IfStatement) {
             return new IfStatementGraphFactory((IfStatement) statement, scope);
         } else if (statement instanceof MethodCall) {
-            // TODO(Manny): make compatible with existing code
-//            return new MethodCallStatementGraphFactory((MethodCall) statement, scope);
+            // TODO(xearim): figure out how to retrieve Method from MethodCall
+//            methodCall = (MethodCall) statement;
+//            return new MethodCallFactory(Method method);
         } else if (statement instanceof ReturnStatement) {
             return new ReturnStatementStatementGraphFactory((ReturnStatement) statement, scope);
         } else if (statement instanceof WhileLoop) {
@@ -58,8 +56,7 @@ public class StatementGraphFactory implements ControlTerminalGraphFactory {
 
     @Override
     public ControlTerminalGraph getGraph() {
-        // TODO Auto-generated method stub
-        return null;
+        return graph;
     }
 
 }

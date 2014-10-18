@@ -7,7 +7,6 @@ import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.asm.VariableReference;
-import edu.mit.compilers.codegen.asm.instructions.Instructions;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.GraphFactory;
 import edu.mit.compilers.codegen.controllinker.NativeExprGraphFactory;
