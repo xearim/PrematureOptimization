@@ -4,7 +4,6 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.errorExit;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.Method;
-import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.ControlFlowNode;
 
 /**
@@ -24,9 +23,8 @@ public class MethodGraphFactory implements GraphFactory {
 
     private BiTerminalGraph calculateGraph(Method method) {
         Block block = method.getBlock();
-        Scope scope = method.getParameters();
 
-        ControlTerminalGraph blockGraph = new BlockGraphFactory(block, scope).getGraph();
+        ControlTerminalGraph blockGraph = new BlockGraphFactory(block).getGraph();
 
         BiTerminalGraph returnInstruction = BiTerminalGraph.ofInstructions(ret());
         ControlFlowNode sink = returnInstruction.getBeginning();

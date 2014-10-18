@@ -26,15 +26,14 @@ public class IfStatementGraphFactory implements ControlTerminalGraphFactory {
 
         // Obtain then block
         ControlTerminalGraph thenBlockGraph =
-                new BlockGraphFactory(ifStatement.getThenBlock(),
-                        scope).getGraph();
+                new BlockGraphFactory(ifStatement.getThenBlock()).getGraph();
 
         // Obtain else block
         Optional<Block> elseBlock = ifStatement.getElseBlock();
         ControlTerminalGraph elseBlockGraph;
         if (elseBlock.isPresent()) {
             elseBlockGraph =
-                    new BlockGraphFactory(elseBlock.get(), scope).getGraph();
+                    new BlockGraphFactory(elseBlock.get()).getGraph();
         } else {
             elseBlockGraph = ControlTerminalGraph.nopTerminal();
         }
