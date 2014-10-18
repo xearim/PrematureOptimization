@@ -17,10 +17,8 @@ import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
 
 public class StatementGraphFactory implements ControlTerminalGraphFactory {
-//    Statement statement;
-//    Scope scope;
     private final ControlTerminalGraph graph;
-    
+
     public StatementGraphFactory(Statement statement, Scope scope) {
         this.graph = calculateGraph(statement, scope);
     }
@@ -30,24 +28,23 @@ public class StatementGraphFactory implements ControlTerminalGraphFactory {
             Assignment assignment = (Assignment) statement;
             return new ControlTerminalGraph(
                     new AssignmentGraphFactory(assignment.getLocation(),
-                    assignment.getOperation(), assignment.getExpression(),
-                    scope).getGraph());
+                            assignment.getOperation(), assignment.getExpression(),
+                            scope).getGraph());
         } else if (statement instanceof BreakStatement) {
-            return new BreakStatementGraphFactory((BreakStatement) statement, scope);
+            return new BreakStatementGraphFactory().getGraph();
         } else if (statement instanceof ContinueStatement) {
-            return new ContinueStatementGraphFactory((ContinueStatement) statement, scope);
+            return new ContinueStatementGraphFactory().getGraph();
         } else if (statement instanceof ForLoop) {
-            return new ForLoopGraphFactory((ForLoop) statement, scope);
+            return new ForLoopGraphFactory((ForLoop) statement, scope).getGraph();
         } else if (statement instanceof IfStatement) {
             return new IfStatementGraphFactory((IfStatement) statement, scope);
         } else if (statement instanceof MethodCall) {
             // TODO(xearim): figure out how to retrieve Method from MethodCall
-//            methodCall = (MethodCall) statement;
-//            return new MethodCallFactory(Method method);
+            throw new RuntimeException("MethodCallFactory not implemented");
         } else if (statement instanceof ReturnStatement) {
-            return new ReturnStatementStatementGraphFactory((ReturnStatement) statement, scope);
+            return new ReturnStatementStatementGraphFactory((ReturnStatement) statement, scope).getGraph();
         } else if (statement instanceof WhileLoop) {
-            return new WhileLoopGraphFactory((WhileLoop) statement, scope);
+            return new WhileLoopGraphFactory((WhileLoop) statement, scope).getGraph();
         } else {
             throw new RuntimeException(
                     "Received something that isn't a known statement");
