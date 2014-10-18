@@ -1,4 +1,4 @@
-package edu.mit.compilers.codegen.controllinker;
+package edu.mit.compilers.codegen.controllinker.statements;
 
 import edu.mit.compilers.ast.ArrayLocation;
 import edu.mit.compilers.ast.AssignmentOperation;
@@ -8,6 +8,10 @@ import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.asm.VariableReference;
 import edu.mit.compilers.codegen.asm.instructions.Instructions;
+import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
+import edu.mit.compilers.codegen.controllinker.GraphFactory;
+import edu.mit.compilers.codegen.controllinker.NativeExprGraphFactory;
+import edu.mit.compilers.codegen.controllinker.VariableLoadGraphFactory;
 import static edu.mit.compilers.codegen.asm.Register.R10;
 import static edu.mit.compilers.codegen.asm.Register.R11;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
