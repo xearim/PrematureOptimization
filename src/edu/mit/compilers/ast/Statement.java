@@ -8,6 +8,13 @@ public interface Statement extends Node {
 	 */
 	public boolean canReturn();
 	
+	
+	/**
+	 * Returns the size of this statement in terms of needed storage space
+	 * on the stack, for many statements this is 0
+	 */
+	public long getMemorySize();
+	
 	/**
 	 * Returns the Blocks at a recursive depth of 1 below the current statement
 	 * This gives back the block(s) underneath an if, while, and for loop

@@ -33,6 +33,14 @@ public class Block implements Node {
     	return scope;
     }
     
+    public long getMemorySize() {
+    	long size = 0;
+    	for(Statement statement: getStatements()){
+    		size = size < statement.getMemorySize() ? statement.getMemorySize() : size;
+    	}
+    	return size + scope.size();
+    }
+    
     // TODO: (jasonpr) update this when getChildren of nodeSequence has a more specific return type
     public Iterable<Statement> getStatements(){
     	ImmutableList.Builder<Statement> builder = ImmutableList.builder();

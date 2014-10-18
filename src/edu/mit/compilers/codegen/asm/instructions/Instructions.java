@@ -1,6 +1,7 @@
 package edu.mit.compilers.codegen.asm.instructions;
 
 import edu.mit.compilers.ast.BinaryOperator;
+import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.Value;
@@ -121,6 +122,16 @@ public final class Instructions {
     /** Does `jmp(type) label.inAttSyntax`. */
     public static Instruction jumpTyped(JumpType type, Label target) {
     	return new JumpTyped(type, target);
+    }
+    
+    /** Does `enter $x, $0`. Calculated appropriately for a given method */
+    public static Instruction enter(Block methodBlock){
+    	return new Enter(methodBlock);
+    }
+    
+    /** Does `leave` */
+    public static Instruction leave(){
+    	return new Leave();
     }
 
     /** Exits with some error code. */

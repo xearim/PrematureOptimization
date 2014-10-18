@@ -35,6 +35,11 @@ public class Assignment implements Statement {
 	public boolean canReturn() {
 		return false;
 	}
+	
+	@Override
+	public long getMemorySize() {
+		return 0;
+	}
 
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;

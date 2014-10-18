@@ -42,6 +42,11 @@ public class ForLoop implements Statement {
 		}
 		return false;
 	}
+	
+	@Override
+	public long getMemorySize() {
+		return body.getMemorySize();
+	}
 
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;

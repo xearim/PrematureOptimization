@@ -37,6 +37,11 @@ public class MethodCall implements Statement, NativeExpression {
 		return false;
 	}
 	
+	@Override
+	public long getMemorySize() {
+		return 0;
+	}
+	
 	public String getMethodName(){
 		return methodName;
 	}
