@@ -1,11 +1,14 @@
 package edu.mit.compilers.codegen.controllinker.statements;
 
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
+
 import com.google.common.base.Optional;
 
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes;
@@ -28,11 +31,15 @@ public class ReturnStatementGraphFactory implements ControlTerminalGraphFactory 
         Optional<NativeExpression> value = rs.getValue(); 
 
         if (value.isPresent()) {
-            BiTerminalGraph valueGraph =
-                    new NativeExprGraphFactory(value.get(), scope).getGraph();
-            start.setNext(valueGraph.getBeginning());
-            valueGraph.getEnd().setNext(returnNode);
+            BiTerminalGraph putReturnValueInReturnRegister =
+                    BiTerminalGraph.sequenceOf(
+                            new NativeExprGraphFactory(value.get(), scope).getGraph(),
+                            BiTerminalGraph.ofInstructions(pop(Register.RAX)));
+
+            start.setNext(putReturnValueInReturnRegister.getBeginning());
+            putReturnValueInReturnRegister.getEnd().setNext(returnNode);
         } else {
+            // Don't modify the stack or any registers.
             start.setNext(returnNode);
         }
         
