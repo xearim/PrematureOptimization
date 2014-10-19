@@ -2,12 +2,20 @@ package edu.mit.compilers.codegen.controllinker.statements;
 
 import com.google.common.base.Optional;
 
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.compareFlagged;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.IfStatement;
 import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.codegen.BranchingControlFlowNode;
+import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.codegen.asm.Literal;
+import edu.mit.compilers.codegen.asm.Register;
+import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.BlockGraphFactory;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph;
+import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
 import edu.mit.compilers.codegen.controllinker.NativeExprGraphFactory;
 
@@ -20,37 +28,51 @@ public class IfStatementGraphFactory implements ControlTerminalGraphFactory {
 
     private ControlTerminalGraph calculateGraph(IfStatement ifStatement,
             Scope scope) {
+        SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode continueNode = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode breakNode = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode returnNode = SequentialControlFlowNode.nopTerminal(); 
+        
+        
         // Conditional
         BiTerminalGraph conditionalGraph = new NativeExprGraphFactory(
                 ifStatement.getCondition(), scope).getGraph();
-
+        start.setNext(conditionalGraph.getBeginning());
+        
+        BiTerminalGraph ifComparator =
+                BiTerminalGraph.ofInstructions(
+                        pop(Register.R10),
+                        compareFlagged(Literal.TRUE, Register.R10));
+        conditionalGraph.getEnd().setNext(ifComparator.getBeginning());
+        
         // Obtain then block
         ControlTerminalGraph thenBlockGraph =
                 new BlockGraphFactory(ifStatement.getThenBlock()).getGraph();
+        thenBlockGraph.getControlNodes().getBreakNode().setNext(breakNode);
+        thenBlockGraph.getControlNodes().getContinueNode().setNext(continueNode);
+        thenBlockGraph.getControlNodes().getReturnNode().setNext(returnNode);
+        thenBlockGraph.getEnd().setNext(end);
 
         // Obtain else block
         Optional<Block> elseBlock = ifStatement.getElseBlock();
-        ControlTerminalGraph elseBlockGraph;
-        if (elseBlock.isPresent()) {
-            elseBlockGraph =
-                    new BlockGraphFactory(elseBlock.get()).getGraph();
-        } else {
-            elseBlockGraph = ControlTerminalGraph.nopTerminal();
-        }
-
-        ControlTerminalGraph ifGraph = new BranchControlGraphFactory(conditionalGraph,
-                thenBlockGraph, elseBlockGraph).getGraph();
-
-        /*
-         * TODO(xearim):
-         * make sure this is the scheme we want to use,
-         * if it is, then remove the exception, uncomment the return,
-         * and implement BranchControlGraphFactory
-         */
-
-        throw new RuntimeException("IfStatementGraphFactory not implemented yet");
-
-        // return ifGraph;
+        ControlTerminalGraph elseBlockGraph = (elseBlock.isPresent())
+                ? new BlockGraphFactory(elseBlock.get()).getGraph() 
+                : ControlTerminalGraph.nopTerminal();
+        elseBlockGraph.getControlNodes().getBreakNode().setNext(breakNode);
+        elseBlockGraph.getControlNodes().getContinueNode().setNext(continueNode);
+        elseBlockGraph.getControlNodes().getReturnNode().setNext(returnNode);
+        elseBlockGraph.getEnd().setNext(end);
+        
+        BranchingControlFlowNode branch =
+                new BranchingControlFlowNode(
+                        JumpType.JE,
+                        thenBlockGraph.getBeginning(),
+                        elseBlockGraph.getBeginning());
+        ifComparator.getEnd().setNext(branch);
+        
+        return new ControlTerminalGraph(start, end,
+                new ControlNodes(breakNode,continueNode,returnNode));
     }
 
     @Override
