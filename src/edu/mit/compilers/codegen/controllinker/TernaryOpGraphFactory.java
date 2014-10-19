@@ -1,11 +1,8 @@
 package edu.mit.compilers.codegen.controllinker;
 
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.writeLabel;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
-import edu.mit.compilers.codegen.asm.Label;
-import edu.mit.compilers.codegen.asm.Label.LabelType;
 
 public class TernaryOpGraphFactory implements GraphFactory {
 
@@ -18,25 +15,22 @@ public class TernaryOpGraphFactory implements GraphFactory {
     private BiTerminalGraph calculateGraph(TernaryOperation operation, Scope scope) {
     	
     	// Construct a label for the false branch
-    	SequentialControlFlowNode falseLabel = SequentialControlFlowNode.terminal(writeLabel(
-							new Label(LabelType.CONTROL_FLOW, "falseTernary" + operation.getID())));
-    	// And make a label for the end of the ternary
-    	SequentialControlFlowNode endLabel = SequentialControlFlowNode.terminal(writeLabel(
-				new Label(LabelType.CONTROL_FLOW, "endTernary" + operation.getID())));
-    	
+        SequentialControlFlowNode trueNode = SequentialControlFlowNode.namedNop("ternary true");
+        SequentialControlFlowNode falseNode = SequentialControlFlowNode.namedNop("ternary false");
     	
     	BiTerminalGraph trueBranch = new NativeExprGraphFactory(operation.getTrueResult(), scope).getGraph();
     	BiTerminalGraph falseBranch = new NativeExprGraphFactory(operation.getFalseResult(), scope).getGraph();
     	
     	// Hook up the true target
-    	trueBranch.getEnd().setNext(endLabel);
-    	BiTerminalGraph trueTarget = new BiTerminalGraph(trueBranch.getBeginning(), endLabel);
+        trueNode.setNext(trueBranch.getBeginning());
+        BiTerminalGraph trueTarget = new BiTerminalGraph(trueNode,
+                SequentialControlFlowNode.nopTerminal());
     	
     	// Hook up the false target
-    	falseLabel.setNext(falseBranch.getBeginning());
-    	falseBranch.getEnd().setNext(endLabel);
-    	BiTerminalGraph falseTarget = new BiTerminalGraph(falseLabel, endLabel);
-    	
+    	falseNode.setNext(falseBranch.getBeginning());
+    	BiTerminalGraph falseTarget = new BiTerminalGraph(falseNode,
+                SequentialControlFlowNode.nopTerminal());
+        
         return new BranchGraphFactory(
                 new NativeExprGraphFactory(operation.getCondition(), scope).getGraph(),
                 trueTarget,
