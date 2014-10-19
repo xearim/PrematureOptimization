@@ -50,7 +50,7 @@ public class Compare implements Instruction {
     	}
     	syntax += Register.R10.inAttSyntax() + ", " + Register.R11.inAttSyntax() + "\n";
     	// now write out the resultant value back to our expected output location
-    	syntax += Instructions.move(Register.R11, rightArgument);
+    	syntax += Instructions.move(Register.R11, rightArgument).inAttSyntax();
     	return syntax;
     }
 

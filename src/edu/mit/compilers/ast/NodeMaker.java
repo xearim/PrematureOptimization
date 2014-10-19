@@ -606,7 +606,9 @@ public class NodeMaker {
      */
     public static GeneralExpression generalExpression(AST methodCallArg) {
         if (methodCallArg.getType() == STRING) {
-            return stringLiteral(methodCallArg);
+        	StringLiteral retVal = stringLiteral(methodCallArg);
+        	StringLiteral.addString(retVal);
+            return retVal;
         } else {
             // Just delegate to the NativeExpression generator. If it's an
             // error, it will be reported there.

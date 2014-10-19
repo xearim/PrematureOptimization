@@ -2,12 +2,11 @@ package edu.mit.compilers.ast;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 
 public class StringLiteral implements GeneralExpression {
-	private static long stringIDGenerator;
+	private static long stringIDGenerator = 0;
 	private static Collection<StringLiteral> stringLiteralSet = new ArrayList<StringLiteral>();
 
     private final String value;
@@ -18,7 +17,6 @@ public class StringLiteral implements GeneralExpression {
         this.value = value;
         this.locationDescriptor = locationDescriptor;
         this.stringID = stringIDGenerator++;
-        stringLiteralSet.add(this);
     }
     
     @Override
@@ -41,6 +39,10 @@ public class StringLiteral implements GeneralExpression {
     
     public static Iterable<StringLiteral> getStringLiterals() {
     	return stringLiteralSet;
+    }
+    
+    public static void addString(StringLiteral sl) {
+    	stringLiteralSet.add(sl);
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

@@ -70,8 +70,12 @@ public class ControlTerminalGraph {
     }
 
     public static ControlTerminalGraph nopTerminal() {
-        // TODO(xearim): implement ControlTerminalGraph equivalent of
-        // SequentialTerminalGraph#nopTerminal
-        throw new RuntimeException("ControlTerminalGraph#nopTerminal not yet implemented");
+    	SequentialControlFlowNode start = SequentialControlFlowNode.namedNop("Start NOP");
+    	SequentialControlFlowNode end = SequentialControlFlowNode.namedNop("End NOP");
+    	start.setNext(end);
+        return new ControlTerminalGraph(start, end,
+        		new ControlNodes(SequentialControlFlowNode.namedNop("Dummy Break"),
+                        SequentialControlFlowNode.namedNop("Dummy Continue"),
+                        SequentialControlFlowNode.namedNop("Dummy Return")));
     }
 }
