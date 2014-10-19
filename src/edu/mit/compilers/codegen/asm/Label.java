@@ -7,7 +7,9 @@ public class Label implements Value {
         // The start of a method.  Has no prefix, for easy compatibility with callouts.
         METHOD(""),
         // An instruction inside a method.
-        CONTROL_FLOW(".cf_");
+        CONTROL_FLOW(".cf_"),
+        // A string element
+        STRING(".s_");
 
         private final String prefix;
 

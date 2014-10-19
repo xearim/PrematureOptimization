@@ -23,8 +23,7 @@ public class GeneralExprGraphFactory implements GraphFactory {
 
     private GraphFactory getDelegate() {
         if (expr instanceof StringLiteral) {
-            // TODO(jasonpr): Implement.
-            throw new RuntimeException("Not yet implemented.");
+            return new StringLiteralGraphFactory((StringLiteral) expr);
         } else if (expr instanceof NativeExpression) {
             return new NativeExprGraphFactory((NativeExpression) expr, scope);
         } else {
