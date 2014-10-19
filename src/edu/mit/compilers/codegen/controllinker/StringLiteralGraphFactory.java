@@ -10,8 +10,8 @@ public class StringLiteralGraphFactory implements GraphFactory {
     private final Label stringLabel;
 
     public StringLiteralGraphFactory(StringLiteral stringLiteral) {
+    	this.stringLabel = new Label(LabelType.STRING, stringLiteral.getID());
         this.graph = calculateStringLiteral(stringLiteral);
-        this.stringLabel = new Label(LabelType.STRING, stringLiteral.getID());
     }
     
     public BiTerminalGraph calculateStringLiteral(StringLiteral stringLiteral){
