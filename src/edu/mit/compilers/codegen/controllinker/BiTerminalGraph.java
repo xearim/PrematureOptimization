@@ -52,13 +52,15 @@ public class BiTerminalGraph {
 
     public static BiTerminalGraph ofInstructions(Instruction... instructions) {
         List<Instruction> instructionsList = ImmutableList.copyOf(instructions);
-        SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
         
-        SequentialControlFlowNode beginning = end;
-        for (Instruction instr : Lists.reverse(instructionsList)) {
-            beginning = SequentialControlFlowNode.WithNext(instr, beginning);
-        }
+        SequentialControlFlowNode end = SequentialControlFlowNode.namedNop("BiTerminal End");
+        SequentialControlFlowNode currentHead = end;
 
+        for (Instruction instr : Lists.reverse(instructionsList)) {
+            currentHead = SequentialControlFlowNode.WithNext(instr, currentHead);
+        }
+        SequentialControlFlowNode beginning = SequentialControlFlowNode.namedNop("BiTerminal Beginning");
+        beginning.setNext(currentHead);
         return new BiTerminalGraph(beginning, end);
     }
 }
