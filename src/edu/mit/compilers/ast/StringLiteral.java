@@ -26,7 +26,7 @@ public class StringLiteral implements GeneralExpression {
 
     @Override
     public String getName() {
-        return "\"" + value + "\"";
+        return value;
     }
 
     public LocationDescriptor getLocationDescriptor() {

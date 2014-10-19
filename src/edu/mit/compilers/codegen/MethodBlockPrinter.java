@@ -52,7 +52,7 @@ public class MethodBlockPrinter {
 	}
 	
 	private void printNodeChain(ControlFlowNode beginning, PrintStream outputStream){
-		Optional<ControlFlowNode> currentNodeWrapper = Optional.of(methodGraph.getBeginning());
+		Optional<ControlFlowNode> currentNodeWrapper = Optional.of(beginning);
 		while(currentNodeWrapper.isPresent()){ 
 			ControlFlowNode currentNode = currentNodeWrapper.get();
 			if(currentNode instanceof SequentialControlFlowNode){
@@ -61,7 +61,7 @@ public class MethodBlockPrinter {
 					SequentialControlFlowNode labelNode = (SequentialControlFlowNode) currentNode;
 					checkState(labelNode.hasInstruction());
 					checkState(labelNode.getInstruction() instanceof WriteLabel);
-					outputStream.println(Instructions.jump(((WriteLabel) labelNode.getInstruction()).getLabel()));
+					outputStream.println(Instructions.jump(((WriteLabel) labelNode.getInstruction()).getLabel()).inAttSyntax());
 					// After we jump, it is pointless to write anything more, so stop recursing
 					currentNodeWrapper = Optional.<ControlFlowNode>absent();
 				} else {
@@ -73,6 +73,7 @@ public class MethodBlockPrinter {
 				}
 			} else if(currentNode instanceof BranchingControlFlowNode) {
 				printBranchingNode((BranchingControlFlowNode) currentNode, outputStream);
+				currentNodeWrapper = Optional.<ControlFlowNode>absent();
 			} else {
 				throw new AssertionError("Bad node type in control flow graph of type: " + currentNode.getClass().toString());
 			}
@@ -94,12 +95,11 @@ public class MethodBlockPrinter {
 		// Figure out where to jump for the false branch
 		Label falseLabel = getFalseLabel((SequentialControlFlowNode) falseNode);
 		// Insert our special jump over the true branch
-		outputStream.println(Instructions.jumpTyped(currentNode.getType(), falseLabel));
+		outputStream.println(Instructions.jumpTyped(currentNode.getType(), falseLabel).inAttSyntax());
 		// Recurse on the true branch
 		printNodeChain(trueNode, outputStream);
 		// Then on the false branch
 		printNodeChain(falseNode, outputStream);
-		
 	}
 	
 	private Label getFalseLabel(SequentialControlFlowNode falseNode){

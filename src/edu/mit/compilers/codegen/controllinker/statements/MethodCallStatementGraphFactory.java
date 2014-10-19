@@ -25,7 +25,7 @@ public class MethodCallStatementGraphFactory implements ControlTerminalGraphFact
         BiTerminalGraph statementGraph = BiTerminalGraph.sequenceOf(
                 expressionGraph,
                 BiTerminalGraph.ofInstructions(
-                        add(Register.RSP, new Literal(Architecture.WORD_SIZE))));
+                        add(new Literal(Architecture.WORD_SIZE), Register.RSP)));
         return ControlTerminalGraph.ofBiTerminalGraph(statementGraph);
     }
 

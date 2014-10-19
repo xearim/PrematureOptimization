@@ -3,6 +3,7 @@ package edu.mit.compilers.codegen.controllinker.statements;
 import com.google.common.base.Optional;
 
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.compareFlagged;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.writeLabel;
 import edu.mit.compilers.ast.Block;
@@ -57,7 +58,8 @@ public class IfStatementGraphFactory implements ControlTerminalGraphFactory {
         BiTerminalGraph ifComparator =
                 BiTerminalGraph.ofInstructions(
                         pop(Register.R10),
-                        compareFlagged(Literal.TRUE, Register.R10));
+                        move(Literal.TRUE, Register.R11),
+                        compareFlagged(Register.R11, Register.R10));
         conditionalGraph.getEnd().setNext(ifComparator.getBeginning());
         
         // Obtain then block
