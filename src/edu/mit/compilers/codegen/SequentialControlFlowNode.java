@@ -88,6 +88,6 @@ public class SequentialControlFlowNode implements ControlFlowNode {
     public String nodeText() {
         return instruction.isPresent()
                 ? instruction.get().inAttSyntax()
-                : "NOP";
+                : "NOP (" + name + ")";
     }
 }
