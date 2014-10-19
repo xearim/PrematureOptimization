@@ -23,11 +23,11 @@ public class ReturnStatementGraphFactory implements ControlTerminalGraphFactory 
     }
     
     private ControlTerminalGraph calculateGraph(ReturnStatement rs, Scope scope) {
-        SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode continueNode = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode breakNode = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode returnNode = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode start = SequentialControlFlowNode.namedNop("RS start");
+        SequentialControlFlowNode end = SequentialControlFlowNode.namedNop("RS end");
+        SequentialControlFlowNode continueNode = SequentialControlFlowNode.namedNop("RS cont");
+        SequentialControlFlowNode breakNode = SequentialControlFlowNode.namedNop("RS break");
+        SequentialControlFlowNode returnNode = SequentialControlFlowNode.namedNop("RS return");
         Optional<NativeExpression> value = rs.getValue(); 
 
         if (value.isPresent()) {

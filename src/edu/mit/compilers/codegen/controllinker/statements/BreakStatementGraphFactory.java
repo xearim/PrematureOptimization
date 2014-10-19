@@ -13,11 +13,11 @@ public class BreakStatementGraphFactory implements ControlTerminalGraphFactory {
     }
     
     private ControlTerminalGraph calculateGraph() {
-        SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode continueNode = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode breakNode = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode returnNode = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode start = SequentialControlFlowNode.namedNop("BS start");
+        SequentialControlFlowNode end = SequentialControlFlowNode.namedNop("BS end");
+        SequentialControlFlowNode continueNode = SequentialControlFlowNode.namedNop("BS cont");
+        SequentialControlFlowNode breakNode = SequentialControlFlowNode.namedNop("BS break");
+        SequentialControlFlowNode returnNode = SequentialControlFlowNode.namedNop("BS return");
         
         start.setNext(breakNode);
 
