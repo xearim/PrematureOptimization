@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 
 /**
@@ -13,13 +14,14 @@ import edu.mit.compilers.codegen.asm.instructions.JumpType;
  *
  * TODO(jasonpr): Determine exactly when the {true,false} condition is followed.
  */
-public class BranchingControlFlowNode implements ControlFlowNode {
+public class BranchingControlFlowNode extends ControlFlowNode {
     private final JumpType type;
     private final ControlFlowNode trueBranch;
     private final ControlFlowNode falseBranch;
 
     public BranchingControlFlowNode(JumpType type, ControlFlowNode trueBranch,
             ControlFlowNode falseBranch) {
+    	super();
         // TODO(Manny): find more meaningful error message
         Preconditions.checkNotNull(trueBranch, "True Branch is null.");
         Preconditions.checkNotNull(falseBranch, "False Branch is null.");
@@ -40,7 +42,7 @@ public class BranchingControlFlowNode implements ControlFlowNode {
     public ControlFlowNode getFalseBranch() {
         return falseBranch;
     }
-
+    
     @Override
     public List<ControlFlowNode> getSinks() {
         return ImmutableList.of(trueBranch,falseBranch);

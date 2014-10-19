@@ -47,8 +47,8 @@ public class AssemblyWriter {
             outputStream.println("\t.globl main");
         }
         outputStream.println(method.getName() + ":");
-//        methodBlockPrinter(method.getBlock(),outputStream);
-        throw new RuntimeException("AssemblyWriter#methodBlockPrinter not yet implemented");
+        MethodBlockPrinter methodGraph = new MethodBlockPrinter(method);
+        methodGraph.printStream(outputStream);
         outputStream.println();
     }
 
