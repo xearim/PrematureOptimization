@@ -11,6 +11,7 @@ import edu.mit.compilers.codegen.BranchingControlFlowNode;
 import edu.mit.compilers.codegen.ControlFlowNode;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
 import edu.mit.compilers.codegen.asm.Literal;
+import edu.mit.compilers.codegen.asm.Location;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
@@ -74,7 +75,7 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
                 push(Register.R10));
 
         BiTerminalGraph maxRepetitionsComparator = BiTerminalGraph.ofInstructions(
-                pop(Register.R10), // max repetitions counter
+                move(new Location(Register.RSP, 8L), Register.R10), // move max repetitions counter to R10
                 move(new Literal(whileLoop.getMaxRepetitions().get().get64BitValue()), Register.R11), // max repetitions
                 compareFlagged(Register.R10, Register.R11));
 
