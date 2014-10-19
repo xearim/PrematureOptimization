@@ -11,6 +11,7 @@ import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.VariableReference;
 
 
@@ -35,14 +36,13 @@ public class VariableLoadGraphFactory implements GraphFactory {
     private BiTerminalGraph calculateLoadFromArray(ArrayLocation location, Scope scope) {
         String name = location.getVariableName();
         NativeExpression index = location.getIndex();
-        long bytesPerEntry = 8;
 
         return BiTerminalGraph.sequenceOf(
                 new NativeExprGraphFactory(index, scope).getGraph(),
                 BiTerminalGraph.ofInstructions(
                         pop(R10),
                         moveFromArray(new VariableReference(name, scope),
-                                R10, bytesPerEntry, R11),
+                                R10, Architecture.BYTES_PER_ENTRY, R11),
                         push(R11)));
     }
 
