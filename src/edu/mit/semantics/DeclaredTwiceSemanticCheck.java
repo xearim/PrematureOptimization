@@ -101,9 +101,41 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
          * subblock, perform the semantic check and recurse.
          */
         for (Statement statement : block.getStatements()) {
-            for (Block subblock : statement.getBlocks()) {
-                checkScope(LocationType.LOCAL,subblock.getScope(),methodName);
-                checkBlock(subblock, methodName);
+            /*
+             * Three cases for statements:
+             * 1) methodcall - need to check if the method's name has been
+             *      overshadowed.
+             * 2) if,while,for - these have blocks that need to be recursed on
+             * 3) all else - nothing
+             */
+            if (statement instanceof MethodCall) {
+                String methodCallName = ((MethodCall) statement).getMethodName();
+                Scope scope = block.getScope();
+                // Recurse on all scopes until we hit the global scope
+                while (scope.getParent().isPresent()) {
+                    if (scope.isInScope(methodCallName)) {
+                        /*
+                         * If overshadowed, get the location of the
+                         * overshadowing variable declaration.
+                         */
+                        LocationDescriptor overshadowLocation =
+                                scope.getFromScope(methodCallName).get().getLocationDescriptor();
+
+                        // Accumulate the error, already know the error exists
+                        Utils.check(true, errors,
+                                "Invalid method call: method %s called at %s but was overshadowed at %s. ",
+                                methodCallName,
+                                ((MethodCall) statement).getLocationDescriptor(),
+                                overshadowLocation);
+                    }
+                    scope = scope.getParent().get();
+                }
+            }
+            else {
+                for (Block subblock : statement.getBlocks()) {
+                    checkScope(LocationType.LOCAL,subblock.getScope(),methodName);
+                    checkBlock(subblock, methodName);
+                }
             }
         }
     }
