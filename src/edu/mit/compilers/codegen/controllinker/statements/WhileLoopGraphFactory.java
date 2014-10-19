@@ -67,7 +67,7 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
 
         // The branch for checking conditionals
         BranchingControlFlowNode conditionalBranch = new BranchingControlFlowNode(JumpType.JNE, 
-        									body.getBeginning(), maxRepetitionsDestroyer.getBeginning());
+        									body.getBeginning(), end);
         
         if(whileLoop.getMaxRepetitions().isPresent()){
         	// When you have max repetitions, you need to actually pop off that variable before returning.
