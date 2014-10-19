@@ -83,7 +83,7 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
 
         ControlTerminalGraph body = new BlockGraphFactory(forLoop.getBody()).getGraph();
 
-        BranchingControlFlowNode branch = new BranchingControlFlowNode(JumpType.JL, body.getBeginning(), endTarget.getBeginning());
+        BranchingControlFlowNode branch = new BranchingControlFlowNode(JumpType.JGE, body.getBeginning(), endTarget.getBeginning());
 
         // All the nodes have been made.  Make the connections.
         start.setNext(minAssigner.getBeginning());

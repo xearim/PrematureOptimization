@@ -84,7 +84,7 @@ public class IfStatementGraphFactory implements ControlTerminalGraphFactory {
         
         BranchingControlFlowNode branch =
                 new BranchingControlFlowNode(
-                        JumpType.JE,
+                        JumpType.JNE,
                         thenBlockGraph.getBeginning(),
                         elseTarget.getBeginning());
         ifComparator.getEnd().setNext(branch);

@@ -69,7 +69,7 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
                 BiTerminalGraph.ofInstructions(
                         pop(Register.R10), // Evaluated conditional.
                         move(Literal.TRUE, Register.R11), // true.
-                        compareFlagged(Register.R11, Register.R10)));
+                        compareFlagged(Register.R10, Register.R11)));
 
         // increment the max Repetitions var towards maxRepetitions
         BiTerminalGraph incrementor = BiTerminalGraph.ofInstructions(
@@ -81,7 +81,7 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
         ControlTerminalGraph body = new BlockGraphFactory(whileLoop.getBody()).getGraph();
         
         // The branch for checking repetition number
-        BranchingControlFlowNode maxRepetitionBranch = new BranchingControlFlowNode(JumpType.JL, 
+        BranchingControlFlowNode maxRepetitionBranch = new BranchingControlFlowNode(JumpType.JGE, 
         								loopComparator.getBeginning(), endTarget.getEnd());
 
         // The branch for checking conditionals
@@ -104,7 +104,7 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
 	        BiTerminalGraph maxRepetitionsComparator = BiTerminalGraph.ofInstructions(
 	                        pop(Register.R10), // max repetitions counter
 	                        move(new Literal(whileLoop.getMaxRepetitions().get().get64BitValue()), Register.R11), // max repetitions
-	                        compareFlagged(Register.R11, Register.R10));
+	                        compareFlagged(Register.R10, Register.R11));
 	        
 	        // insert the removal of the max repetitions stack object into the endTarget
 	        endLabel.setNext(maxRepetitionsDestroyer.getBeginning());

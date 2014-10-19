@@ -59,6 +59,8 @@ public class MethodBlockPrinter {
 				if(e.haveVisited((SequentialControlFlowNode) currentNode)){
 					// If we have already visited the node, it must be a label node, so we just want to jump to that label
 					SequentialControlFlowNode labelNode = (SequentialControlFlowNode) currentNode;
+					checkState(labelNode.hasInstruction());
+					checkState(labelNode.getInstruction() instanceof WriteLabel);
 					outputStream.println(Instructions.jump(((WriteLabel) labelNode.getInstruction()).getLabel()));
 					// After we jump, it is pointless to write anything more, so stop recursing
 					currentNodeWrapper = Optional.<ControlFlowNode>absent();
@@ -102,6 +104,7 @@ public class MethodBlockPrinter {
 	
 	private Label getFalseLabel(SequentialControlFlowNode falseNode){
 		// The first node of a false node sequence should always be a writeLabel instruction
+		checkState(falseNode.hasInstruction());
 		checkState(falseNode.getInstruction() instanceof WriteLabel);
 		return ((WriteLabel) falseNode.getInstruction()).getLabel();
 	}
