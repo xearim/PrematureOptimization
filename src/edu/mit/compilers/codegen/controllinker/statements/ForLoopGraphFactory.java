@@ -56,7 +56,7 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
                 new VariableLoadGraphFactory(forLoop.getLoopVariable(), scope).getGraph(),
                 BiTerminalGraph.ofInstructions(
                         pop(Register.R10), // Loop variable
-                        move(new Location(Register.RSP, 1*Architecture.BYTES_PER_ENTRY), Register.R11), // Range End.
+                        move(new Location(Register.RSP, 0*Architecture.BYTES_PER_ENTRY), Register.R11), // Range End.
                         compareFlagged(Register.R10, Register.R11)));
 
         BiTerminalGraph incrementor = BiTerminalGraph.ofInstructions(

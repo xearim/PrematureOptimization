@@ -76,7 +76,7 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
                 push(Register.R10));
 
         BiTerminalGraph maxRepetitionsComparator = BiTerminalGraph.ofInstructions(
-                move(new Location(Register.RSP, 1*Architecture.BYTES_PER_ENTRY), Register.R10), // move max repetitions counter to R10
+                move(new Location(Register.RSP, 0*Architecture.BYTES_PER_ENTRY), Register.R10), // move max repetitions counter to R10
                 move(new Literal(whileLoop.getMaxRepetitions().get().get64BitValue()), Register.R11), // max repetitions
                 compareFlagged(Register.R10, Register.R11));
 
