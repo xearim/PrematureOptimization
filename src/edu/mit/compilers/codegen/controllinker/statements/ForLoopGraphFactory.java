@@ -27,14 +27,14 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
     }
 
     private ControlTerminalGraph calculateGraph(ForLoop forLoop, Scope scope) {
-        SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode start = SequentialControlFlowNode.namedNop("FL start");
         // end node needs to clean up the end Expression
         SequentialControlFlowNode end = SequentialControlFlowNode.terminal(pop(Register.R10));
-        SequentialControlFlowNode continueNode = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode breakNode = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode continueNode = SequentialControlFlowNode.namedNop("FL continue");
+        SequentialControlFlowNode breakNode = SequentialControlFlowNode.namedNop("FL break");
         // return node needs to clean up the end Expression
         SequentialControlFlowNode returnNode = SequentialControlFlowNode.terminal(pop(Register.R10)); 
-        SequentialControlFlowNode loopStart = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode loopStart = SequentialControlFlowNode.namedNop("FL loopStart");
 
         VariableReference loopVar = new VariableReference(forLoop.getLoopVariable().getName(),
                 scope);

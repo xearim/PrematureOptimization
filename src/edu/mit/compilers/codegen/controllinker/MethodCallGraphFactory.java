@@ -50,7 +50,7 @@ public class MethodCallGraphFactory implements GraphFactory {
     private BiTerminalGraph calculateGraph(MethodCall methodCall, Scope scope) {
         List<GeneralExpression> args = ImmutableList.copyOf(methodCall.getParameterValues());
 
-        SequentialControlFlowNode preCallStart = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode preCallStart = SequentialControlFlowNode.namedNop(methodCall.getMethodName() + "()");
         SequentialControlFlowNode preCallEnd = preCallStart;
 
         // Setup args for call.

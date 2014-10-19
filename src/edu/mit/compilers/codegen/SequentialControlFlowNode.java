@@ -12,33 +12,39 @@ public class SequentialControlFlowNode implements ControlFlowNode {
 
     private final Optional<Instruction> instruction;
     private Optional<ControlFlowNode> next;
+    private final String name;
 
     private SequentialControlFlowNode(Optional<Instruction> instruction,
-            Optional<ControlFlowNode> next) {
+            Optional<ControlFlowNode> next, String name) {
         this.instruction = instruction;
         this.next = next;
+        this.name = name;
     }
 
-    private SequentialControlFlowNode(Optional<ControlFlowNode> next) {
-        this(Optional.<Instruction>absent(), next);
+    private SequentialControlFlowNode(Optional<ControlFlowNode> next, String name) {
+        this(Optional.<Instruction>absent(), next, name);
     }
 
-    public static SequentialControlFlowNode nopWithNext(ControlFlowNode next) {
-        return new SequentialControlFlowNode(Optional.of(next));
+    public static SequentialControlFlowNode nopWithNext(ControlFlowNode next, String name) {
+        return new SequentialControlFlowNode(Optional.of(next), name);
     }
 
     public static SequentialControlFlowNode nopTerminal() {
-        return new SequentialControlFlowNode(Optional.<ControlFlowNode>absent());
+        return new SequentialControlFlowNode(Optional.<ControlFlowNode>absent(), "");
     }
 
     public static SequentialControlFlowNode
             WithNext(Instruction instruction, ControlFlowNode next) {
-        return new SequentialControlFlowNode(Optional.of(instruction), Optional.of(next));
+        return new SequentialControlFlowNode(Optional.of(instruction), Optional.of(next), "");
     }
 
     public static SequentialControlFlowNode terminal(Instruction instruction) {
         return new SequentialControlFlowNode(Optional.of(instruction),
-                Optional.<ControlFlowNode>absent());
+                Optional.<ControlFlowNode>absent(), "");
+    }
+
+    public static SequentialControlFlowNode namedNop(String name) {
+        return new SequentialControlFlowNode(Optional.<ControlFlowNode>absent(), name);
     }
 
     public boolean hasNext() {
@@ -82,6 +88,6 @@ public class SequentialControlFlowNode implements ControlFlowNode {
     public String nodeText() {
         return instruction.isPresent()
                 ? instruction.get().inAttSyntax()
-                : "NOP";
+                : "NOP (" + name + ")";
     }
 }

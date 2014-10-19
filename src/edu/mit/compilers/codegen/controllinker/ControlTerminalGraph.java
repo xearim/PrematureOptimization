@@ -52,9 +52,9 @@ public class ControlTerminalGraph {
 
     public static ControlTerminalGraph ofBiTerminalGraph(BiTerminalGraph biTerminal) {
         return new ControlTerminalGraph(biTerminal.getBeginning(), biTerminal.getEnd(),
-                new ControlNodes(SequentialControlFlowNode.nopTerminal(),
-                        SequentialControlFlowNode.nopTerminal(),
-                        SequentialControlFlowNode.nopTerminal()));
+                new ControlNodes(SequentialControlFlowNode.namedNop("Dummy Break"),
+                        SequentialControlFlowNode.namedNop("Dummy Continue"),
+                        SequentialControlFlowNode.namedNop("Dummy Return")));
     }
 
     public ControlFlowNode getBeginning() {

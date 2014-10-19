@@ -13,11 +13,11 @@ public class ContinueStatementGraphFactory implements ControlTerminalGraphFactor
     }
 
     private ControlTerminalGraph calculateGraph() {
-        SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode continueNode = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode breakNode = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode returnNode = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode start = SequentialControlFlowNode.namedNop("CSGF start");
+        SequentialControlFlowNode end = SequentialControlFlowNode.namedNop("CSGF end");
+        SequentialControlFlowNode continueNode = SequentialControlFlowNode.namedNop("CSGF cont");
+        SequentialControlFlowNode breakNode = SequentialControlFlowNode.namedNop("CSGF break");
+        SequentialControlFlowNode returnNode = SequentialControlFlowNode.namedNop("CSGF return");
 
         start.setNext(continueNode);
 
