@@ -15,7 +15,8 @@ public class AssemblyWriter {
     private final static String GLOBALS_COMMENT = "\n// All globals.";
     private final static String DATA_DECLARATION = "\n.DATA";
     private final static String GLOBALS_DECLARATION = "\n.section .bss";
-    private final static int GLOBAL_INITIAL_VALUE = 0;
+    private final static String MAIN_METHOD_NAME = "main";
+    private final static int GLOBAL_INITIAL_VALUE = 1;
 
     public static void writeAttAssembly(Program program, PrintStream outputStream) {
         // Get one graph per method
@@ -42,7 +43,13 @@ public class AssemblyWriter {
     }
 
     private static void methodPrinter(Method method, PrintStream outputStream) {
-//        throw new RuntimeException("Unimplemented AssemblyWriter#writeAssembly");
+        if (method.getName().equals(MAIN_METHOD_NAME)) {
+            outputStream.println("\t.globl main");
+        }
+        outputStream.println(method.getName() + ":");
+//        methodBlockPrinter(method.getBlock(),outputStream);
+        throw new RuntimeException("AssemblyWriter#methodBlockPrinter not yet implemented");
+        outputStream.println();
     }
 
     private static void stringPrinter(StringLiteral sl, PrintStream outputStream) {
@@ -55,7 +62,7 @@ public class AssemblyWriter {
         outputStream.println(String.format("\t%s: .quad %d",
                 new Label(LabelType.GLOBAL, fd.getName()).inAttSyntax(),
                 (fd.getLength().isPresent())
-                    ? fd.getLength().get().get64BitValue()
-                    : 1));
+                ? fd.getLength().get().get64BitValue()
+                        : GLOBAL_INITIAL_VALUE));
     }
 }
