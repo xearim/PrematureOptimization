@@ -3,12 +3,14 @@ package edu.mit.compilers.ast;
 import com.google.common.collect.ImmutableList;
 
 public class ForLoop implements Statement {
+	private static long forLoopIDGenerator = 0;
 
     private final ScalarLocation loopVariable;
     private final NativeExpression rangeStart;
     private final NativeExpression rangeEnd;
     private final Block body;
     private final LocationDescriptor locationDescriptor;
+    private final long forLoopID;
 
     public ForLoop(ScalarLocation loopVariable, NativeExpression rangeStart,
 		   NativeExpression rangeEnd, Block body, LocationDescriptor locationDescriptor) {
@@ -16,7 +18,8 @@ public class ForLoop implements Statement {
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;
         this.body = body;
-	this.locationDescriptor = locationDescriptor;
+        this.locationDescriptor = locationDescriptor;
+        this.forLoopID = forLoopIDGenerator++;
     }
     
     @Override
@@ -66,6 +69,10 @@ public class ForLoop implements Statement {
 
     public Block getBody() {
         return body;
+    }
+    
+    public String getID() {
+    	return Long.toString(forLoopID);
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.
