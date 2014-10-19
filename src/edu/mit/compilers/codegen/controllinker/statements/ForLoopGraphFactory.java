@@ -8,8 +8,6 @@ import edu.mit.compilers.ast.ForLoop;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.BranchingControlFlowNode;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
-import edu.mit.compilers.codegen.asm.Label;
-import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.VariableReference;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
