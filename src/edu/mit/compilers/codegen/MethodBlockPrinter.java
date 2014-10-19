@@ -1,23 +1,25 @@
 package edu.mit.compilers.codegen;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
-
-import static com.google.common.base.Preconditions.checkState;
+import java.util.Set;
 
 import com.google.common.base.Optional;
 
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.codegen.asm.Label;
+import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.instructions.Instructions;
-import edu.mit.compilers.codegen.asm.instructions.WriteLabel;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 
 public class MethodBlockPrinter {
 	private final Method method;
 	private final BiTerminalGraph methodGraph;
+	private final Set<ControlFlowNode> multiSourced;
 	private final VisitedSet e;
 	
 	private class VisitedSet{
@@ -44,10 +46,14 @@ public class MethodBlockPrinter {
 	MethodBlockPrinter(Method method) {
 		this.method = method;
 		this.methodGraph = new MethodGraphFactory(this.method).getGraph();
+		this.multiSourced =
+		        new SourceCounter().getMultiSourceNodes(this.methodGraph.getBeginning());
 		this.e = new VisitedSet();
 	}
 	
 	public void printStream(PrintStream outputStream){
+	    ControlFlowNode beginning = methodGraph.getBeginning();
+	    new SourceCounter().getMultiSourceNodes(beginning);
 		printNodeChain(methodGraph.getBeginning(), outputStream);
 	}
 	
@@ -58,10 +64,9 @@ public class MethodBlockPrinter {
 			if(currentNode instanceof SequentialControlFlowNode){
 				if(e.haveVisited((SequentialControlFlowNode) currentNode)){
 					// If we have already visited the node, it must be a label node, so we just want to jump to that label
-					SequentialControlFlowNode labelNode = (SequentialControlFlowNode) currentNode;
-					checkState(labelNode.hasInstruction());
-					checkState(labelNode.getInstruction() instanceof WriteLabel);
-					outputStream.println(Instructions.jump(((WriteLabel) labelNode.getInstruction()).getLabel()).inAttSyntax());
+					SequentialControlFlowNode labeledNode = (SequentialControlFlowNode) currentNode;
+					checkState(multiSourced.contains(labeledNode));
+					outputStream.println(Instructions.jump(getMultiSourceLabel(labeledNode)).inAttSyntax());
 					// After we jump, it is pointless to write anything more, so stop recursing
 					currentNodeWrapper = Optional.<ControlFlowNode>absent();
 				} else {
@@ -83,6 +88,9 @@ public class MethodBlockPrinter {
 	private void printSequentialNode(SequentialControlFlowNode currentNode, PrintStream outputStream){
 		// Visit the node, so we add it to the set
 		e.visit(currentNode);
+		if (multiSourced.contains(currentNode)) {
+		    printLabel(getMultiSourceLabel(currentNode), outputStream);
+		}
 		// If it has an instruction, print that mofo
 		if(currentNode.hasInstruction()){
 			outputStream.println(currentNode.getInstruction().inAttSyntax());
@@ -98,15 +106,23 @@ public class MethodBlockPrinter {
 		outputStream.println(Instructions.jumpTyped(currentNode.getType(), falseLabel).inAttSyntax());
 		// Recurse on the true branch
 		printNodeChain(trueNode, outputStream);
+		// Print the label for the false node, so we can jump to it.
+		printLabel(falseLabel, outputStream);
 		// Then on the false branch
 		printNodeChain(falseNode, outputStream);
 	}
 	
 	private Label getFalseLabel(SequentialControlFlowNode falseNode){
 		// The first node of a false node sequence should always be a writeLabel instruction
-		checkState(falseNode.hasInstruction());
-		checkState(falseNode.getInstruction() instanceof WriteLabel);
-		return ((WriteLabel) falseNode.getInstruction()).getLabel();
+		return new Label(LabelType.CONTROL_FLOW, falseNode.getNodeID() + "_false");
+	}
+	
+	private Label getMultiSourceLabel(ControlFlowNode node) {
+	    return new Label(LabelType.CONTROL_FLOW, node.getNodeID() +"_multi_source");
+	}
+	
+	private void printLabel(Label label, PrintStream outputStream) {
+	    outputStream.println(label.inAttSyntax() + ":");
 	}
 	
 }
