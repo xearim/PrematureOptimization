@@ -1,12 +1,14 @@
 package edu.mit.compilers.ast;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 
 public class StringLiteral implements GeneralExpression {
 	private static long stringIDGenerator;
-	private static Set<StringLiteral> stringLiteralSet;
+	private static Collection<StringLiteral> stringLiteralSet = new ArrayList<StringLiteral>();
 
     private final String value;
     private final LocationDescriptor locationDescriptor;
