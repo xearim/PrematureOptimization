@@ -34,8 +34,8 @@ public class VariableReference implements Value{
 		case LOCAL:
 			// Locals are some offset of the base pointer
 			// its under the return address, then offset by all the other scopes
-			return Long.toString(-1*(Architecture.WORD_SIZE + Architecture.WORD_SIZE*targetScope.offsetFromBasePointer(name))) + 
-								"(" + Register.RBP.inAttSyntax() + ")";
+			return new Location(Register.RBP, 
+					-1*(Architecture.WORD_SIZE + Architecture.WORD_SIZE*targetScope.offsetFromBasePointer(name))).inAttSyntax();
 		case PARAMETER:
 			// Parameters are either a register or a base pointer offset
 			// dont know if i love this cast
@@ -61,8 +61,8 @@ public class VariableReference implements Value{
 			default:
 				// All other args are at some offset to the base pointer
 				// its the old %rbp and %rsp then up to the arg
-				return Long.toString(Architecture.WORD_SIZE*2 + Architecture.WORD_SIZE*targetScope.offsetInParameterSet(name)) + 
-									"(" + Register.RBP.inAttSyntax() + ")";
+				return new Location(Register.RBP,
+						Architecture.WORD_SIZE*2 + Architecture.WORD_SIZE*targetScope.offsetInParameterSet(name)).inAttSyntax();
 			}
 		default:
 			throw new AssertionError("Variable " + name + " not in scope, this should never happen");
