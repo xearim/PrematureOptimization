@@ -6,6 +6,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 public enum JumpType {
     JZ("jz"), // zero
     JNZ("jnz"), // not zero
+    JE("je"), // equal
     JNE("jne"), // not equal
     JS("js"), // negative
     JNS("jns"), // not negative

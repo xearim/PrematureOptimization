@@ -74,6 +74,10 @@ public class WhileLoop implements Statement {
     public Optional<IntLiteral> getMaxRepetitions() {
         return maxRepetitions;
     }
+    
+    public Block getBody() {
+    	return body;
+    }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.

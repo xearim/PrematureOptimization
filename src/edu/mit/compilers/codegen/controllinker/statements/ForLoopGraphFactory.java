@@ -28,10 +28,12 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
 
     private ControlTerminalGraph calculateGraph(ForLoop forLoop, Scope scope) {
         SequentialControlFlowNode start = SequentialControlFlowNode.namedNop("FL start");
-        SequentialControlFlowNode end = SequentialControlFlowNode.namedNop("FL end");
-        SequentialControlFlowNode continueNode = SequentialControlFlowNode.namedNop("FL cont");
+        // end node needs to clean up the end Expression
+        SequentialControlFlowNode end = SequentialControlFlowNode.terminal(pop(Register.R10));
+        SequentialControlFlowNode continueNode = SequentialControlFlowNode.namedNop("FL continue");
         SequentialControlFlowNode breakNode = SequentialControlFlowNode.namedNop("FL break");
-        SequentialControlFlowNode returnNode = SequentialControlFlowNode.namedNop("FL return");
+        // return node needs to clean up the end Expression
+        SequentialControlFlowNode returnNode = SequentialControlFlowNode.terminal(pop(Register.R10)); 
         SequentialControlFlowNode loopStart = SequentialControlFlowNode.namedNop("FL loopStart");
 
         VariableReference loopVar = new VariableReference(forLoop.getLoopVariable().getName(),
@@ -42,15 +44,18 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
                 BiTerminalGraph.ofInstructions(
                         pop(Register.R10),
                         move(Register.R10, loopVar)));
+        
+        // We actually want to leave the value that we get on the stack, as thats where we expect to find it forever
+        BiTerminalGraph endExpressionEvaluator = BiTerminalGraph.sequenceOf(
+        		new NativeExprGraphFactory(forLoop.getRangeEnd(), scope).getGraph()
+        		);
 
-        // TODO(jasonpr): Only evaluate the loop end expression once.
         BiTerminalGraph loopComparator = BiTerminalGraph.sequenceOf(
                 new VariableLoadGraphFactory(forLoop.getLoopVariable(), scope).getGraph(),
-                new NativeExprGraphFactory(forLoop.getRangeEnd(), scope).getGraph(),
                 BiTerminalGraph.ofInstructions(
-                        pop(Register.R10), // Range end.
-                        pop(Register.R11), // Loop variable.
-                        compareFlagged(Register.R11, Register.R10)));
+                        pop(Register.R10), // Loop variable
+                        pop(Register.R11), // Range End.
+                        compareFlagged(Register.R10, Register.R11)));
 
         BiTerminalGraph incrementor = BiTerminalGraph.ofInstructions(
                 move(loopVar, Register.R10),
@@ -63,7 +68,8 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
 
         // All the nodes have been made.  Make the connections.
         start.setNext(minAssigner.getBeginning());
-        minAssigner.getEnd().setNext(loopStart);
+        minAssigner.getEnd().setNext(endExpressionEvaluator.getBeginning());
+        endExpressionEvaluator.getEnd().setNext(loopStart);
         loopStart.setNext(loopComparator.getBeginning());
         loopComparator.getEnd().setNext(branch);
         body.getEnd().setNext(incrementor.getBeginning());
