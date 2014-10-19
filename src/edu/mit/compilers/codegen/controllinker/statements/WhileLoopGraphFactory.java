@@ -5,12 +5,15 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.increment;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.writeLabel;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.WhileLoop;
 import edu.mit.compilers.codegen.BranchingControlFlowNode;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
+import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.BlockGraphFactory;
@@ -34,7 +37,22 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
         SequentialControlFlowNode returnNode = SequentialControlFlowNode.nopTerminal(); 
         SequentialControlFlowNode loopStart = SequentialControlFlowNode.nopTerminal();
 
-
+        // Create the two labels we need to have a for loop
+        // One label for the beginning of the loop after initialization
+        SequentialControlFlowNode startLabel = SequentialControlFlowNode.terminal(writeLabel(
+        											new Label(LabelType.CONTROL_FLOW, "startwhile" + whileLoop.getID())));
+        // A second label for the end of the loop
+        SequentialControlFlowNode endLabel = SequentialControlFlowNode.terminal(writeLabel(
+													new Label(LabelType.CONTROL_FLOW, "endwhile" + whileLoop.getID())));
+        
+        // Link up the start to its label
+        startLabel.setNext(loopStart);
+        BiTerminalGraph loopStartTarget = new BiTerminalGraph(startLabel, loopStart);
+        
+        // And link the end to its label
+        endLabel.setNext(end);
+        BiTerminalGraph endTarget = new BiTerminalGraph(endLabel, end);
+        
     	// Assign the max Rep var
         BiTerminalGraph maxRepetitionsAssigner = BiTerminalGraph.ofInstructions(
         											push(Literal.INITIAL_VALUE)
@@ -63,13 +81,21 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
         
         // The branch for checking repetition number
         BranchingControlFlowNode maxRepetitionBranch = new BranchingControlFlowNode(JumpType.JL, 
-        								loopComparator.getBeginning(), maxRepetitionsDestroyer.getBeginning());
+        								loopComparator.getBeginning(), endTarget.getEnd());
 
         // The branch for checking conditionals
         BranchingControlFlowNode conditionalBranch = new BranchingControlFlowNode(JumpType.JNE, 
-        									body.getBeginning(), end);
+        									body.getBeginning(), endTarget.getEnd());
         
         if(whileLoop.getMaxRepetitions().isPresent()){
+        	// We need a third label for max rep loops, this one takes us to the incrementor
+        	SequentialControlFlowNode incLabel = SequentialControlFlowNode.terminal(writeLabel(
+						new Label(LabelType.CONTROL_FLOW, "incwhile" + whileLoop.getID())));
+        	
+        	// Link up the incrementor to its label
+            incLabel.setNext(incrementor.getBeginning());
+            BiTerminalGraph incTarget = new BiTerminalGraph(incLabel, incrementor.getEnd());
+        	
         	// When you have max repetitions, you need to actually pop off that variable before returning.
 	        returnNode = SequentialControlFlowNode.terminal(pop(Register.R10));
 	        
@@ -79,34 +105,33 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
 	                        move(new Literal(whileLoop.getMaxRepetitions().get().get64BitValue()), Register.R11), // max repetitions
 	                        compareFlagged(Register.R11, Register.R10));
 	        
-	        // The branch for checking conditionals when you have max reps
-	        conditionalBranch = new BranchingControlFlowNode(JumpType.JNE, 
-	        				body.getBeginning(), maxRepetitionsDestroyer.getBeginning());
+	        // insert the removal of the max repetitions stack object into the endTarget
+	        endLabel.setNext(maxRepetitionsDestroyer.getBeginning());
+	        maxRepetitionsDestroyer.getEnd().setNext(end);
 	        
 	        // All the nodes have been made.  Make the connections.
 	        start.setNext(maxRepetitionsAssigner.getBeginning());
-	        maxRepetitionsAssigner.getEnd().setNext(loopStart);
-	        loopStart.setNext(maxRepetitionsComparator.getBeginning());
+	        maxRepetitionsAssigner.getEnd().setNext(loopStartTarget.getBeginning());
+	        loopStartTarget.getEnd().setNext(maxRepetitionsComparator.getBeginning());
 	        maxRepetitionsComparator.getEnd().setNext(maxRepetitionBranch);
 	        loopComparator.getEnd().setNext(conditionalBranch);
-	        body.getEnd().setNext(incrementor.getBeginning());
-	        incrementor.getEnd().setNext(loopStart);
-	        maxRepetitionsDestroyer.getEnd().setNext(end);
-	        body.getControlNodes().getBreakNode().setNext(maxRepetitionsDestroyer.getBeginning());
-	        body.getControlNodes().getContinueNode().setNext(incrementor.getBeginning());
+	        body.getEnd().setNext(incTarget.getBeginning());
+	        incTarget.getEnd().setNext(loopStartTarget.getBeginning());
+	        body.getControlNodes().getBreakNode().setNext(endTarget.getBeginning());
+	        body.getControlNodes().getContinueNode().setNext(incTarget.getBeginning());
 	        body.getControlNodes().getReturnNode().setNext(returnNode);
         } else {
         	// All the nodes have been made.  Make the connections.
-	        start.setNext(loopStart);
-	        loopStart.setNext(loopComparator.getBeginning());
+	        start.setNext(loopStartTarget.getBeginning());
+	        loopStartTarget.getEnd().setNext(loopComparator.getBeginning());
 	        loopComparator.getEnd().setNext(conditionalBranch);
-	        body.getEnd().setNext(loopStart);
-	        body.getControlNodes().getBreakNode().setNext(end);
-	        body.getControlNodes().getContinueNode().setNext(loopStart);
+	        body.getEnd().setNext(loopStartTarget.getBeginning());
+	        body.getControlNodes().getBreakNode().setNext(endTarget.getBeginning());
+	        body.getControlNodes().getContinueNode().setNext(loopStartTarget.getBeginning());
 	        body.getControlNodes().getReturnNode().setNext(returnNode);
         }
 
-        return new ControlTerminalGraph(start, end,
+        return new ControlTerminalGraph(start, endTarget.getEnd(),
                 	new ControlNodes(breakNode, continueNode, returnNode));
     }
 

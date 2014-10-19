@@ -4,18 +4,21 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class WhileLoop implements Statement {
+	private static long whileLoopIDGenerator = 0;
 
     private final NativeExpression condition;
     private final Optional<IntLiteral> maxRepetitions;
     private final Block body;
     private final LocationDescriptor locationDescriptor;
+    private final long whileLoopID;
 
     private WhileLoop(NativeExpression condition, Optional<IntLiteral> maxRepetitions,
             Block body, LocationDescriptor locationDescriptor) {
         this.condition = condition;
         this.maxRepetitions = maxRepetitions;
         this.body = body;
-	this.locationDescriptor = locationDescriptor;
+        this.locationDescriptor = locationDescriptor;
+        this.whileLoopID = whileLoopIDGenerator++;
     }
     
     @Override
@@ -77,6 +80,10 @@ public class WhileLoop implements Statement {
     
     public Block getBody() {
     	return body;
+    }
+    
+    public String getID() {
+    	return Long.toString(whileLoopID);
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.

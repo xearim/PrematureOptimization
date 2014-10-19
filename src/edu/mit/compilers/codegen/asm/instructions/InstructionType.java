@@ -40,7 +40,8 @@ public enum InstructionType {
     JMP ("JMP"),
     MOV ("MOV"),
     ENTER ("ENTER"),
-    LEAVE ("LEAVE");
+    LEAVE ("LEAVE"),
+    LABEL ("LABEL");
 
     private String instructionName;
 

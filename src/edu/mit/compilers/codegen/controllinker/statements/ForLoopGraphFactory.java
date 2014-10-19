@@ -1,6 +1,7 @@
 package edu.mit.compilers.codegen.controllinker.statements;
 
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.compareFlagged;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.writeLabel;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.increment;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
@@ -8,6 +9,8 @@ import edu.mit.compilers.ast.ForLoop;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.BranchingControlFlowNode;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.codegen.asm.Label;
+import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.VariableReference;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
@@ -35,7 +38,23 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
         // return node needs to clean up the end Expression
         SequentialControlFlowNode returnNode = SequentialControlFlowNode.terminal(pop(Register.R10)); 
         SequentialControlFlowNode loopStart = SequentialControlFlowNode.namedNop("FL loopStart");
-
+        
+        // Create the two labels we need to have a for loop
+        // One label for the begining of the loop after initialization
+        SequentialControlFlowNode startLabel = SequentialControlFlowNode.terminal(writeLabel(
+        											new Label(LabelType.CONTROL_FLOW, "startfor" + forLoop.getID())));
+        // A second label for the end of the loop
+        SequentialControlFlowNode endLabel = SequentialControlFlowNode.terminal(writeLabel(
+													new Label(LabelType.CONTROL_FLOW, "endfor" + forLoop.getID())));
+        
+        // Link up the start to its label
+        startLabel.setNext(loopStart);
+        BiTerminalGraph loopStartTarget = new BiTerminalGraph(startLabel, loopStart);
+        
+        // And link the end to its label
+        endLabel.setNext(end);
+        BiTerminalGraph endTarget = new BiTerminalGraph(endLabel, end);
+        
         VariableReference loopVar = new VariableReference(forLoop.getLoopVariable().getName(),
                 scope);
 
@@ -64,21 +83,21 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
 
         ControlTerminalGraph body = new BlockGraphFactory(forLoop.getBody()).getGraph();
 
-        BranchingControlFlowNode branch = new BranchingControlFlowNode(JumpType.JL, body.getBeginning(), end);
+        BranchingControlFlowNode branch = new BranchingControlFlowNode(JumpType.JL, body.getBeginning(), endTarget.getBeginning());
 
         // All the nodes have been made.  Make the connections.
         start.setNext(minAssigner.getBeginning());
         minAssigner.getEnd().setNext(endExpressionEvaluator.getBeginning());
-        endExpressionEvaluator.getEnd().setNext(loopStart);
-        loopStart.setNext(loopComparator.getBeginning());
+        endExpressionEvaluator.getEnd().setNext(loopStartTarget.getBeginning());
+        loopStartTarget.getEnd().setNext(loopComparator.getBeginning());
         loopComparator.getEnd().setNext(branch);
         body.getEnd().setNext(incrementor.getBeginning());
-        incrementor.getEnd().setNext(loopStart);
-        body.getControlNodes().getBreakNode().setNext(end);
+        incrementor.getEnd().setNext(loopStartTarget.getBeginning());
+        body.getControlNodes().getBreakNode().setNext(endTarget.getBeginning());
         body.getControlNodes().getContinueNode().setNext(incrementor.getBeginning());
         body.getControlNodes().getReturnNode().setNext(returnNode);
 
-        return new ControlTerminalGraph(start, end,
+        return new ControlTerminalGraph(start, endTarget.getEnd(),
                 new ControlNodes(breakNode, continueNode, returnNode));
     }
 
