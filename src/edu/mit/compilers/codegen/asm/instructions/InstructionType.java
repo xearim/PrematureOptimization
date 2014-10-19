@@ -41,6 +41,7 @@ public enum InstructionType {
     MOV ("MOV"),
     ENTER ("ENTER"),
     LEAVE ("LEAVE"),
+    RET ("RETURN"),
     LABEL ("LABEL");
 
     private String instructionName;

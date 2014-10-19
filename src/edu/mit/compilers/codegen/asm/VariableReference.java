@@ -40,22 +40,22 @@ public class VariableReference implements Value{
 			// Parameters are either a register or a base pointer offset
 			// dont know if i love this cast
 			switch((int) targetScope.offset(name)){
-			case 1:
+			case 0:
 				// Holds the first arg
 				return Register.RDI.inAttSyntax();
-			case 2:
+			case 1:
 				// Holds the second arg
 				return Register.RSI.inAttSyntax();
-			case 3:
+			case 2:
 				// Holds the third arg
 				return Register.RDX.inAttSyntax();
-			case 4:
+			case 3:
 				// Holds the fourth arg
 				return Register.RCX.inAttSyntax();
-			case 5:
+			case 4:
 				// Holds the fifth arg
 				return Register.R8.inAttSyntax();
-			case 6:
+			case 5:
 				// Holds the sixth arg
 				return Register.R9.inAttSyntax();
 			default:
