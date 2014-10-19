@@ -141,8 +141,8 @@ public class BinOpGraphFactory implements GraphFactory {
 	        new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
 	        new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
 	        BiTerminalGraph.ofInstructions(
-	                pop(R10),
-	                pop(R11),
+			pop(R11), // Right argument.
+			pop(R10), // Left argument.
 	                compare(binOp.getOperator(), R10, R11),
 	                push(R11)
 	                ));
