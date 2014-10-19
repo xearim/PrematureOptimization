@@ -19,7 +19,7 @@ public class Add implements Instruction {
 
     @Override
     public String inAttSyntax() {
-    	String syntax = "add ";
+    	String syntax = "addq ";
     	// Add left arg into right arg, result is stored there
     	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax();
     	return syntax;

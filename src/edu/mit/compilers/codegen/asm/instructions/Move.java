@@ -14,7 +14,7 @@ public class Move implements Instruction {
 
     @Override
     public String inAttSyntax() {
-    	String syntax = "mov ";
+    	String syntax = "movq ";
     	// Add left arg into right arg, result is stored there
     	syntax += source.inAttSyntax() + ", " + dest.inAttSyntax();
     	return syntax;

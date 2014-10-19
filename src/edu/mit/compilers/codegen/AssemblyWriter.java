@@ -13,8 +13,8 @@ public class AssemblyWriter {
     private final static String METHODS_COMMENT = "// All methods.";
     private final static String STRINGS_COMMENT = "\n// All strings.";
     private final static String GLOBALS_COMMENT = "\n// All globals.";
-    private final static String DATA_DECLARATION = "\n.DATA";
-    private final static String GLOBALS_DECLARATION = "\n.section .bss";
+    private final static String DATA_DECLARATION = "\n.data";
+    private final static String GLOBALS_DECLARATION = "\n.bss";
     private final static String MAIN_METHOD_NAME = "main";
     private final static int GLOBAL_INITIAL_VALUE = 1;
 

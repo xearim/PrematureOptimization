@@ -11,7 +11,9 @@ public class PlaceHolder implements Instruction {
 
     @Override
     public String inAttSyntax() {
-        return "NOP ;" + annotation;
+    	// Gonna supress this for now, just for testing
+    	return "";
+        //return "nop ;" + annotation;
     }
 
 }
