@@ -39,11 +39,12 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
 
         // Create the two labels we need to have a for loop
         // One label for the beginning of the loop after initialization
-        SequentialControlFlowNode startLabel = SequentialControlFlowNode.terminal(writeLabel(
-        											new Label(LabelType.CONTROL_FLOW, "startwhile" + whileLoop.getID())));
+        Label startL = new Label(LabelType.CONTROL_FLOW, "startwhile" + whileLoop.getID());
+        SequentialControlFlowNode startLabel = SequentialControlFlowNode.terminal(writeLabel(startL));
+        
         // A second label for the end of the loop
-        SequentialControlFlowNode endLabel = SequentialControlFlowNode.terminal(writeLabel(
-													new Label(LabelType.CONTROL_FLOW, "endwhile" + whileLoop.getID())));
+        Label endL = new Label(LabelType.CONTROL_FLOW, "endwhile" + whileLoop.getID());
+        SequentialControlFlowNode endLabel = SequentialControlFlowNode.terminal(writeLabel(endL));
         
         // Link up the start to its label
         startLabel.setNext(loopStart);

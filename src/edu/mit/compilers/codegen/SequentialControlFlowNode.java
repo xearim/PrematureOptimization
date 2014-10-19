@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableList;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 
 
-public class SequentialControlFlowNode implements ControlFlowNode {
+public class SequentialControlFlowNode extends ControlFlowNode {
 
     private final Optional<Instruction> instruction;
     private Optional<ControlFlowNode> next;
@@ -16,6 +16,7 @@ public class SequentialControlFlowNode implements ControlFlowNode {
 
     private SequentialControlFlowNode(Optional<Instruction> instruction,
             Optional<ControlFlowNode> next, String name) {
+    	super();
         this.instruction = instruction;
         this.next = next;
         this.name = name;

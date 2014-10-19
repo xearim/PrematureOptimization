@@ -9,6 +9,10 @@ public class WriteLabel implements Instruction {
     public WriteLabel(Label label) {
         this.label = label;
     }
+    
+    public Label getLabel() {
+    	return label;
+    }
 
     @Override
     public String inAttSyntax() {
