@@ -146,7 +146,7 @@ public final class Instructions {
 
     /** Issue a return instruction. */
     public static Instruction ret() {
-        return new PlaceHolder("RET");
+        return new Return();
     }
 
 }

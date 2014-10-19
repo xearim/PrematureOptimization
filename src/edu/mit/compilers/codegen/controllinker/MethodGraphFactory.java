@@ -2,6 +2,7 @@ package edu.mit.compilers.codegen.controllinker;
 
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.errorExit;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.enter;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.leave;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.Method;
@@ -31,7 +32,9 @@ public class MethodGraphFactory implements GraphFactory {
         // Link the Entry instruction to the start of the block
         enterInstruction.getEnd().setNext(blockGraph.getBeginning());
 
-        BiTerminalGraph returnInstruction = BiTerminalGraph.ofInstructions(ret());
+        BiTerminalGraph returnInstruction = BiTerminalGraph.ofInstructions(
+        										leave(),
+        										ret());
         ControlFlowNode sink = returnInstruction.getBeginning();
 
         boolean isVoid = !method.getReturnType().getReturnType().isPresent();
