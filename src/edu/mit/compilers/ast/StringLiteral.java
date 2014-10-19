@@ -1,15 +1,22 @@
 package edu.mit.compilers.ast;
 
+import java.util.Set;
+
 import com.google.common.collect.ImmutableList;
 
 public class StringLiteral implements GeneralExpression {
+	private static long stringIDGenerator;
+	private static Set<StringLiteral> stringLiteralSet;
 
     private final String value;
     private final LocationDescriptor locationDescriptor;
+    private final long stringID;
 
     public StringLiteral(String value, LocationDescriptor locationDescriptor) {
         this.value = value;
-	this.locationDescriptor = locationDescriptor;
+        this.locationDescriptor = locationDescriptor;
+        this.stringID = stringIDGenerator++;
+        stringLiteralSet.add(this);
     }
     
     @Override
@@ -24,6 +31,14 @@ public class StringLiteral implements GeneralExpression {
 
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
+    }
+    
+    public String getID() {
+    	return Long.toString(stringID);
+    }
+    
+    public static Iterable<StringLiteral> getStringLiterals() {
+    	return stringLiteralSet;
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.
