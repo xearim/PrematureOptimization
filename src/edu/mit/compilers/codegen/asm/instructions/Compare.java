@@ -21,11 +21,11 @@ public class Compare implements Instruction {
     public String inAttSyntax() {
     	String syntax = "";
     	// compare the arguments for a flag set
-    	syntax += Instructions.compareFlagged(leftArgument, rightArgument);
+    	syntax += Instructions.compareFlagged(leftArgument, rightArgument).inAttSyntax() + "\n";
     	// We are going to start stupid, assume that we are wrong, put false in R11
     	// And load the possible true into R10
-    	syntax += Instructions.move(Literal.FALSE, Register.R11);
-    	syntax += Instructions.move(Literal.TRUE, Register.R10);
+    	syntax += Instructions.move(Literal.FALSE, Register.R11).inAttSyntax() + "\n";
+    	syntax += Instructions.move(Literal.TRUE, Register.R10).inAttSyntax() + "\n";
     	switch(op){
 		case DOUBLE_EQUALS:
 			syntax += "cmove ";

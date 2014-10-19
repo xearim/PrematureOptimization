@@ -16,7 +16,7 @@ public class CompareFlagged implements Instruction {
     public String inAttSyntax() {
     	String syntax = "cmp ";
     	// because of x86, gotta flip arguments to maintain abstraction
-    	syntax += rightArgument.inAttSyntax() + ", " + leftArgument.inAttSyntax() + "\n";
+    	syntax += rightArgument.inAttSyntax() + ", " + leftArgument.inAttSyntax();
     	return syntax;
     }
 

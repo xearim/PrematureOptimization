@@ -30,15 +30,15 @@ public class MoveFromArrayLocation implements Instruction {
     public String inAttSyntax() {
     	String syntax = "";
     	// Compare our desired access point to make sure it is in bounds
-    	syntax += Instructions.compareFlagged(offset, new Literal(reference.getScope().getFromScope(reference.getName()).get().getLength().get()));
+    	syntax += Instructions.compareFlagged(offset, new Literal(reference.getScope().getFromScope(reference.getName()).get().getLength().get())).inAttSyntax() + "\n";
     	// TODO(xearim): Fix this once we can generate anonymous labels, jump to the error state 1 location
-    	syntax += Instructions.jumpTyped(JumpType.JG, new Label(LabelType.CONTROL_FLOW, "errOneBadArrayBounds"));
+    	syntax += Instructions.jumpTyped(JumpType.JG, new Label(LabelType.CONTROL_FLOW, "errOneBadArrayBounds")).inAttSyntax() + "\n";
     	// move the desired array location into our target
     	// assuming that this type of array access is valid stuff
     	syntax += "mov "; 
     	syntax += "(" + offset.inAttSyntax() + "*" + Long.toString(elementSize) + " + " + 
  			   reference.inAttSyntax() + ")" + "\n";
-    	syntax += ", " + target.inAttSyntax() + "\n";
+    	syntax += ", " + target.inAttSyntax();
     	return syntax;
     }
 

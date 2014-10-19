@@ -16,7 +16,7 @@ public class And implements Instruction {
     public String inAttSyntax() {
     	String syntax = "and ";
     	// and our two arguments
-    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax() + "\n";
+    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax();
     	return syntax;
     }
 
