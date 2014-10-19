@@ -1,0 +1,6 @@
+// Desc: Test simple returns.
+// Returns: 2
+
+int main() {
+    return 2;
+}
