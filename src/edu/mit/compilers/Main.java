@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.NodeMaker;
 import edu.mit.compilers.ast.Program;
+import edu.mit.compilers.codegen.AssemblyWriter;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.grammar.DecafParser;
@@ -152,6 +153,14 @@ class Main {
         new ControlFlowGraphPrinter(outputStream).print(controlFlowGraph.getBeginning());
     }
 
+    private static void genCode(InputStream inputStream, PrintStream outputStream) throws RecognitionException, TokenStreamException {
+        Optional<Program> programAST = semanticallyValidProgram(inputStream, outputStream);
+        if (!programAST.isPresent()) {
+            System.exit(1);
+        }
+        AssemblyWriter.writeAttAssembly(programAST.get(), outputStream);
+    }
+
     /**
      * Check whether the program is semantically valid.
      *
@@ -212,10 +221,5 @@ class Main {
         return isSemanticallyValid(program, outputStream)
                 ? Optional.of(program)
                         : Optional.<Program>absent();
-    }
-
-    private static void genCode(InputStream inputStream, PrintStream outputStream) {
-
-
     }
 }
