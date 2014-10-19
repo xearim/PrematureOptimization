@@ -133,11 +133,6 @@ public final class Instructions {
     public static Instruction leave(){
     	return new Leave();
     }
-    
-    /** Writes out the label given */
-    public static Instruction writeLabel(Label label){
-    	return new WriteLabel(label);
-    }
 
     /** Exits with some error code. */
     public static Instruction errorExit() {
