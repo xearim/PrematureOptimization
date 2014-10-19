@@ -20,11 +20,11 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
     }
 
     private ControlTerminalGraph calculateGraph(Block block) {
-        SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode continueNode = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode breakNode = SequentialControlFlowNode.nopTerminal();
-        SequentialControlFlowNode returnNode = SequentialControlFlowNode.nopTerminal(); 
+        SequentialControlFlowNode start = SequentialControlFlowNode.namedNop("Block start");
+        SequentialControlFlowNode end = SequentialControlFlowNode.namedNop("Block end");
+        SequentialControlFlowNode continueNode = SequentialControlFlowNode.namedNop("Block continue");
+        SequentialControlFlowNode breakNode = SequentialControlFlowNode.namedNop("Block break");
+        SequentialControlFlowNode returnNode = SequentialControlFlowNode.namedNop("Block return");
 
         SequentialControlFlowNode currentNode = start;
         // Zero out variables

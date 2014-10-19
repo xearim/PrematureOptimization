@@ -34,7 +34,7 @@ public class BranchGraphFactory implements GraphFactory {
                 falseBranch.getBeginning());
 
         // Let the two branches merge back to this sink.
-        SequentialControlFlowNode sink = SequentialControlFlowNode.nopTerminal();
+        SequentialControlFlowNode sink = SequentialControlFlowNode.namedNop("Merge");
         trueBranch.getEnd().setNext(sink);
         falseBranch.getEnd().setNext(sink);
 
