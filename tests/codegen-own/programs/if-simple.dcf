@@ -1,0 +1,9 @@
+// Desc: Simplest possible following of a true branch.
+// Returns: 33
+int main() {
+  if (true) {
+    return 33;
+  } else {
+    return 44;
+  }
+}
