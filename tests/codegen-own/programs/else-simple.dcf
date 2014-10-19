@@ -1,0 +1,9 @@
+// Desc: Simplest possible 'else' following.
+// Returns: 44
+int main() {
+  if (false) {
+    return 33;
+  } else {
+    return 44;
+  }
+}
