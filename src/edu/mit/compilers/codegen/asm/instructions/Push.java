@@ -14,7 +14,7 @@ public class Push implements Instruction {
     public String inAttSyntax() {
     	String syntax = "push ";
     	// push it onto the stack
-    	syntax += Argument.inAttSyntax() + "\n";
+    	syntax += Argument.inAttSyntax();
     	return syntax;
     }
 

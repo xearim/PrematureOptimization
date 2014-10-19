@@ -14,7 +14,7 @@ public class Pop implements Instruction {
     public String inAttSyntax() {
     	String syntax = "pop ";
     	// pop it from the stack
-    	syntax += Argument.inAttSyntax() + "\n";
+    	syntax += Argument.inAttSyntax();
     	return syntax;
     }
 

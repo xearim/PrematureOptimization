@@ -16,7 +16,7 @@ public class Subtract implements Instruction {
     public String inAttSyntax() {
     	String syntax = "sub ";
     	// sub left arg into right arg, result is stored there
-    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax() + "\n";
+    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax();
     	return syntax;
     }
 

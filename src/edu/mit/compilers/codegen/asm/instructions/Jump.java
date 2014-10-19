@@ -14,7 +14,7 @@ public class Jump implements Instruction {
     public String inAttSyntax() {
     	String syntax = "jmp ";
     	// and our target
-    	syntax += target.inAttSyntax() + "\n";
+    	syntax += target.inAttSyntax();
     	return syntax;
     }
 

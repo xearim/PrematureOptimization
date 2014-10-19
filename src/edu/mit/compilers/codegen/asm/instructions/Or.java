@@ -16,7 +16,7 @@ public class Or implements Instruction {
     public String inAttSyntax() {
     	String syntax = "or ";
     	// or our two arguments
-    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax() + "\n";
+    	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax();
     	return syntax;
     }
 

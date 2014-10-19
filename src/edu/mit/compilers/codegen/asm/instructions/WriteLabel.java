@@ -16,7 +16,7 @@ public class WriteLabel implements Instruction {
 
     @Override
     public String inAttSyntax() {
-    	return label.inAttSyntax() + "\n";
+    	return label.inAttSyntax();
     }
 
 }

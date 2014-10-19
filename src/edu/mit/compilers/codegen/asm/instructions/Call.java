@@ -16,9 +16,9 @@ public class Call implements Instruction {
     public String inAttSyntax() {
     	String syntax = "";
     	// We are going to be dumb/safe right now and always set %rax to 0 going into a call, so it will be universal
-    	syntax += Instructions.move(new Literal(0), Register.RAX);
+    	syntax += Instructions.move(new Literal(0), Register.RAX).inAttSyntax() + "\n";
     	// and our two arguments
-    	syntax += "call " + function.inAttSyntax() + "\n";
+    	syntax += "call " + function.inAttSyntax();
     	return syntax;
     }
 

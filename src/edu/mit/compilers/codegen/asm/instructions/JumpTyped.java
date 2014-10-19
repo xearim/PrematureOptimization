@@ -16,7 +16,7 @@ public class JumpTyped implements Instruction {
     public String inAttSyntax() {
     	String syntax = jumpType.getName() + " ";
     	// and our target
-    	syntax += target.inAttSyntax() + "\n";
+    	syntax += target.inAttSyntax();
     	return syntax;
     }
 

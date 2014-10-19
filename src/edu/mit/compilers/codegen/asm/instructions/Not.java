@@ -14,7 +14,7 @@ public class Not implements Instruction {
     public String inAttSyntax() {
     	String syntax = "not ";
     	// and our two arguments
-    	syntax += Argument.inAttSyntax() + "\n";
+    	syntax += Argument.inAttSyntax();
     	return syntax;
     }
 
