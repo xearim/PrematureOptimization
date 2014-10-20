@@ -71,6 +71,9 @@ public class VariableLoadGraphFactory implements GraphFactory {
             return BiTerminalGraph.sequenceOf(
                     // Locals are offset from stack pointer.
                     new NativeExprGraphFactory(location.getIndex(), scope).getGraph(),
+                    // We are going to borrow the array index and
+                    // Check it boundaries against the array size
+                    new ArrayBoundsCheckGraphFactory(location, scope).getGraph(),
                     BiTerminalGraph.ofInstructions(
                             pop(Register.R11),
                             move(Register.RBP, Register.R10)));
@@ -78,6 +81,9 @@ public class VariableLoadGraphFactory implements GraphFactory {
         } else if (scopeType == ScopeType.GLOBAL) {
             return BiTerminalGraph.sequenceOf(
                     new NativeExprGraphFactory(location.getIndex(), scope).getGraph(),
+                    // We are going to borrow the array index and
+                    // Check it boundaries against the array size
+                    new ArrayBoundsCheckGraphFactory(location, scope).getGraph(),
                     BiTerminalGraph.ofInstructions(
                             pop(Register.R11),
                             movePointer(new Label(LabelType.GLOBAL, location.getVariableName()),
