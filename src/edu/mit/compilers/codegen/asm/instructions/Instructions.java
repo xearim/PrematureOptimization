@@ -69,7 +69,7 @@ public final class Instructions {
     }
     
     /** Does a compare that produces flags */
-    public static Instruction compareFlagged(Value lhs, Value rhs) {
+    public static Instruction compareFlagged(Register lhs, Value rhs) {
         return new CompareFlagged(lhs, rhs);
     }
     
@@ -89,7 +89,7 @@ public final class Instructions {
     }
     
     /** Does a compare that produces an output */
-    public static Instruction compare(BinaryOperator cmp, Value lhs, Value rhs) {
+    public static Instruction compare(BinaryOperator cmp, Register lhs, Value rhs) {
         return new Compare(cmp, lhs, rhs);
     }
     
@@ -108,7 +108,7 @@ public final class Instructions {
     }
     
     /** Does "mov source, offset(reference, index, elementSize)". */
-    public static Instruction moveToMemory(Register source, long offset, Register reference,
+    public static Instruction moveToMemory(Value source, long offset, Register reference,
             Register index, long elementSize) {
         return new MoveToMemory(source, offset, reference, index, elementSize);
     }
