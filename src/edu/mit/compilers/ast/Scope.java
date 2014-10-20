@@ -105,7 +105,8 @@ public class Scope {
         }
         checkState(getScopeType().equals(ScopeType.LOCAL));
         if (isInScopeImmediately(variableName)) {
-            return offset(variableName) + effectiveBasePointerOffset();
+            long sizeAdjustment = getFromScope(variableName).get().getSize();
+            return offset(variableName) + effectiveBasePointerOffset() + sizeAdjustment;
         } else {
             // Recurse towards the global scope.
             // If we take this branch, we're not in the global scope, because

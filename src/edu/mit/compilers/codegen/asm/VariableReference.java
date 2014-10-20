@@ -34,7 +34,7 @@ public class VariableReference implements Value{
 			// Locals are some offset of the base pointer
 			// its under the return address, then offset by all the other scopes
 			return new Location(Register.RBP, 
-					-1*(Architecture.WORD_SIZE + Architecture.WORD_SIZE*targetScope.offsetFromBasePointer(name))).inAttSyntax();
+					-1*(Architecture.WORD_SIZE*targetScope.offsetFromBasePointer(name))).inAttSyntax();
 		case PARAMETER:
 			// Parameters are either a register or a base pointer offset
 			// dont know if i love this cast
