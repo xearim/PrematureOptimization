@@ -19,11 +19,11 @@ public class Modulo implements Instruction {
     	// A modulo is a special type of signed divide in that you need to use %rax and %rdx as intermediates
     	String syntax = "";
     	// Put the division target in %rax
-    	syntax += Instructions.move(leftArgument, Register.RAX).inAttSyntax() + "\n";
+    	syntax += Instructions.move(rightArgument, Register.RAX).inAttSyntax() + "\n";
     	// Zero out %rdx just in case (it shouldn't hold any values)
     	syntax += Instructions.move(Literal.FALSE, Register.RDX).inAttSyntax() + "\n";
     	// Divide
-    	syntax += "idiv " + rightArgument.inAttSyntax() + "\n";
+    	syntax += "idiv " + leftArgument.inAttSyntax() + "\n";
     	// Return the resultant remainder into the rightArgument as we expect
     	syntax += Instructions.move(Register.RDX, rightArgument).inAttSyntax();
     	return syntax;
