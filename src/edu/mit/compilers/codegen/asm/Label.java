@@ -32,6 +32,12 @@ public class Label implements Value {
 
     @Override
     public String inAttSyntax() {
+        return type == LabelType.STRING
+                ? "$" + labelText()
+                : labelText();
+    }
+    
+    public String labelText() {
         return type.getPrefix() + name;
     }
 }
