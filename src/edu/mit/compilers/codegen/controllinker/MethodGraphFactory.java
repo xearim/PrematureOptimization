@@ -1,11 +1,14 @@
 package edu.mit.compilers.codegen.controllinker;
 
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.enter;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.leave;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.codegen.ControlFlowNode;
+import edu.mit.compilers.codegen.asm.Architecture;
+import edu.mit.compilers.codegen.asm.Register;
 
 /**
  * Produce a BiTerminalGraph that represents the entire execution of a method.
@@ -25,8 +28,12 @@ public class MethodGraphFactory implements GraphFactory {
     private BiTerminalGraph calculateGraph(Method method) {
         Block block = method.getBlock();
 
-        
-        BiTerminalGraph enterInstruction = BiTerminalGraph.ofInstructions(enter(block));
+        // If we are the main method, we need to write down the base pointer for error handling
+        BiTerminalGraph enterInstruction = method.isMain()
+        		? BiTerminalGraph.ofInstructions(
+        				enter(block),
+        				move(Register.RBP, Architecture.CONTROL_FALLOFF_ERROR_VARIABLE))
+        		: BiTerminalGraph.ofInstructions(enter(block));
         ControlTerminalGraph blockGraph = new BlockGraphFactory(block).getGraph();
         // Link the Entry instruction to the start of the block
         enterInstruction.getEnd().setNext(blockGraph.getBeginning());

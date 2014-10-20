@@ -15,7 +15,6 @@ public class AssemblyWriter {
     private final static String GLOBALS_COMMENT = "\n// All globals.";
     private final static String DATA_DECLARATION = "\n.data";
     private final static String GLOBALS_DECLARATION = "\n.bss";
-    private final static String MAIN_METHOD_NAME = "main";
     private final static int GLOBAL_INITIAL_VALUE = 1;
 
     public static void writeAttAssembly(Program program, PrintStream outputStream) {
@@ -43,7 +42,7 @@ public class AssemblyWriter {
     }
 
     private static void methodPrinter(Method method, PrintStream outputStream) {
-        if (method.getName().equals(MAIN_METHOD_NAME)) {
+        if (method.isMain()) {
             outputStream.println("\t.globl main");
         }
         outputStream.println(method.getName() + ":");
