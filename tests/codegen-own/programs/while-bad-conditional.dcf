@@ -1,0 +1,7 @@
+// Returns: 1
+int main () {
+    while (false) {
+        return 0;
+    }
+    return 1;
+}

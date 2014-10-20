@@ -1,0 +1,10 @@
+// Returns: 1
+int main () {
+    boolean b;
+    b = false;
+    b = !b;
+    if (b) {
+        return 1;
+    }
+    return 0;
+}

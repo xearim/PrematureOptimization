@@ -1,0 +1,12 @@
+// Returns: 3
+int main() {
+    int count;
+    int x;
+    for (count = 3, 10) {
+        if (x >= 3) {
+            break;
+        }
+        x += 1;
+    }
+    return x;
+}

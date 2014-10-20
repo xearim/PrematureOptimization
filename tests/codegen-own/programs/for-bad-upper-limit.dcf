@@ -1,0 +1,9 @@
+// Returns: 0
+int main() {
+    int count;
+    int x;
+    for (count = 10, 0) {
+        x += 1;
+    }
+    return x;
+}
