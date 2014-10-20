@@ -1,13 +1,14 @@
 package edu.mit.compilers.codegen.asm.instructions;
 
+import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Value;
 
-public class Move implements Instruction {
+public class MovePointer implements Instruction {
     private InstructionType type = InstructionType.MOV;
-    private final Value source;
+    private final Label source;
     private final Value dest;
 
-    public Move(Value source, Value dest) {
+    public MovePointer(Label source, Value dest) {
         this.source = source;
         this.dest = dest;
     }
