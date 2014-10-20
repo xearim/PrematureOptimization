@@ -30,7 +30,6 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
         // Zero out variables
         for(FieldDescriptor variable: block.getScope().getVariables()){
             SequentialControlFlowNode nextNode = zeroOutVariable(variable, block.getScope(), currentNode);
-            currentNode.setNext(nextNode);
             currentNode = nextNode;
         }
         

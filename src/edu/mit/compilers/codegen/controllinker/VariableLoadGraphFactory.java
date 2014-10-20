@@ -43,53 +43,53 @@ public class VariableLoadGraphFactory implements GraphFactory {
                 setupArrayRegisters(location, scope),
                 BiTerminalGraph.ofInstructions(
                         moveFromMemory(
-                                Register.R11, Register.R10, Register.RAX,
-                                new Literal(Architecture.WORD_SIZE), Register.R10),
-                        add(new Literal(3*Architecture.WORD_SIZE), Register.RSP),
+                                offset(location, scope), Register.R10, Register.R11,
+                                Architecture.WORD_SIZE, Register.R10),
+                        add(new Literal(2*Architecture.WORD_SIZE), Register.RSP),
                         push(Register.R10)));
     }
     // TODO(jasonpr): Have this code live somewhere sensible.
     public static BiTerminalGraph calculateStoreToArray(ArrayLocation location, Scope scope) {
         return BiTerminalGraph.sequenceOf(
                 BiTerminalGraph.ofInstructions(
-                        pop(Register.R10), // Pop value to store into R10.
-                        push(Register.R9), // Push R9, so we can use it as temp.
-                        move(Register.R10, Register.R9)), // Free up R10 for later use.
+                        pop(Register.RAX)), // Pop value to store.
                 setupArrayRegisters(location, scope),
                 BiTerminalGraph.ofInstructions(
-                        moveToMemory(Register.R9, Register.R11, Register.R10, Register.RAX,
-                                new Literal(Architecture.WORD_SIZE)),
-                        add(new Literal(3*Architecture.WORD_SIZE), Register.RSP),
+                        moveToMemory(Register.RAX, offset(location, scope), Register.R10,
+                                Register.R11, Architecture.WORD_SIZE),
+                        add(new Literal(2*Architecture.WORD_SIZE), Register.RSP),
                         pop(Register.R9))); // Restore R9.
     }
     
     /**
-     * Load values into R10, R11, and RAX so that '%r11(%r10, %rax, 8)' refers to the array
+     * Load values into R10, and R11 so that 'X(%r10, %r11, 8)' refers to the array
      * location.
      */
     public static BiTerminalGraph setupArrayRegisters(ArrayLocation location, Scope scope) {
-        Scope immediateScope = scope.getLocation(location.getName());
+        Scope immediateScope = scope.getLocation(location.getVariableName());
         ScopeType scopeType = immediateScope.getScopeType();
         if (scopeType == ScopeType.LOCAL) {
             return BiTerminalGraph.sequenceOf(
                     // Locals are offset from stack pointer.
                     new NativeExprGraphFactory(location.getIndex(), scope).getGraph(),
                     BiTerminalGraph.ofInstructions(
-                            pop(Register.RAX),
-                            move(Register.RBP, Register.R10),
-                            move(new Literal(scope.offsetFromBasePointer(location.getName())),
-                                    Register.R11)));
+                            pop(Register.R11),
+                            move(Register.RBP, Register.R10)));
+
         } else if (scopeType == ScopeType.GLOBAL) {
             return BiTerminalGraph.sequenceOf(
                     new NativeExprGraphFactory(location.getIndex(), scope).getGraph(),
                     BiTerminalGraph.ofInstructions(
-                            pop(Register.RAX),
-                            move(new Label(LabelType.GLOBAL, location.getName()),
-                                    Register.R10),
-                            move(new Literal(0), Register.R11)));
+                            pop(Register.R11),
+                            move(new Label(LabelType.GLOBAL, location.getVariableName()),
+                                    Register.R10)));
         } else {
             throw new AssertionError("Unexepected ScopeType for array: " + scopeType);
         }
+    }
+    
+    private static long offset(ArrayLocation location, Scope scope) {
+        return scope.offsetFromBasePointer(location.getVariableName()) * Architecture.WORD_SIZE;
     }
 
     private BiTerminalGraph calculateLoadFromScalar(ScalarLocation location, Scope scope) {

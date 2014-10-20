@@ -99,14 +99,14 @@ public final class Instructions {
     }
 
     /** Does "mov offset(reference, index, elementSize), target". */
-    public static Instruction moveFromMemory(Register offset, Register reference,
-            Register index, Literal elementSize, Register target) {
+    public static Instruction moveFromMemory(long offset, Register reference,
+            Register index, long elementSize, Register target) {
         return new MoveFromMemory(offset, reference, index, elementSize, target);
     }
     
     /** Does "mov source, offset(reference, index, elementSize)". */
-    public static Instruction moveToMemory(Register source, Register offset, Register reference,
-            Register index, Literal elementSize) {
+    public static Instruction moveToMemory(Register source, long offset, Register reference,
+            Register index, long elementSize) {
         return new MoveToMemory(source, offset, reference, index, elementSize);
     }
 

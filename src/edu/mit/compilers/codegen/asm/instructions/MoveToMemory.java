@@ -1,17 +1,16 @@
 package edu.mit.compilers.codegen.asm.instructions;
 
-import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 
 public class MoveToMemory implements Instruction {
-    private final Register offset;
+    private final long offset;
     private final Register reference;
     private final Register index;
-    private final Literal elementSize;
+    private final long elementSize;
     private final Register source;
 
-    public MoveToMemory(Register source, Register offset, Register reference, Register index,
-            Literal elementSize) {
+    public MoveToMemory(Register source, long offset, Register reference, Register index,
+            long elementSize) {
         this.offset = offset;
         this.reference = reference;
         this.index = index;
@@ -21,8 +20,8 @@ public class MoveToMemory implements Instruction {
     
     @Override
     public String inAttSyntax() {
-        return String.format("movq %s, %s(%s,%s,%d)",
-                source.inAttSyntax(), offset.inAttSyntax(), reference.inAttSyntax(),
-                index.inAttSyntax(), elementSize.inAttSyntax());
+        return String.format("movq %s, %d(%s,%s,%d)",
+                source.inAttSyntax(), offset, reference.inAttSyntax(),
+                index.inAttSyntax(), elementSize);
     }
 }

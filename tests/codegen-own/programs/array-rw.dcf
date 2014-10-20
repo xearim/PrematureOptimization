@@ -1,0 +1,6 @@
+// Returns: 3
+int main() {
+    int array[10];
+    array[5] = 3;
+    return array[5];
+}
