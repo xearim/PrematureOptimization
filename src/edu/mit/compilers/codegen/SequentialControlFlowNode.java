@@ -3,6 +3,7 @@ package edu.mit.compilers.codegen;
 import java.util.Collection;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
@@ -66,6 +67,7 @@ public class SequentialControlFlowNode extends ControlFlowNode {
     }
     
     public void setNext(ControlFlowNode next) {
+        Preconditions.checkState(!this.equals(next));
         this.next = Optional.of(next);
     }
     
