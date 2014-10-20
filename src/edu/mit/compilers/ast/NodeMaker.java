@@ -1,6 +1,7 @@
 package edu.mit.compilers.ast;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.ARRAY_FIELD_DECL;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.ARRAY_LOCATION;
 import static edu.mit.compilers.grammar.DecafParserTokenTypes.AT_SIGN;
@@ -54,6 +55,8 @@ import antlr.collections.AST;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import edu.mit.compilers.AntlrASTWithLines;
 
 /** Utility class for dealing with ANTLR's ASTs. */
 public class NodeMaker {
@@ -381,7 +384,10 @@ public class NodeMaker {
             return WhileLoop.simple(condition, block(children.get(1), scope), location);
         } else {
             // There is a bound on the while loop.
-            IntLiteral maxRepetitions = intLiteral(children.get(1));
+            AST colon = children.get(1);
+            checkState(colon.getText().equals(":"));
+            checkChildCount(1, colon);
+            IntLiteral maxRepetitions = intLiteral(colon.getFirstChild());
             Block body = block(children.get(2), scope);
             return WhileLoop.limited(condition, maxRepetitions, body, location);
         }
