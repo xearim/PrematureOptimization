@@ -25,7 +25,7 @@ public class BranchGraphFactory implements GraphFactory {
         // instructions to be able to jump in response to its value.
         BiTerminalGraph conditionEvaluator = BiTerminalGraph.ofInstructions(
                 pop(R10),
-                compareFlagged(R10, Literal.TRUE));
+                compareFlagged(Literal.TRUE, R10));
 
         // Setup the branching node.
         BranchingControlFlowNode branch = new BranchingControlFlowNode(

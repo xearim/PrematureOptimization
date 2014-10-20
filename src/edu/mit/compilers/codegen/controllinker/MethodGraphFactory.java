@@ -4,6 +4,7 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.enter;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.leave;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
+import edu.mit.compilers.ast.BaseType;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.codegen.ControlFlowNode;
@@ -43,8 +44,7 @@ public class MethodGraphFactory implements GraphFactory {
         										ret());
         ControlFlowNode sink = returnInstruction.getBeginning();
 
-        boolean isVoid = !method.getReturnType().getReturnType().isPresent();
-        BiTerminalGraph fallThroughChecker = isVoid
+        BiTerminalGraph fallThroughChecker = method.isVoid()
                 ? BiTerminalGraph.ofInstructions()
                 : new ControlFallOffGraphFactory().getGraph();
 

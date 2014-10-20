@@ -55,6 +55,13 @@ public class Method implements Node {
     	return getName().equals(Architecture.MAIN_METHOD_NAME);
     }
     
+    public boolean isVoid() {
+    	if(returnType.getReturnType().isPresent()){
+    		return returnType.getReturnType().get().isA(BaseType.VOID);
+    	}
+    	throw new AssertionError("Somehow we have a method without a return type what?");
+    }
+    
     // TODO(jasonpr): Implement equals, hashCode, and toString.
     // TODO(jasonpr): Implement class-specific accessors.
 }

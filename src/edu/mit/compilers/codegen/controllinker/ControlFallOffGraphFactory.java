@@ -50,7 +50,7 @@ public class ControlFallOffGraphFactory implements GraphFactory {
     	// Link all the graph nodes up
     	initialize.getEnd().setNext(compareBasePointer.getBeginning());
     	compareBasePointer.getEnd().setNext(branch);
-    	cleanMethodScope.getEnd().setNext(compareBasePointer.getBeginning());
+    	cleanMethodScope.getEnd().setNext(initialize.getBeginning());
 
         return new BiTerminalGraph(initialize.getBeginning(), exit.getEnd());
     }
