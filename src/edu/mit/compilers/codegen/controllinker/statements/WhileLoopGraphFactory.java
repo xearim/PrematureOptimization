@@ -75,9 +75,13 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
                 // Push the return value back onto the stack.
                 push(Register.R10));
 
+        Literal maxRepetitions = whileLoop.getMaxRepetitions().isPresent()
+                ? new Literal(whileLoop.getMaxRepetitions().get().get64BitValue())
+                : new Literal(0); // We will never actually use this.
+
         BiTerminalGraph maxRepetitionsComparator = BiTerminalGraph.ofInstructions(
                 move(new Location(Register.RSP, 0*Architecture.BYTES_PER_ENTRY), Register.R10), // move max repetitions counter to R10
-                move(new Literal(whileLoop.getMaxRepetitions().get().get64BitValue()), Register.R11), // max repetitions
+                move(maxRepetitions, Register.R11), // max repetitions
                 compareFlagged(Register.R10, Register.R11));
 
         // The branch for checking repetition number
@@ -103,6 +107,7 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
         body.getEnd().setNext(incrementor.getBeginning());
         incrementor.getEnd().setNext(loopStart);
         body.getControlNodes().getBreakNode().setNext(maxRepetitionsEndDestroyer.getBeginning());
+        maxRepetitionsEndDestroyer.getEnd().setNext(end);
         body.getControlNodes().getContinueNode().setNext(incrementor.getBeginning());
         body.getControlNodes().getReturnNode().setNext(maxRepetitionsReturnDestroyer.getBeginning());
         maxRepetitionsReturnDestroyer.getEnd().setNext(returnNode);

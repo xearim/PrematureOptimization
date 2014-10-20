@@ -24,18 +24,18 @@ public class MethodBlockPrinter {
 	
 	private class VisitedSet{
 		
-		private Collection<SequentialControlFlowNode> visitedNodes;
+		private Collection<ControlFlowNode> visitedNodes;
 		
 		public VisitedSet(){
-			visitedNodes = new ArrayList<SequentialControlFlowNode>();
+			visitedNodes = new ArrayList<ControlFlowNode>();
 		}
 		
-		public void visit(SequentialControlFlowNode node){
+		public void visit(ControlFlowNode node){
 			visitedNodes.add(node);
 		}
 		
-		public boolean haveVisited(SequentialControlFlowNode node){
-			for(SequentialControlFlowNode visitedNode: visitedNodes){
+		public boolean haveVisited(ControlFlowNode node){
+			for(ControlFlowNode visitedNode: visitedNodes){
 				if(visitedNode.getNodeID() == node.getNodeID())
 					return true;
 			}
@@ -57,40 +57,39 @@ public class MethodBlockPrinter {
 		printNodeChain(methodGraph.getBeginning(), outputStream);
 	}
 	
-	private void printNodeChain(ControlFlowNode beginning, PrintStream outputStream){
-		Optional<ControlFlowNode> currentNodeWrapper = Optional.of(beginning);
-		while(currentNodeWrapper.isPresent()){ 
-			ControlFlowNode currentNode = currentNodeWrapper.get();
-			if(currentNode instanceof SequentialControlFlowNode){
-				if(e.haveVisited((SequentialControlFlowNode) currentNode)){
-					// If we have already visited the node, it must be a label node, so we just want to jump to that label
-					SequentialControlFlowNode labeledNode = (SequentialControlFlowNode) currentNode;
-					checkState(multiSourced.contains(labeledNode));
-					outputStream.println(Instructions.jump(getMultiSourceLabel(labeledNode)).inAttSyntax());
-					// After we jump, it is pointless to write anything more, so stop recursing
-					currentNodeWrapper = Optional.<ControlFlowNode>absent();
-				} else {
-					// Else we should go ahead and print the node and keep recursing
-					printSequentialNode((SequentialControlFlowNode) currentNode, outputStream);
-					currentNodeWrapper = ((SequentialControlFlowNode) currentNode).hasNext()
-												? Optional.of(((SequentialControlFlowNode) currentNode).getNext())
-												: Optional.<ControlFlowNode>absent();
-				}
-			} else if(currentNode instanceof BranchingControlFlowNode) {
-				printBranchingNode((BranchingControlFlowNode) currentNode, outputStream);
-				currentNodeWrapper = Optional.<ControlFlowNode>absent();
-			} else {
-				throw new AssertionError("Bad node type in control flow graph of type: " + currentNode.getClass().toString());
-			}
-		}
+	private void printNodeChain(ControlFlowNode currentNode, PrintStream outputStream){
+	    if(e.haveVisited(currentNode)){
+	        // If we have already visited the node, it must be a label node, so we just want to jump to that label
+	        SequentialControlFlowNode labeledNode = (SequentialControlFlowNode) currentNode;
+	        checkState(multiSourced.contains(labeledNode));
+	        outputStream.println(Instructions.jump(getMultiSourceLabel(labeledNode)).inAttSyntax());
+	        // After we jump, it is pointless to write anything more, so stop recursing
+	        return;
+	    } else {
+	        e.visit(currentNode);
+	    }
+
+	    // Print the node. 
+	    if(currentNode instanceof SequentialControlFlowNode){
+	        // Print the node and keep recursing
+	        SequentialControlFlowNode seqNode = (SequentialControlFlowNode) currentNode;
+	        printSequentialNode(seqNode, outputStream);
+	        if (seqNode.hasNext()) {
+	            printNodeChain(seqNode.getNext(), outputStream);
+	        }
+	    } else if(currentNode instanceof BranchingControlFlowNode) {
+	        printBranchingNode((BranchingControlFlowNode) currentNode, outputStream);
+	        return;
+	    } else {
+	        throw new AssertionError("Bad node type in control flow graph of type: " + currentNode.getClass().toString());
+	    }
 	}
 	
 	private void printSequentialNode(SequentialControlFlowNode currentNode, PrintStream outputStream){
 		// Visit the node, so we add it to the set
-		e.visit(currentNode);
-		if (multiSourced.contains(currentNode)) {
-		    printLabel(getMultiSourceLabel(currentNode), outputStream);
-		}
+        if (multiSourced.contains(currentNode)) {
+            printLabel(getMultiSourceLabel(currentNode), outputStream);
+        }
 		// If it has an instruction, print that mofo
 		if(currentNode.hasInstruction()){
 			outputStream.println(currentNode.getInstruction().inAttSyntax());
@@ -101,7 +100,8 @@ public class MethodBlockPrinter {
 		ControlFlowNode trueNode = currentNode.getTrueBranch();
 		ControlFlowNode falseNode = currentNode.getFalseBranch();
 		// Figure out where to jump for the false branch
-		Label falseLabel = getFalseLabel((SequentialControlFlowNode) falseNode);
+		// Current node has only one false branch, so this is guaranteed to be unique.
+		Label falseLabel = getFalseLabel(currentNode);
 		// Insert our special jump over the true branch
 		outputStream.println(Instructions.jumpTyped(currentNode.getType(), falseLabel).inAttSyntax());
 		// Recurse on the true branch
@@ -112,7 +112,7 @@ public class MethodBlockPrinter {
 		printNodeChain(falseNode, outputStream);
 	}
 	
-	private Label getFalseLabel(SequentialControlFlowNode falseNode){
+	private Label getFalseLabel(ControlFlowNode falseNode){
 		// The first node of a false node sequence should always be a writeLabel instruction
 		return new Label(LabelType.CONTROL_FLOW, falseNode.getNodeID() + "_false");
 	}
