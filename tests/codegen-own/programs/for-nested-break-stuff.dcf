@@ -1,0 +1,17 @@
+// Returns: 101
+int main() {
+  int pile;
+  int counter;
+  int countertwo;
+  counter = 0;
+  countertwo = 0;
+  for ( counter = 1, 100 ) {
+    for ( countertwo = 1, 100 ) {
+       pile += 100;
+       break;
+    }
+    pile += 1;
+    break;
+  }
+  return pile;
+}
