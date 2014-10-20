@@ -1,0 +1,16 @@
+// Returns: 13
+
+int fibo(int index) {
+  int a;
+  int b;
+  if (index <= 1) {
+    return 1;
+  }
+  a = fibo(index - 1);
+  b = fibo(index - 2);
+  return a + b;
+}
+
+int main() {
+  return fibo(6);
+}
