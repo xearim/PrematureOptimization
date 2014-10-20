@@ -10,6 +10,9 @@ TEMP_OBJ_FILE_NAME = 'tmp.output.o'
 DECAF_SUFFIX = '.dcf'
 PROGRAMS_DIRECTORY = 'programs/'
 
+COLORED_PASS = '\033[92m' 'PASS' '\033[0m'
+COLORED_FAIL = '\033[91m' 'FAIL' '\033[0m'
+
 def runner_path():
     """Get the path of the compiler's run.sh script."""
     git_base = os.popen('git rev-parse --show-toplevel').read().strip()
@@ -63,7 +66,11 @@ def check_return_value(decaf_program):
                                 stderr=subprocess.PIPE)
     stdout, stderr =  compiler.communicate()
     compiler_return_code = compiler.wait()
-    assert compiler_return_code == 0
+    if (compiler_return_code != 0):
+        print "File %s: %s" % (decaf_program, COLORED_FAIL)
+        print "Decaf compiler failed:"
+        print stderr
+        return False
 
     # TODO(jasonpr): Figure out how to use a temp file here, instead of
     # using this TEMP_OBJ_FILE_NAME string.
@@ -73,11 +80,11 @@ def check_return_value(decaf_program):
     decaf_return_value = runner.wait()
 
     if decaf_return_value == exp_ret_val:
-        print "File %s: PASS" % decaf_program
+        print "File %s: %s" % (decaf_program, COLORED_PASS)
         return True
     else:
-        print "File %s: FAIL (Exp: %d. Got: %d)" % (decaf_program, exp_ret_val,
-                                                    decaf_return_value)
+        print "File %s: %s (Exp: %d. Got: %d)" % (decaf_program, COLORED_FAIL,
+                                                  exp_ret_val, decaf_return_value)
         return False
 
 def check_programs_in_directory(directory):
