@@ -1,0 +1,4 @@
+// Returns: 8
+int main() {
+  return 3 + 5;
+}
