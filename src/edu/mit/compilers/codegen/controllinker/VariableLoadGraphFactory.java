@@ -88,7 +88,9 @@ public class VariableLoadGraphFactory implements GraphFactory {
     }
     
     private static long offset(ArrayLocation location, Scope scope) {
-        return scope.offsetFromBasePointer(location.getVariableName()) * Architecture.WORD_SIZE;
+        return scope.offsetFromBasePointer(location.getVariableName())
+                * Architecture.WORD_SIZE
+                * -1;
     }
 
     private BiTerminalGraph calculateLoadFromScalar(ScalarLocation location, Scope scope) {
