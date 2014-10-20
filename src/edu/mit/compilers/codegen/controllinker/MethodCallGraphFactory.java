@@ -51,7 +51,12 @@ public class MethodCallGraphFactory implements GraphFactory {
         List<GeneralExpression> args = ImmutableList.copyOf(methodCall.getParameterValues());
 
         SequentialControlFlowNode preCallStart = SequentialControlFlowNode.namedNop(methodCall.getMethodName() + "()");
-        SequentialControlFlowNode preCallEnd = preCallStart;
+        
+        // Need to save Arg registers before method call
+        BiTerminalGraph saveArgRegisters = RegisterSaver.pushAll();
+        preCallStart.setNext(saveArgRegisters.getBeginning());
+        
+        SequentialControlFlowNode preCallEnd = saveArgRegisters.getEnd();
 
         // Setup args for call.
         int argNumber = args.size() - 1;
@@ -81,11 +86,18 @@ public class MethodCallGraphFactory implements GraphFactory {
 
         int numOverflowingArgs = args.size() - ARG_REGISTERS.size();
         BiTerminalGraph postCall = (numOverflowingArgs > 0)
-                ? BiTerminalGraph.ofInstructions(
+                ? BiTerminalGraph.sequenceOf(
                         // Remove the pushed arguments from the stack.
-                        add(new Literal(numOverflowingArgs * 8L), RSP),
-                        push(RAX))
-                : BiTerminalGraph.ofInstructions(push(RAX));
+                        BiTerminalGraph.ofInstructions(add(new Literal(numOverflowingArgs * 8L), RSP)),
+                        // Restore Arg Registers
+                        RegisterSaver.popAll(),
+                        // Put the return value on the stack
+                        BiTerminalGraph.ofInstructions(push(RAX)))
+                : BiTerminalGraph.sequenceOf(
+                		// Restore Arg Registers
+                		RegisterSaver.popAll(),
+                		// Put the return value on the stack
+                		BiTerminalGraph.ofInstructions(push(RAX)));
 
         // TODO(jasonpr): Do 16-byte alignment.
         return BiTerminalGraph.sequenceOf(preCall, call, postCall);
