@@ -54,7 +54,7 @@ public class AssemblyWriter {
 
     private static void stringPrinter(StringLiteral sl, PrintStream outputStream) {
         outputStream.println(String.format("\t%s: .asciz %s",
-                new Label(LabelType.STRING, sl.getID()).inAttSyntax(),
+                new Label(LabelType.STRING, sl.getID()).labelText(),
                 sl.getName()));
     }
 
