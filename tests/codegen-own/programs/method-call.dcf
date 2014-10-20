@@ -1,0 +1,8 @@
+// Returns: 3
+int get_three() {
+    return 3;
+}
+
+int main() {
+    return get_three();
+}

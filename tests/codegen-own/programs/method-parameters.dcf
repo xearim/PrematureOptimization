@@ -1,0 +1,9 @@
+// Returns: 24
+
+int doubler(int arg) {
+    return 2 * arg;
+}
+
+int main() {
+    return doubler(12);
+}
