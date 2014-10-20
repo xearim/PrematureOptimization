@@ -23,7 +23,7 @@ public class ControlFallOffGraphFactory implements GraphFactory {
     	
     	// Set R10 to the global for the intial RBP
     	BiTerminalGraph initialize = BiTerminalGraph.ofInstructions(
-    			move(Architecture.CONTROL_FALLOFF_ERROR_VARIABLE, Register.R10)
+    			move(Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE, Register.R10)
     			);
     	
     	// Check if the current RBP is the initial RBP
@@ -50,7 +50,7 @@ public class ControlFallOffGraphFactory implements GraphFactory {
     	// Link all the graph nodes up
     	initialize.getEnd().setNext(compareBasePointer.getBeginning());
     	compareBasePointer.getEnd().setNext(branch);
-    	cleanMethodScope.getEnd().setNext(initialize.getBeginning());
+    	cleanMethodScope.getEnd().setNext(compareBasePointer.getBeginning());
 
         return new BiTerminalGraph(initialize.getBeginning(), exit.getEnd());
     }

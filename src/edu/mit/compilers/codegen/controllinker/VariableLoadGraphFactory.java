@@ -42,6 +42,14 @@ public class VariableLoadGraphFactory implements GraphFactory {
     private static BiTerminalGraph calculateLoadFromArray(ArrayLocation location, Scope scope) {
         return BiTerminalGraph.sequenceOf(
                 setupArrayRegisters(location, scope),
+                // We are going to borrow the array index
+                BiTerminalGraph.ofInstructions(
+                		push(Register.R11)),
+                // Check it boundaries against the array size
+                new ArrayBoundsCheckGraphFactory(location, scope).getGraph(),
+                // Then restore it
+                BiTerminalGraph.ofInstructions(
+                		pop(Register.R11)),
                 BiTerminalGraph.ofInstructions(
                         moveFromMemory(
                                 offset(location, scope), Register.R10, Register.R11,
@@ -54,6 +62,14 @@ public class VariableLoadGraphFactory implements GraphFactory {
                 BiTerminalGraph.ofInstructions(
                         pop(Register.RAX)), // Pop value to store.
                 setupArrayRegisters(location, scope),
+                // We are going to borrow the array index
+                BiTerminalGraph.ofInstructions(
+                		push(Register.R11)),
+                // Check it boundaries against the array size
+                new ArrayBoundsCheckGraphFactory(location, scope).getGraph(),
+                // Then restore it
+                BiTerminalGraph.ofInstructions(
+                		pop(Register.R11)),
                 BiTerminalGraph.ofInstructions(
                         moveToMemory(Register.RAX, offset(location, scope), Register.R10,
                                 Register.R11, Architecture.WORD_SIZE)));

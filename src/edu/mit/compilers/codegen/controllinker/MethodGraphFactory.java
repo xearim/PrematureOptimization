@@ -33,7 +33,7 @@ public class MethodGraphFactory implements GraphFactory {
         BiTerminalGraph enterInstruction = method.isMain()
         		? BiTerminalGraph.ofInstructions(
         				enter(block),
-        				move(Register.RBP, Architecture.CONTROL_FALLOFF_ERROR_VARIABLE))
+        				move(Register.RBP, Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE))
         		: BiTerminalGraph.ofInstructions(enter(block));
         ControlTerminalGraph blockGraph = new BlockGraphFactory(block).getGraph();
         // Link the Entry instruction to the start of the block
