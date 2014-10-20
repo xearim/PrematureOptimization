@@ -1,0 +1,9 @@
+// Returns: 50
+int x;
+
+int main() {
+    x = 0;
+    x += 100;
+    x -= 50;
+    return x;
+}
