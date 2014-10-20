@@ -39,7 +39,7 @@ public class ArrayBoundsCheckGraphFactory implements GraphFactory {
     	// Set R11 to the total size of the array minus 1 (aka valid indexes)
     	BiTerminalGraph initialize = BiTerminalGraph.ofInstructions(
     			pop(Register.R10),
-    			move(new Literal(arrayDescriptor.getLength().get().get64BitValue() - 1L), Register.R11)
+    			move(new Literal(arrayDescriptor.getLength().get().get64BitValue()), Register.R11)
     			);
     	
     	// Check if the array is in bounds
@@ -52,7 +52,7 @@ public class ArrayBoundsCheckGraphFactory implements GraphFactory {
     			);
     	
     	BranchingControlFlowNode boundsBranch = new BranchingControlFlowNode(
-    			JumpType.JG,
+    			JumpType.JGE,
     			valid,
     			startExit.getBeginning()
     			);
