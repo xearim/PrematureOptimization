@@ -36,14 +36,14 @@ public class ControlFallOffGraphFactory implements GraphFactory {
     	
     	// When we exit, we need to restore RBP and RSP and then put the error code into RAX
     	BiTerminalGraph exit = BiTerminalGraph.ofInstructions(
-    			move(Architecture.CONTROL_FALLOFF_ERROR_VARIABLE, Register.RSP),
-    			move(new Location(Register.RBP, 0*Architecture.BYTES_PER_ENTRY), Register.RBP),
+    			move(Register.RBP, Register.RSP),
+    			pop(Register.RBP),
     			move(Literal.CONTROL_DROP_OFF_EXIT, Register.RAX),
     			ret());
     	
     	// We branch between recursively setting RBP and just exiting with our error code
     	BranchingControlFlowNode branch = new BranchingControlFlowNode(
-    			JumpType.JNE,
+    			JumpType.JE,
     			cleanMethodScope.getBeginning(),
     			exit.getBeginning());
     	

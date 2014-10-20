@@ -1,0 +1,20 @@
+// Returns: 254
+
+boolean bar() {
+  int a;
+  boolean b;
+  a = 4;
+  a += 5;
+  b = true;
+  return false;
+}
+
+int foo() {
+  if(bar()){
+    return 4;	
+  }
+}
+
+void main() {
+    foo();
+}
