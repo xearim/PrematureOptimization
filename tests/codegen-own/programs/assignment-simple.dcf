@@ -1,0 +1,6 @@
+// Returns: 4
+int main() {
+    int x;
+    x=4;
+    return x;
+}
