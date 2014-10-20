@@ -1,25 +1,23 @@
 package edu.mit.compilers.codegen.controllinker.statements;
 
+import static edu.mit.compilers.codegen.asm.Register.R10;
+import static edu.mit.compilers.codegen.asm.Register.R11;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.add;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.subtract;
 import edu.mit.compilers.ast.ArrayLocation;
 import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.VariableReference;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.GraphFactory;
 import edu.mit.compilers.codegen.controllinker.NativeExprGraphFactory;
 import edu.mit.compilers.codegen.controllinker.VariableLoadGraphFactory;
-import static edu.mit.compilers.codegen.asm.Register.R10;
-import static edu.mit.compilers.codegen.asm.Register.R11;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.add;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.subtract;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.moveToArray;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
 
 public class AssignmentGraphFactory implements GraphFactory {
 
@@ -46,17 +44,8 @@ public class AssignmentGraphFactory implements GraphFactory {
 	}
 	
 	private BiTerminalGraph calculateStoreToArray(ArrayLocation target, Scope scope){
-		String name = target.getVariableName();
-        NativeExpression index = target.getIndex();
-
-        return BiTerminalGraph.sequenceOf(
-                new NativeExprGraphFactory(index, scope).getGraph(),
-                BiTerminalGraph.ofInstructions(
-                        pop(R11),
-                        pop(R10),
-                        moveToArray(R10, R11, Architecture.BYTES_PER_ENTRY, 
-                        		new VariableReference(name, scope))
-                        ));
+	    // TODO(jasonpr): Have this code live somewhere sensible.
+        return VariableLoadGraphFactory.calculateStoreToArray(target, scope);
 	}
 	
 	private BiTerminalGraph calculateStoreToScalar(ScalarLocation target, Scope scope){

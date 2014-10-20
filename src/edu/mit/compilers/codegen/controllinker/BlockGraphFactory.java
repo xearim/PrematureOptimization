@@ -29,9 +29,9 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
         SequentialControlFlowNode currentNode = start;
         // Zero out variables
         for(FieldDescriptor variable: block.getScope().getVariables()){
-        	SequentialControlFlowNode nextNode = zeroOutVariable(variable, block.getScope(), currentNode);
-        	currentNode.setNext(nextNode);
-        	currentNode = nextNode;
+            SequentialControlFlowNode nextNode = zeroOutVariable(variable, block.getScope(), currentNode);
+            currentNode.setNext(nextNode);
+            currentNode = nextNode;
         }
         
         for (Statement statement : block.getStatements()) {
@@ -51,18 +51,18 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
         currentNode.setNext(end);
 
         return new ControlTerminalGraph(start, end,
-        			new ControlNodes(breakNode, continueNode, returnNode));
+                    new ControlNodes(breakNode, continueNode, returnNode));
     }
     
     /**
      * Initialize a given variable in a given scope
      */
     private SequentialControlFlowNode zeroOutVariable(FieldDescriptor variable, Scope scope, SequentialControlFlowNode start){
-    	if(variable.getLength().isPresent()){
-    		return zeroOutArray(variable, scope, start);
-    	} else {
-    		return zeroOutScalar(variable, scope, start);
-    	}
+        if(variable.getLength().isPresent()){
+            return zeroOutArray(variable, scope, start);
+        } else {
+            return zeroOutScalar(variable, scope, start);
+        }
     }
     
     /**
@@ -72,14 +72,11 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
      * returns the newly created node containing the zero-ing instructions following the start 
      */
     private SequentialControlFlowNode zeroOutArray(FieldDescriptor variable, Scope scope, SequentialControlFlowNode start){
-    	SequentialControlFlowNode hook = start;
-    	for(int i = 0; i < variable.getLength().get().get64BitValue(); i++){
-    		SequentialControlFlowNode next = SequentialControlFlowNode.terminal(Instructions.moveToArray(Literal.INITIAL_VALUE,
-    												new Literal(i), Architecture.BYTES_PER_ENTRY, new VariableReference(variable.getName(), scope)));
-    		hook.setNext(next);
-    		hook = next;
-    	}
-    	return hook;
+        SequentialControlFlowNode hook = start;
+        for(int i = 0; i < variable.getLength().get().get64BitValue(); i++){
+            // TODO(jasonpr): Zero it out.
+        }
+        return hook;
     }
     
     /**
@@ -89,12 +86,12 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
      * returns the newly created node containing the zero-ing instructions following the start 
      */
     private SequentialControlFlowNode zeroOutScalar(FieldDescriptor variable, Scope scope, SequentialControlFlowNode start){
-    	SequentialControlFlowNode hook = start;
-    	SequentialControlFlowNode next = SequentialControlFlowNode.terminal(Instructions.move(Literal.INITIAL_VALUE, 
-    											new VariableReference(variable.getName(), scope)));
-    	hook.setNext(next);
-    	hook = next;
-    	return hook;
+        SequentialControlFlowNode hook = start;
+        SequentialControlFlowNode next = SequentialControlFlowNode.terminal(Instructions.move(Literal.INITIAL_VALUE, 
+                                                new VariableReference(variable.getName(), scope)));
+        hook.setNext(next);
+        hook = next;
+        return hook;
     }
 
     @Override

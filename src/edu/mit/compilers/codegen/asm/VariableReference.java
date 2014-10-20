@@ -23,7 +23,6 @@ public class VariableReference implements Value{
         return scope;
     }
     
-
     @Override
     public String inAttSyntax() {
     	Scope targetScope = scope.getLocation(name);
