@@ -77,8 +77,8 @@ public class AssignmentGraphFactory implements GraphFactory {
 					BiTerminalGraph.ofInstructions(
 							pop(R10),
 							pop(R11),
-							subtract(R11, R10),
-							push(R10)
+							subtract(R10, R11),
+							push(R11)
 							),
 					calculateStore(target, scope)
 					);
@@ -89,8 +89,8 @@ public class AssignmentGraphFactory implements GraphFactory {
 					BiTerminalGraph.ofInstructions(
 							pop(R10),
 							pop(R11),
-							add(R11, R10),
-							push(R10)
+							add(R10, R11),
+							push(R11)
 							),
 					calculateStore(target, scope)
 					);
