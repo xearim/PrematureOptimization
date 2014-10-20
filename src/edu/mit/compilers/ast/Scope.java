@@ -92,15 +92,21 @@ public class Scope {
      * the offset of a variable, given its scope, requires looking at the parent
      * scopes.
      * 
-     * <p>Requires that this is a local scope.
+     * <p>Requires that this is a local scope, or a parameter scope.  If it's a parameter scope,
+     * we just return zero.  (This is only to provide a simple base case for the recursion through
+     * locals.
      *  
      * @param variableName
      * @return
      */
     public long offsetFromBasePointer(String variableName) {
+        if (getScopeType().equals(ScopeType.PARAMETER)) {
+            return 0;
+        }
         checkState(getScopeType().equals(ScopeType.LOCAL));
         if (isInScopeImmediately(variableName)) {
-            return offset(variableName) + effectiveBasePointerOffset();
+            long sizeAdjustment = getFromScope(variableName).get().getSize();
+            return offset(variableName) + effectiveBasePointerOffset() + sizeAdjustment;
         } else {
             // Recurse towards the global scope.
             // If we take this branch, we're not in the global scope, because

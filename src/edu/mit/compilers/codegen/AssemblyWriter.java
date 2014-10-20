@@ -63,7 +63,7 @@ public class AssemblyWriter {
 
     private static void globalPrinter(FieldDescriptor fd, PrintStream outputStream) {
         outputStream.println(String.format("\t%s: .quad %d",
-                new Label(LabelType.GLOBAL, fd.getName()).inAttSyntax(),
+                new Label(LabelType.GLOBAL, fd.getName()).labelText(),
                 (fd.getLength().isPresent())
                 ? fd.getLength().get().get64BitValue()
                         : GLOBAL_INITIAL_VALUE));

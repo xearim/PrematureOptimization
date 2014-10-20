@@ -4,6 +4,8 @@ import edu.mit.compilers.ast.BinaryOperator;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
+import edu.mit.compilers.codegen.asm.Literal;
+import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
 import edu.mit.compilers.codegen.asm.VariableReference;
 
@@ -90,22 +92,25 @@ public final class Instructions {
     public static Instruction compare(BinaryOperator cmp, Value lhs, Value rhs) {
         return new Compare(cmp, lhs, rhs);
     }
-
-    /** Does "mov referenceOffset(referenceBase, multipliedOffset, multiplier), target" */
-    public static Instruction moveFromArray(VariableReference reference, Value multipliedOffset,
-            long multiplier, Value target) {
-        return new MoveFromArrayLocation(reference, multipliedOffset, multiplier, target);
-    }
-    
-    /** Does "mov source, targetOffset(targetBase, multipliedOffset, multiplier)" */
-    public static Instruction moveToArray(Value source, Value multipliedOffset,
-            long multiplier, VariableReference target) {
-        return new MoveToArrayLocation(source, multipliedOffset, multiplier, target);
-    }
     
     /** Does "mov reference, target". */
     public static Instruction move(Value reference, Value target) {
         return new Move(reference, target);
+    }
+
+    public static Instruction movePointer(Label reference, Value target) {
+        return new MovePointer(reference, target);
+    }
+    /** Does "mov offset(reference, index, elementSize), target". */
+    public static Instruction moveFromMemory(long offset, Register reference,
+            Register index, long elementSize, Register target) {
+        return new MoveFromMemory(offset, reference, index, elementSize, target);
+    }
+    
+    /** Does "mov source, offset(reference, index, elementSize)". */
+    public static Instruction moveToMemory(Register source, long offset, Register reference,
+            Register index, long elementSize) {
+        return new MoveToMemory(source, offset, reference, index, elementSize);
     }
 
     /** Does `call .m_methodName`. */

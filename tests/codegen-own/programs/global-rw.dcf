@@ -1,0 +1,10 @@
+// Returns: 7
+int some_global;
+
+int main() {
+    int some_local;
+    some_global = 5;
+    some_local = some_global + 6;
+    some_global = some_local - 4;
+    return some_global;
+}
