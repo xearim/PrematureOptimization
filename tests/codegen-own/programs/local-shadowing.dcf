@@ -1,0 +1,17 @@
+// Returns: 14
+int foo(int x) {
+    int y;
+    y = x;
+    if( true ) {
+        int x;
+        x = 8;
+        y += x;
+    }
+    return y;
+}
+
+int main() {
+    int x;
+    x = 2;
+    return x + foo(4);
+}

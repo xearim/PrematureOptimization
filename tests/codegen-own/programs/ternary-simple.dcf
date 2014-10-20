@@ -1,0 +1,6 @@
+// Returns: 3
+int main() {
+  boolean pile;
+  pile = true;
+  return pile ? 3 : 2;
+}
