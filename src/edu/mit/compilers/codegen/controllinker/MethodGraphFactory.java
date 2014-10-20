@@ -1,6 +1,5 @@
 package edu.mit.compilers.codegen.controllinker;
 
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.errorExit;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.enter;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.leave;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
@@ -40,7 +39,7 @@ public class MethodGraphFactory implements GraphFactory {
         boolean isVoid = !method.getReturnType().getReturnType().isPresent();
         BiTerminalGraph fallThroughChecker = isVoid
                 ? BiTerminalGraph.ofInstructions()
-                : BiTerminalGraph.ofInstructions(errorExit());
+                : new ControlFallOffGraphFactory().getGraph();
 
         // TODO(jasonpr): Connect break and continue to an explicit error thrower.
         // The semantic checker should ensure that we'll never have one in a method's block,
