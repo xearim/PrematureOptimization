@@ -24,12 +24,12 @@ public class TernaryOpGraphFactory implements GraphFactory {
     	// Hook up the true target
         trueNode.setNext(trueBranch.getBeginning());
         BiTerminalGraph trueTarget = new BiTerminalGraph(trueNode,
-                SequentialControlFlowNode.nopTerminal());
+                trueBranch.getEnd());
     	
     	// Hook up the false target
     	falseNode.setNext(falseBranch.getBeginning());
     	BiTerminalGraph falseTarget = new BiTerminalGraph(falseNode,
-                SequentialControlFlowNode.nopTerminal());
+                falseBranch.getEnd());
         
         return new BranchGraphFactory(
                 new NativeExprGraphFactory(operation.getCondition(), scope).getGraph(),
