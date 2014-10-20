@@ -120,7 +120,7 @@ public class MethodBlockPrinter {
 	}
 	
 	private void printLabel(Label label, PrintStream outputStream) {
-	    outputStream.println(label.inAttSyntax() + ":");
+	    outputStream.println(label.labelText() + ":");
 	}
 	
 }
