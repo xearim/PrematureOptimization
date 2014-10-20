@@ -124,7 +124,7 @@ public class Scope {
      */
     public long offsetInParameterSet(String variableName) {
     	checkState(getScopeType().equals(ScopeType.PARAMETER));
-    	return (6 - offset(variableName));
+        return (offset(variableName) - 6);
     }
 
     /**
