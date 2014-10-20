@@ -1,0 +1,9 @@
+// Returns: 50
+int main () {
+  int x[1000];
+  int j;
+  for ( j = 0, 1000 ) {
+    x[j] = j;
+  }
+  return x[50];
+}

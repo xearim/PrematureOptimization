@@ -1,0 +1,6 @@
+// Returns: 3
+int arr[10];
+int main() {
+    arr[5] = 3;
+    return arr[5];
+}
