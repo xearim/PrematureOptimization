@@ -17,7 +17,7 @@ public class MovePointer implements Instruction {
     public String inAttSyntax() {
     	String syntax = "movq ";
     	// Add left arg into right arg, result is stored there
-    	syntax += source.inAttSyntax() + ", " + dest.inAttSyntax();
+        syntax += "$" + source.inAttSyntax() + ", " + dest.inAttSyntax();
     	return syntax;
     }
 
