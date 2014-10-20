@@ -63,7 +63,7 @@ public class ArrayBoundsCheckGraphFactory implements GraphFactory {
     	
     	// Check if the current RBP is the initial RBP
     	BiTerminalGraph compareBasePointer = BiTerminalGraph.ofInstructions(
-    			compareFlagged(Register.RBP, Register.R11));
+                compareFlagged(Register.RBP, Register.R10));
     	
     	// When we exit, we need to restore RBP and RSP and then put the error code into RAX
     	BiTerminalGraph exit = BiTerminalGraph.ofInstructions(
