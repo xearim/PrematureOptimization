@@ -310,7 +310,7 @@ public class TypesSemanticCheck implements SemanticCheck {
         Optional<IntLiteral> maxRepetitions = whileLoop.getMaxRepetitions();
         if (maxRepetitions.isPresent()) {
             // maxRepetitions must be a positive integer (SR22).
-            Utils.check(isNonPositiveIntLiteral(maxRepetitions.get().getName()),
+            Utils.check(!isNonPositiveIntLiteral(maxRepetitions.get().getName()),
                     errorAccumulator,
                     "Invalid upper bound for while loop at %s: expected a positive integer, but got %s",
                     maxRepetitions.get().getLocationDescriptor(), maxRepetitions.get().getName());
