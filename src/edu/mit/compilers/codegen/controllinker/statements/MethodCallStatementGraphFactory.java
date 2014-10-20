@@ -10,6 +10,7 @@ import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
 import edu.mit.compilers.codegen.controllinker.MethodCallGraphFactory;
+import edu.mit.compilers.codegen.controllinker.RegisterSaver;
 
 public class MethodCallStatementGraphFactory implements ControlTerminalGraphFactory {
 
@@ -22,6 +23,7 @@ public class MethodCallStatementGraphFactory implements ControlTerminalGraphFact
     private ControlTerminalGraph calculateGraph(MethodCall call, Scope scope) {
         BiTerminalGraph expressionGraph = new MethodCallGraphFactory(call, scope).getGraph();
         // When we use a method call as a statement, we discard the return value.
+        // And we make sure to save everything before hand, and get it back afterwards
         BiTerminalGraph statementGraph = BiTerminalGraph.sequenceOf(
                 expressionGraph,
                 BiTerminalGraph.ofInstructions(

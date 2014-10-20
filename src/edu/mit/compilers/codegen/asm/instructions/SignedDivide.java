@@ -19,6 +19,8 @@ public class SignedDivide implements Instruction {
     public String inAttSyntax() {
     	// A signed divide is special in that you need to use %rax and %rdx as intermediates
     	String syntax = "";
+    	// Gotta store the value of RDX incase the caller expects it
+    	syntax += Instructions.push(Register.RDX).inAttSyntax()  + "\n";
     	// Put the division target in %rax
     	syntax += Instructions.move(rightArgument, Register.RAX).inAttSyntax() + "\n";
     	// Zero out %rdx just in case (it shouldn't hold any values)
@@ -26,7 +28,9 @@ public class SignedDivide implements Instruction {
     	// Divide
     	syntax += "idiv " + leftArgument.inAttSyntax() + "\n";
     	// Return the result into the rightArgument as we expect
-    	syntax += Instructions.move(Register.RAX, rightArgument);
+    	syntax += Instructions.move(Register.RAX, rightArgument).inAttSyntax() + "\n";
+    	// Restore the value of RDX for the caller
+    	syntax += Instructions.pop(Register.RDX).inAttSyntax();
     	return syntax;
     }
 }

@@ -18,6 +18,8 @@ public class Modulo implements Instruction {
     public String inAttSyntax() {
     	// A modulo is a special type of signed divide in that you need to use %rax and %rdx as intermediates
     	String syntax = "";
+    	// Gotta store away RDX incase it is being used by the caller
+    	syntax += Instructions.push(Register.RDX).inAttSyntax() + "\n";
     	// Put the division target in %rax
     	syntax += Instructions.move(rightArgument, Register.RAX).inAttSyntax() + "\n";
     	// Zero out %rdx just in case (it shouldn't hold any values)
@@ -25,7 +27,9 @@ public class Modulo implements Instruction {
     	// Divide
     	syntax += "idiv " + leftArgument.inAttSyntax() + "\n";
     	// Return the resultant remainder into the rightArgument as we expect
-    	syntax += Instructions.move(Register.RDX, rightArgument).inAttSyntax();
+    	syntax += Instructions.move(Register.RDX, rightArgument).inAttSyntax() + "\n";
+    	// Restore the value of RDX
+    	syntax += Instructions.pop(Register.RDX).inAttSyntax();
     	return syntax;
     }
 }
