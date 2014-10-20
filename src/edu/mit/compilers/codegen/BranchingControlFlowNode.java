@@ -25,6 +25,8 @@ public class BranchingControlFlowNode extends ControlFlowNode {
         // TODO(Manny): find more meaningful error message
         Preconditions.checkNotNull(trueBranch, "True Branch is null.");
         Preconditions.checkNotNull(falseBranch, "False Branch is null.");
+        Preconditions.checkState(!trueBranch.equals(this));
+        Preconditions.checkState(!falseBranch.equals(this));
 
         this.type = type;
         this.trueBranch = trueBranch;
