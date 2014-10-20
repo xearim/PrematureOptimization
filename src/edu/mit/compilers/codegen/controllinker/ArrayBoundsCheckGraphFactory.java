@@ -43,16 +43,25 @@ public class ArrayBoundsCheckGraphFactory implements GraphFactory {
     			);
     	
     	// Check if the array is in bounds
-    	BiTerminalGraph compareArrayBounds = BiTerminalGraph.ofInstructions(
+    	BiTerminalGraph compareArrayUpperBounds = BiTerminalGraph.ofInstructions(
     			compareFlagged(Register.R10, Register.R11));
+    	
+    	BiTerminalGraph compareArrayLowerBounds = BiTerminalGraph.ofInstructions(
+    			compareFlagged(Register.R10, new Literal(0)));
     	
     	// Set up the original bp for the exit operation
     	BiTerminalGraph startExit = BiTerminalGraph.ofInstructions(
     			move(Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE, Register.R10)
     			);
     	
-    	BranchingControlFlowNode boundsBranch = new BranchingControlFlowNode(
+    	BranchingControlFlowNode boundsUpperBranch = new BranchingControlFlowNode(
     			JumpType.JGE,
+    			compareArrayLowerBounds.getBeginning(),
+    			startExit.getBeginning()
+    			);
+    	
+    	BranchingControlFlowNode boundsLowerBranch = new BranchingControlFlowNode(
+    			JumpType.JL,
     			valid,
     			startExit.getBeginning()
     			);
@@ -79,8 +88,9 @@ public class ArrayBoundsCheckGraphFactory implements GraphFactory {
     			exit.getBeginning());
     	
     	// Link all the graph nodes up
-    	initialize.getEnd().setNext(compareArrayBounds.getBeginning());
-    	compareArrayBounds.getEnd().setNext(boundsBranch);
+    	initialize.getEnd().setNext(compareArrayUpperBounds.getBeginning());
+    	compareArrayUpperBounds.getEnd().setNext(boundsUpperBranch);
+    	compareArrayLowerBounds.getEnd().setNext(boundsLowerBranch);
     	startExit.getEnd().setNext(compareBasePointer.getBeginning());
     	compareBasePointer.getEnd().setNext(exitBranch);
     	cleanMethodScope.getEnd().setNext(startExit.getBeginning());
