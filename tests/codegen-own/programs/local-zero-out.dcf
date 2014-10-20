@@ -1,0 +1,15 @@
+// Returns: 1
+int main() {
+  int a;
+  for (a = 0, 2) {
+    // These should both be zeroed.
+    int x, y;
+    x = 1;
+    if (a == 1) {
+      // Should be 1, since (x, y) = (1, 0).
+      return x + y;
+    }
+    // Set it, to test that it's erased next iteration.
+    y = 2;
+  }
+}
