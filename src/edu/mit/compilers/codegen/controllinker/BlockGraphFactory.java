@@ -1,14 +1,21 @@
 package edu.mit.compilers.codegen.controllinker;
 
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.compareFlagged;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.moveToMemory;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.Statement;
+import edu.mit.compilers.codegen.BranchingControlFlowNode;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
+import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.VariableReference;
+import edu.mit.compilers.codegen.asm.instructions.CompareFlagged;
 import edu.mit.compilers.codegen.asm.instructions.Instructions;
+import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes;
 import edu.mit.compilers.codegen.controllinker.statements.StatementGraphFactory;
 
@@ -68,14 +75,30 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
      * Assign an array variable to the default initial value of a variable for each element of the array
      * and patch that in as the ControlFlowNode following the start
      * 
-     * returns the newly created node containing the zero-ing instructions following the start 
+     * returns the node after a tiny loop that zeroes out the array.
      */
     private SequentialControlFlowNode zeroOutArray(FieldDescriptor variable, Scope scope, SequentialControlFlowNode start){
-        SequentialControlFlowNode hook = start;
-        for(int i = 0; i < variable.getLength().get().get64BitValue(); i++){
-            // TODO(jasonpr): Zero it out.
-        }
-        return hook;
+        Literal length = new Literal(variable.getLength().get());
+        long offset = (-Architecture.WORD_SIZE) * scope.offsetFromBasePointer(variable.getName());
+
+        SequentialControlFlowNode setup =
+                SequentialControlFlowNode.terminal(move(new Literal(0), Register.R10));
+        SequentialControlFlowNode comparator =
+                SequentialControlFlowNode.terminal(compareFlagged(Register.R10, length));
+        BiTerminalGraph loopBody = BiTerminalGraph.ofInstructions(
+                moveToMemory(new Literal(0), offset, Register.RBP,
+                        Register.R10, Architecture.WORD_SIZE),
+                Instructions.increment(Register.R10));
+        SequentialControlFlowNode exit = SequentialControlFlowNode.namedNop("exit_array_zero");
+
+        BranchingControlFlowNode loopBranch =
+                new BranchingControlFlowNode(JumpType.JGE, loopBody.getBeginning(), exit);
+
+        start.setNext(setup);
+        setup.setNext(comparator);
+        comparator.setNext(loopBranch);
+        loopBody.getEnd().setNext(comparator);
+        return exit;
     }
     
     /**

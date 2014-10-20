@@ -8,10 +8,10 @@ import edu.mit.compilers.codegen.asm.Value;
 public class Compare implements Instruction {
     private InstructionType type = InstructionType.CMP;
     private final BinaryOperator op;
-    private final Value leftArgument;
+    private final Register leftArgument;
     private final Value rightArgument;
 
-    public Compare(BinaryOperator cmp, Value leftArgument, Value rightArgument) {
+    public Compare(BinaryOperator cmp, Register leftArgument, Value rightArgument) {
     	this.op = cmp;
         this.leftArgument = leftArgument;
         this.rightArgument = rightArgument;
