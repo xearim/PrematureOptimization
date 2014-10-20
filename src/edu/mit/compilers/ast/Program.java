@@ -39,6 +39,7 @@ public class Program implements Node {
     public Scope getGlobals() {
         return globals;
     }
+    
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
     }

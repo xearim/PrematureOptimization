@@ -6,6 +6,7 @@ import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.ast.StringLiteral;
+import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
 
@@ -39,6 +40,9 @@ public class AssemblyWriter {
         for (FieldDescriptor global : program.getGlobals().getVariables()){
             globalPrinter(global, outputStream);
         }
+        for (FieldDescriptor errorVar : Architecture.ERROR_VARIABLES.getVariables()){
+        	errorVarPrinter(errorVar, outputStream);
+        }
     }
 
     private static void methodPrinter(Method method, PrintStream outputStream) {
@@ -60,6 +64,14 @@ public class AssemblyWriter {
     private static void globalPrinter(FieldDescriptor fd, PrintStream outputStream) {
         outputStream.println(String.format("\t%s: .quad %d",
                 new Label(LabelType.GLOBAL, fd.getName()).inAttSyntax(),
+                (fd.getLength().isPresent())
+                ? fd.getLength().get().get64BitValue()
+                        : GLOBAL_INITIAL_VALUE));
+    }
+    
+    private static void errorVarPrinter(FieldDescriptor fd, PrintStream outputStream) {
+        outputStream.println(String.format("\t%s: .quad %d",
+                new Label(LabelType.ERROR, fd.getName()).inAttSyntax(),
                 (fd.getLength().isPresent())
                 ? fd.getLength().get().get64BitValue()
                         : GLOBAL_INITIAL_VALUE));
