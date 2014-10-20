@@ -4,6 +4,8 @@ public class Label implements Value {
     public static enum LabelType {
         // A global variable.
         GLOBAL(".g_"),
+        // Special Globals used for error handling
+        ERROR(".e_"),
         // The start of a method.  Has no prefix, for easy compatibility with callouts.
         METHOD(""),
         // An instruction inside a method.

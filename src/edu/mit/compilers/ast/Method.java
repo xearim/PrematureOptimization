@@ -2,6 +2,8 @@ package edu.mit.compilers.ast;
 
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.codegen.asm.Architecture;
+
 public class Method implements Node {
 
     private final String name;
@@ -16,7 +18,7 @@ public class Method implements Node {
         this.returnType = returnType;
         this.parameters = parameters;
         this.body = body;
-	this.locationDescriptor = locationDescriptor;
+        this.locationDescriptor = locationDescriptor;
     }
     
     @Override
@@ -47,6 +49,10 @@ public class Method implements Node {
     
     public Block getBlock() {
     	return body;
+    }
+    
+    public boolean isMain() {
+    	return getName().equals(Architecture.MAIN_METHOD_NAME);
     }
     
     // TODO(jasonpr): Implement equals, hashCode, and toString.
