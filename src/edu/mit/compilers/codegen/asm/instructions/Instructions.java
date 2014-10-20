@@ -98,6 +98,9 @@ public final class Instructions {
         return new Move(reference, target);
     }
 
+    public static Instruction movePointer(Label reference, Value target) {
+        return new MovePointer(reference, target);
+    }
     /** Does "mov offset(reference, index, elementSize), target". */
     public static Instruction moveFromMemory(long offset, Register reference,
             Register index, long elementSize, Register target) {

@@ -3,6 +3,7 @@ package edu.mit.compilers.codegen.controllinker;
 import static edu.mit.compilers.codegen.asm.Register.R11;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.add;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.movePointer;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.moveFromMemory;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.moveToMemory;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
@@ -45,7 +46,6 @@ public class VariableLoadGraphFactory implements GraphFactory {
                         moveFromMemory(
                                 offset(location, scope), Register.R10, Register.R11,
                                 Architecture.WORD_SIZE, Register.R10),
-                        add(new Literal(2*Architecture.WORD_SIZE), Register.RSP),
                         push(Register.R10)));
     }
     // TODO(jasonpr): Have this code live somewhere sensible.
@@ -56,9 +56,8 @@ public class VariableLoadGraphFactory implements GraphFactory {
                 setupArrayRegisters(location, scope),
                 BiTerminalGraph.ofInstructions(
                         moveToMemory(Register.RAX, offset(location, scope), Register.R10,
-                                Register.R11, Architecture.WORD_SIZE),
-                        add(new Literal(2*Architecture.WORD_SIZE), Register.RSP),
-                        pop(Register.R9))); // Restore R9.
+                                Register.R11, Architecture.WORD_SIZE)));
+
     }
     
     /**
@@ -81,7 +80,7 @@ public class VariableLoadGraphFactory implements GraphFactory {
                     new NativeExprGraphFactory(location.getIndex(), scope).getGraph(),
                     BiTerminalGraph.ofInstructions(
                             pop(Register.R11),
-                            move(new Label(LabelType.GLOBAL, location.getVariableName()),
+                            movePointer(new Label(LabelType.GLOBAL, location.getVariableName()),
                                     Register.R10)));
         } else {
             throw new AssertionError("Unexepected ScopeType for array: " + scopeType);
