@@ -1,0 +1,5 @@
+// Returns: 0
+int main() {
+    int arr[3];
+    return arr[1];
+}
