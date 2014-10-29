@@ -1,9 +1,9 @@
-package edu.mit.semantics;
+package edu.mit.compilers.semantics;
 
 import java.io.PrintStream;
 import java.util.List;
 
-import edu.mit.semantics.errors.SemanticError;
+import edu.mit.compilers.semantics.errors.SemanticError;
 
 public class ErrorPrinter {
     private final List<SemanticError> errors;

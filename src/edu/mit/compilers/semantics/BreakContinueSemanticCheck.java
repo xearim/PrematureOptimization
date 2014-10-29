@@ -1,4 +1,4 @@
-package edu.mit.semantics;
+package edu.mit.compilers.semantics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +19,8 @@ import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.Statement;
 import edu.mit.compilers.ast.WhileLoop;
-import edu.mit.semantics.errors.BreakContinueSemanticError;
-import edu.mit.semantics.errors.SemanticError;
+import edu.mit.compilers.semantics.errors.BreakContinueSemanticError;
+import edu.mit.compilers.semantics.errors.SemanticError;
 
 public class BreakContinueSemanticCheck implements SemanticCheck{
 
