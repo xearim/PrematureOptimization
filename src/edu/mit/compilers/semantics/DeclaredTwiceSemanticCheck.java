@@ -1,4 +1,4 @@
-package edu.mit.semantics;
+package edu.mit.compilers.semantics;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import edu.mit.compilers.ast.*;
-import edu.mit.semantics.errors.DeclaredTwiceSemanticError;
-import edu.mit.semantics.errors.LocationType;
-import edu.mit.semantics.errors.SemanticError;
+import edu.mit.compilers.semantics.errors.DeclaredTwiceSemanticError;
+import edu.mit.compilers.semantics.errors.LocationType;
+import edu.mit.compilers.semantics.errors.SemanticError;
 
 /**
  * Checks for the following rule/s:

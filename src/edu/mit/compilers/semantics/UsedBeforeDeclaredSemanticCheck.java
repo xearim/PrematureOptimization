@@ -1,4 +1,4 @@
-package edu.mit.semantics;
+package edu.mit.compilers.semantics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +29,8 @@ import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.ast.WhileLoop;
 import edu.mit.compilers.ir.EvaluateCheck;
-import edu.mit.semantics.errors.SemanticError;
-import edu.mit.semantics.errors.UsedBeforeDeclaredSemanticError;
+import edu.mit.compilers.semantics.errors.SemanticError;
+import edu.mit.compilers.semantics.errors.UsedBeforeDeclaredSemanticError;
 
 /**
  * Checks for the following rule/s:

@@ -25,13 +25,13 @@ import edu.mit.compilers.grammar.DecafParser;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.grammar.DecafScanner;
 import edu.mit.compilers.grammar.DecafScannerTokenTypes;
+import edu.mit.compilers.semantics.ErrorPrinter;
+import edu.mit.compilers.semantics.SemanticChecker;
+import edu.mit.compilers.semantics.errors.SemanticError;
 import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
 import edu.mit.compilers.tools.ControlFlowGraphPrinter;
-import edu.mit.semantics.ErrorPrinter;
-import edu.mit.semantics.SemanticChecker;
-import edu.mit.semantics.errors.SemanticError;
 
 class Main {
 

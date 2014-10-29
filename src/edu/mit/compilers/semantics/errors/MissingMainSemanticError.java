@@ -1,4 +1,4 @@
-package edu.mit.semantics.errors;
+package edu.mit.compilers.semantics.errors;
 
 
 public class MissingMainSemanticError implements SemanticError {

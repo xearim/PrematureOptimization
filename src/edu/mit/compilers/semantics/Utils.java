@@ -1,8 +1,8 @@
-package edu.mit.semantics;
+package edu.mit.compilers.semantics;
 
 import java.util.List;
 
-import edu.mit.semantics.errors.SemanticError;
+import edu.mit.compilers.semantics.errors.SemanticError;
 
 public class Utils {
     private final static String HEX_START = "0x";

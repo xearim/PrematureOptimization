@@ -1,20 +1,20 @@
-package edu.mit.semantics.errors;
+package edu.mit.compilers.semantics.errors;
 
 import edu.mit.compilers.ast.LocationDescriptor;
 
-public class UsedBeforeDeclaredSemanticError implements SemanticError {
-    private final static String ERRORNAME="UsedBeforeDeclaredSemanticError";
+public class IncompatableArgumentsSemanticError implements SemanticError {
+    private final static String ERRORNAME="IncompatableArgumentsSemanticError";
     private final String name;
     private final LocationDescriptor ld;
 
-    public UsedBeforeDeclaredSemanticError(String name, LocationDescriptor ld) {
+    public IncompatableArgumentsSemanticError(String name, LocationDescriptor ld) {
         this.name = name;
         this.ld = ld;
     }
 
     @Override
     public String generateErrorMessage() {
-        return String.format("%s: %s %s; Variable %s used before declared",
+        return String.format("%s: %s %s; %s is not a valid parameter for a non-callout method",
                 ERRORNAME, this.ld.getFileName(), generateLocationString(), this.name);
     }
 

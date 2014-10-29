@@ -1,11 +1,11 @@
-package edu.mit.semantics;
+package edu.mit.compilers.semantics;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import edu.mit.compilers.ast.*;
-import edu.mit.semantics.errors.NonPositiveArrayLengthSemanticError;
-import edu.mit.semantics.errors.SemanticError;
+import edu.mit.compilers.semantics.errors.NonPositiveArrayLengthSemanticError;
+import edu.mit.compilers.semantics.errors.SemanticError;
 
 public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
     private final static String HEX_START = "0x";
