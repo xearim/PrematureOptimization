@@ -4,13 +4,10 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class IfStatement implements Statement {
-	private static long ifStatementIDGenerator = 0;
-
     private final NativeExpression condition;
     private final Block thenBlock;
     private final Optional<Block> elseBlock;
     private final LocationDescriptor locationDescriptor;
-    private final long ifStatementID;
 
     private IfStatement(NativeExpression condition, Block thenBlock,
             Optional<Block> elseBlock, LocationDescriptor locationDescriptor) {
@@ -18,7 +15,6 @@ public class IfStatement implements Statement {
         this.thenBlock = thenBlock;
         this.elseBlock = elseBlock;
         this.locationDescriptor = locationDescriptor;
-        this.ifStatementID = ifStatementIDGenerator++;
     }
 
     public static IfStatement ifThen(NativeExpression condition, Block thenBlock,
@@ -93,10 +89,6 @@ public class IfStatement implements Statement {
 
     public Optional<Block> getElseBlock() {
         return elseBlock;
-    }
-    
-    public String getID() {
-    	return Long.toString(ifStatementID);
     }
 
     // TODO(jasonpr): Implement equals, hashCode, and toString.
