@@ -54,7 +54,4 @@ public class BooleanLiteral implements NativeLiteral {
     public String toString() {
         return value;
     }
-
-    // TODO(jasonpr): Implement hashCode, toString
-    // TODO(jasonpr): Implement class-specific accessors.
 }

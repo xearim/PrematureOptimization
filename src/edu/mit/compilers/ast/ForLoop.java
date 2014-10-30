@@ -67,4 +67,61 @@ public class ForLoop implements Statement {
     public Block getBody() {
         return body;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((body == null) ? 0 : body.hashCode());
+        result = prime * result
+                + ((loopVariable == null) ? 0 : loopVariable.hashCode());
+        result = prime * result
+                + ((rangeEnd == null) ? 0 : rangeEnd.hashCode());
+        result = prime * result
+                + ((rangeStart == null) ? 0 : rangeStart.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof ForLoop)) {
+            return false;
+        }
+        ForLoop other = (ForLoop) obj;
+        if (body == null) {
+            if (other.body != null) {
+                return false;
+            }
+        } else if (!body.equals(other.body)) {
+            return false;
+        }
+        if (loopVariable == null) {
+            if (other.loopVariable != null) {
+                return false;
+            }
+        } else if (!loopVariable.equals(other.loopVariable)) {
+            return false;
+        }
+        if (rangeEnd == null) {
+            if (other.rangeEnd != null) {
+                return false;
+            }
+        } else if (!rangeEnd.equals(other.rangeEnd)) {
+            return false;
+        }
+        if (rangeStart == null) {
+            if (other.rangeStart != null) {
+                return false;
+            }
+        } else if (!rangeStart.equals(other.rangeStart)) {
+            return false;
+        }
+        return true;
+    }
 }

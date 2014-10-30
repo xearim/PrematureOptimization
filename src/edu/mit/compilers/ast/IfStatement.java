@@ -91,6 +91,52 @@ public class IfStatement implements Statement {
         return elseBlock;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((condition == null) ? 0 : condition.hashCode());
+        result = prime * result
+                + ((elseBlock == null) ? 0 : elseBlock.hashCode());
+        result = prime * result
+                + ((thenBlock == null) ? 0 : thenBlock.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof IfStatement)) {
+            return false;
+        }
+        IfStatement other = (IfStatement) obj;
+        if (condition == null) {
+            if (other.condition != null) {
+                return false;
+            }
+        } else if (!condition.equals(other.condition)) {
+            return false;
+        }
+        if (elseBlock == null) {
+            if (other.elseBlock != null) {
+                return false;
+            }
+        } else if (!elseBlock.equals(other.elseBlock)) {
+            return false;
+        }
+        if (thenBlock == null) {
+            if (other.thenBlock != null) {
+                return false;
+            }
+        } else if (!thenBlock.equals(other.thenBlock)) {
+            return false;
+        }
+        return true;
+    }
 }

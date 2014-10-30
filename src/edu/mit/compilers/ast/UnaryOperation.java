@@ -37,6 +37,39 @@ public class UnaryOperation implements NativeExpression {
         return argument;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((argument == null) ? 0 : argument.hashCode());
+        result = prime * result
+                + ((operator == null) ? 0 : operator.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof UnaryOperation)) {
+            return false;
+        }
+        UnaryOperation other = (UnaryOperation) obj;
+        if (argument == null) {
+            if (other.argument != null) {
+                return false;
+            }
+        } else if (!argument.equals(other.argument)) {
+            return false;
+        }
+        if (operator != other.operator) {
+            return false;
+        }
+        return true;
+    }
 }

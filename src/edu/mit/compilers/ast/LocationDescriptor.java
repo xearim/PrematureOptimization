@@ -23,19 +23,45 @@ public class LocationDescriptor {
 	public int colNo(){
 		return colNo;
 	}
-	
-	@Override
-	public boolean equals(Object other){
-		if(other == null){
-			return false;
-		} else if (!this.getClass().equals(other)) {
-			return false;
-		} else {
-			return ((LocationDescriptor) other).getFileName().equals(this.getFileName()) &&
-				   ((LocationDescriptor) other).colNo() == this.colNo() &&
-				   ((LocationDescriptor) other).lineNo() == this.lineNo();
-		}
-	}
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + colNo;
+        result = prime * result
+                + ((fileName == null) ? 0 : fileName.hashCode());
+        result = prime * result + lineNo;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof LocationDescriptor)) {
+            return false;
+        }
+        LocationDescriptor other = (LocationDescriptor) obj;
+        if (colNo != other.colNo) {
+            return false;
+        }
+        if (fileName == null) {
+            if (other.fileName != null) {
+                return false;
+            }
+        } else if (!fileName.equals(other.fileName)) {
+            return false;
+        }
+        if (lineNo != other.lineNo) {
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public String toString() {
