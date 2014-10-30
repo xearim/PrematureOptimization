@@ -1,4 +1,4 @@
-package edu.mit.semantics;
+package edu.mit.compilers.semantics;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,8 +8,8 @@ import com.google.common.base.Optional;
 
 import edu.mit.compilers.ast.*;
 import edu.mit.compilers.ir.EvaluateCheck;
-import edu.mit.semantics.errors.SemanticError;
-import edu.mit.semantics.errors.SignatureMismatchSemanticError;
+import edu.mit.compilers.semantics.errors.SemanticError;
+import edu.mit.compilers.semantics.errors.SignatureMismatchSemanticError;
 
 public class SignatureMismatchSemanticCheck implements SemanticCheck {
     Program prog;

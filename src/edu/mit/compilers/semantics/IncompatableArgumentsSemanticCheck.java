@@ -1,4 +1,4 @@
-package edu.mit.semantics;
+package edu.mit.compilers.semantics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +30,8 @@ import edu.mit.compilers.ast.StringLiteral;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.ast.WhileLoop;
-import edu.mit.semantics.errors.IncompatableArgumentsSemanticError;
-import edu.mit.semantics.errors.SemanticError;
+import edu.mit.compilers.semantics.errors.IncompatableArgumentsSemanticError;
+import edu.mit.compilers.semantics.errors.SemanticError;
 
 public class IncompatableArgumentsSemanticCheck implements SemanticCheck{
 

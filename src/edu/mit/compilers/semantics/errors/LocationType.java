@@ -1,4 +1,4 @@
-package edu.mit.semantics.errors;
+package edu.mit.compilers.semantics.errors;
 
 public enum LocationType {
     GLOBAL ("global"), // includes callouts as well as global fields

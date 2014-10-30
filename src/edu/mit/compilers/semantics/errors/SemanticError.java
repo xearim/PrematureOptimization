@@ -1,4 +1,4 @@
-package edu.mit.semantics.errors;
+package edu.mit.compilers.semantics.errors;
 
 public interface SemanticError {
 	public String generateErrorMessage();

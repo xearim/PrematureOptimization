@@ -1,11 +1,11 @@
-package edu.mit.semantics;
+package edu.mit.compilers.semantics;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import edu.mit.compilers.ast.*;
-import edu.mit.semantics.errors.MissingMainSemanticError;
-import edu.mit.semantics.errors.SemanticError;
+import edu.mit.compilers.semantics.errors.MissingMainSemanticError;
+import edu.mit.compilers.semantics.errors.SemanticError;
 
 /**
  * Checks for the following rule:

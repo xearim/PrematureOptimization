@@ -1,7 +1,7 @@
-package edu.mit.semantics;
+package edu.mit.compilers.semantics;
 
 import static com.google.common.base.Preconditions.checkState;
-import static edu.mit.semantics.NonPositiveArrayLengthSemanticCheck.isNonPositiveIntLiteral;
+import static edu.mit.compilers.semantics.NonPositiveArrayLengthSemanticCheck.isNonPositiveIntLiteral;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ import edu.mit.compilers.ast.Statement;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.ast.WhileLoop;
-import edu.mit.semantics.errors.SemanticError;
+import edu.mit.compilers.semantics.errors.SemanticError;
 
 public class TypesSemanticCheck implements SemanticCheck {
 
