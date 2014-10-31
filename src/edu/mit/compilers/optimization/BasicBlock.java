@@ -1,11 +1,13 @@
 package edu.mit.compilers.optimization;
 
 import java.util.List;
-import java.util.Map;
 
 public abstract class BasicBlock {
-    public abstract List<String> getSubexpressions();
-    public abstract boolean[] getAvailabilityBitVector(
-            Map<String,Integer> bitVectorMapping);
-    public abstract List<BasicBlock> getNextBlocks();
+    /**
+     * We have chosen to have only one Assignment or MethodCall
+     * in each BasicBlock.
+     */
+    public abstract Subexpression getSubexpression();
+    public abstract List<BasicBlock> getPredecessorBlocks();
+    public abstract List<BasicBlock> getSuccessorBlocks();
 }
