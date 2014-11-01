@@ -22,7 +22,7 @@ public class Subexpression {
      * Finds the first scope that contains a variable from the subexpression
      * @return
      */
-    public Scope getMostGeneralScope() {
+    public Scope getGeneralScope() {
         Scope s = this.scope;
         Set<Location> variables = getVariables(this.ne);
 
@@ -30,15 +30,13 @@ public class Subexpression {
             if (containsAVariable(s, variables)) {
                 return s;
             }
-        }
-        while (s.getParent().isPresent());
-
-        /*
-         * Should only reach this point if the semantic checker is broken. It
-         * would mean that we are calling a variable or variables that was
-         * never declared.
-         */
-        throw new RuntimeException("Subexpression.java: Subexpression variables don't exist in Scope");
+        } while (s.getParent().isPresent());
+        
+        throw new AssertionError("Subexpression.java: Subexpression variables don't exist in Scope.");
+    }
+    
+    public boolean containsMethodCall() {
+        throw new UnsupportedOperationException("Subexpression#containsMethodCall unimplemented.");
     }
 
     /**
@@ -46,10 +44,10 @@ public class Subexpression {
      * global NativeExpression ne.
      */
     private boolean containsAVariable(Scope s, Set<Location> variables) {
-        throw new RuntimeException("Subexpression.java: containsAVariableFromNativeExpression unimplemented");
+        throw new RuntimeException("Subexpression#containsAVariableFromNativeExpression unimplemented.");
     }
 
     private Set<Location> getVariables(NativeExpression ne) {
-        throw new RuntimeException("Subexpression.java: getVariables unimplemented");
+        throw new RuntimeException("Subexpression#getVariables unimplemented.");
     }
 }

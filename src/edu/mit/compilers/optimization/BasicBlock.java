@@ -2,7 +2,7 @@ package edu.mit.compilers.optimization;
 
 import java.util.List;
 
-public abstract class BasicBlock {
+public interface BasicBlock {
     /**
      * We have chosen to have only one Assignment or MethodCall
      * in each BasicBlock.
