@@ -16,10 +16,12 @@ import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
 import edu.mit.compilers.codegen.controllinker.NativeExprGraphFactory;
 
 public class ReturnStatementGraphFactory implements ControlTerminalGraphFactory {
-    private ControlTerminalGraph graph;
+    private ReturnStatement rs;
+    private Scope scope;
     
     public ReturnStatementGraphFactory(ReturnStatement rs, Scope scope) {
-        this.graph = calculateGraph(rs, scope);
+        this.rs = rs;
+        this.scope = scope;
     }
     
     private ControlTerminalGraph calculateGraph(ReturnStatement rs, Scope scope) {
@@ -50,7 +52,7 @@ public class ReturnStatementGraphFactory implements ControlTerminalGraphFactory 
 
     @Override
     public ControlTerminalGraph getGraph() {
-        return graph;
+        return calculateGraph(rs, scope);
     }
 
 }

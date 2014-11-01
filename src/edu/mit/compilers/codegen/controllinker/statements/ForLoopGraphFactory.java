@@ -22,10 +22,12 @@ import edu.mit.compilers.codegen.controllinker.NativeExprGraphFactory;
 import edu.mit.compilers.codegen.controllinker.VariableLoadGraphFactory;
 
 public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
-    private final ControlTerminalGraph graph;
+    private ForLoop forLoop;
+    private Scope scope;
 
     public ForLoopGraphFactory(ForLoop forLoop, Scope scope) {
-        this.graph = calculateGraph(forLoop, scope);
+        this.forLoop = forLoop;
+        this.scope = scope;
     }
 
     private ControlTerminalGraph calculateGraph(ForLoop forLoop, Scope scope) {
@@ -86,6 +88,6 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
 
     @Override
     public ControlTerminalGraph getGraph() {
-        return graph;
+        return calculateGraph(forLoop, scope);
     }
 }

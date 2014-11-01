@@ -6,11 +6,8 @@ import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes;
 
 public class ContinueStatementGraphFactory implements ControlTerminalGraphFactory {
-    private ControlTerminalGraph graph;
 
-    public ContinueStatementGraphFactory() {
-        this.graph = calculateGraph();
-    }
+    public ContinueStatementGraphFactory() {}
 
     private ControlTerminalGraph calculateGraph() {
         SequentialControlFlowNode start = SequentialControlFlowNode.namedNop("CSGF start");
@@ -27,7 +24,7 @@ public class ContinueStatementGraphFactory implements ControlTerminalGraphFactor
 
     @Override
     public ControlTerminalGraph getGraph() {
-        return graph;
+        return calculateGraph();
     }
 
 }

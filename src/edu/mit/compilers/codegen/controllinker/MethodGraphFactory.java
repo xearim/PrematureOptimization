@@ -9,6 +9,7 @@ import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.codegen.ControlFlowNode;
 import edu.mit.compilers.codegen.asm.Architecture;
+import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 
 /**
@@ -46,7 +47,7 @@ public class MethodGraphFactory implements GraphFactory {
 
         BiTerminalGraph fallThroughChecker = method.isVoid()
                 ? BiTerminalGraph.ofInstructions()
-                : new ControlFallOffGraphFactory().getGraph();
+                : new ErrorExitGraphFactory(Literal.CONTROL_DROP_OFF_EXIT).getGraph();
 
         // TODO(jasonpr): Connect break and continue to an explicit error thrower.
         // The semantic checker should ensure that we'll never have one in a method's block,

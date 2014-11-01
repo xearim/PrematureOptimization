@@ -20,10 +20,10 @@ import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes
 import edu.mit.compilers.codegen.controllinker.statements.StatementGraphFactory;
 
 public class BlockGraphFactory implements ControlTerminalGraphFactory {
-    private final ControlTerminalGraph graph;
+    private Block block;
 
     public BlockGraphFactory(Block block) {
-        this.graph = calculateGraph(block);
+        this.block = block;
     }
 
     private ControlTerminalGraph calculateGraph(Block block) {
@@ -118,6 +118,6 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
 
     @Override
     public ControlTerminalGraph getGraph() {
-        return graph;
+        return calculateGraph(block);
     }
 }
