@@ -175,7 +175,7 @@ public class UsedBeforeDeclaredSemanticCheck implements SemanticCheck {
     private void checkArrayLocation(ArrayLocation al, Scope scope) {
         if (!EvaluateCheck.evaluatesTo(al, scope).isPresent()){
             errors.add(new UsedBeforeDeclaredSemanticError(
-                    al.getVariableName(), al.getLocationDescriptor()));
+                    al.getVariable().generateName(), al.getLocationDescriptor()));
         }
         checkNativeExpression(al.getIndex(), scope);
     }

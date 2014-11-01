@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.mit.compilers.ast.*;
+import edu.mit.compilers.common.Variable;
 import edu.mit.compilers.semantics.errors.DeclaredTwiceSemanticError;
 import edu.mit.compilers.semantics.errors.LocationType;
 import edu.mit.compilers.semantics.errors.SemanticError;
@@ -113,13 +114,14 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
                 Scope scope = block.getScope();
                 // Recurse on all scopes until we hit the global scope
                 while (scope.getParent().isPresent()) {
-                    if (scope.isInScope(methodCallName)) {
+                    if (scope.isInScope(Variable.forUser(methodCallName))) {
                         /*
                          * If overshadowed, get the location of the
                          * overshadowing variable declaration.
                          */
                         LocationDescriptor overshadowLocation =
-                                scope.getFromScope(methodCallName).get().getLocationDescriptor();
+                                scope.getFromScope(Variable.forUser(methodCallName))
+                                        .get().getLocationDescriptor();
 
                         // Accumulate the error, already know the error exists
                         Utils.check(true, errors,
@@ -207,7 +209,7 @@ public class DeclaredTwiceSemanticCheck implements SemanticCheck {
             Map<String, List<LocationDescriptor>> nameToLocations){
         // Add the locations of each name to the hashmap
         for (FieldDescriptor field : scope.getVariables()) {
-            String fieldName = field.getName();
+            String fieldName = field.getVariable().generateName();
 
             if (!nameToLocations.containsKey(fieldName)) {
                 nameToLocations.put(fieldName, new ArrayList<LocationDescriptor>());

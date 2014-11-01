@@ -7,18 +7,20 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.common.Variable;
+
 public class Scope {
 	
 	private Optional<Scope> parent;
-	private final ImmutableList<FieldDescriptor> variables;
+	private final ImmutableList<FieldDescriptor> entries;
 	
 	public Scope(List<FieldDescriptor> variables) {
-        this.variables = ImmutableList.copyOf(variables);
+        this.entries = ImmutableList.copyOf(variables);
         this.parent = Optional.<Scope>absent();
     }
 	
 	public Scope(List<FieldDescriptor> variables, Scope parent) {
-        this.variables = ImmutableList.copyOf(variables);
+        this.entries = ImmutableList.copyOf(variables);
         this.parent = Optional.of(parent);
     }
 	
@@ -31,17 +33,17 @@ public class Scope {
 	}
 	
 	public ImmutableList<FieldDescriptor> getVariables() {
-		return variables;
+		return entries;
 	}
 	/**
 	 * Checks to see if a given identifier corresponds to an actually initialized variable
 	 * visible from this scope looking upwards
 	 * 
-	 * @param identifier - the String identifier of the target variable
+	 * @param identifier - the target variable
 	 */
-	public boolean isInScope(String identifier){
-        for (FieldDescriptor var : variables) {
-			if(identifier.equals(var.name))
+	public boolean isInScope(Variable identifier){
+        for (FieldDescriptor entry : entries) {
+			if(identifier.equals(entry.variable))
 				return true;
 		}
 		return (parent.isPresent() && parent.get().isInScope(identifier));
@@ -52,9 +54,9 @@ public class Scope {
      *
      * <p>This method ignores any parent scopes. 
      */
-    private boolean isInScopeImmediately(String variableName) {
-        for (FieldDescriptor field : variables) {
-            if (variableName.equals(field.name)) {
+    private boolean isInScopeImmediately(Variable variable) {
+        for (FieldDescriptor entry : entries) {
+            if (variable.equals(entry.variable)) {
                 return true;
             }
         }
@@ -71,18 +73,18 @@ public class Scope {
      * Returns the scope that directly contains a given variable
      * Asserts that the variable must actually be present
      * 
-     * @param variableName - the variable you want to access
+     * @param variable - the variable you want to access
      */
-    public Scope getLocation(String variableName){
-    	checkState(isInScope(variableName));
-    	if(isInScopeImmediately(variableName)){
+    public Scope getLocation(Variable variable){
+    	checkState(isInScope(variable));
+    	if(isInScopeImmediately(variable)){
     		// It must be in this scope, so just return it
     		return this;
     	} else {
     		// Since the variable must be in scope
     		// this recursion will always succeed because you must find
     		// the variable before you run out of scopes
-    		return parent.get().getLocation(variableName);
+    		return parent.get().getLocation(variable);
     	}
     }
 
@@ -96,17 +98,17 @@ public class Scope {
      * we just return zero.  (This is only to provide a simple base case for the recursion through
      * locals.
      *  
-     * @param variableName
+     * @param variable
      * @return
      */
-    public long offsetFromBasePointer(String variableName) {
+    public long offsetFromBasePointer(Variable variable) {
         if (getScopeType().equals(ScopeType.PARAMETER)) {
             return 0;
         }
         checkState(getScopeType().equals(ScopeType.LOCAL));
-        if (isInScopeImmediately(variableName)) {
-            long sizeAdjustment = getFromScope(variableName).get().getSize();
-            return offset(variableName) + effectiveBasePointerOffset() + sizeAdjustment;
+        if (isInScopeImmediately(variable)) {
+            long sizeAdjustment = getFromScope(variable).get().getSize();
+            return offset(variable) + effectiveBasePointerOffset() + sizeAdjustment;
         } else {
             // Recurse towards the global scope.
             // If we take this branch, we're not in the global scope, because
@@ -114,7 +116,7 @@ public class Scope {
             // checks guarantee that the variable will be found.
             // As a result, we're in non-global scope, so the get() call will
             // succeed.
-            return parent.get().offsetFromBasePointer(variableName);
+            return parent.get().offsetFromBasePointer(variable);
         }
     }
     
@@ -125,12 +127,12 @@ public class Scope {
      * 
      * <p>Requires that this is a parameter scope.
      *  
-     * @param variableName
+     * @param variable
      * @return
      */
-    public long offsetInParameterSet(String variableName) {
+    public long offsetInParameterSet(Variable variable) {
     	checkState(getScopeType().equals(ScopeType.PARAMETER));
-        return (offset(variableName) - 6);
+        return (offset(variable) - 6);
     }
 
     /**
@@ -141,15 +143,15 @@ public class Scope {
      * 
      * <p>Requires that the variable is in this immediate scope.
      */
-    public long offset(String variableName) {
+    public long offset(Variable variable) {
         long offset = 0;
-        for (FieldDescriptor field : variables) {
-            if (variableName.equals(field.name)) {
+        for (FieldDescriptor field : entries) {
+            if (variable.equals(field.variable)) {
                 return offset;
             }
             offset += field.getSize();
         }
-        throw new AssertionError("Could not find " + variableName + " in scope " + this);
+        throw new AssertionError("Could not find " + variable + " in scope " + this);
     }
 
     private long effectiveBasePointerOffset() {
@@ -171,7 +173,7 @@ public class Scope {
      */
     public long size() {
         int offset = 0;
-        for (FieldDescriptor field : variables) {
+        for (FieldDescriptor field : entries) {
             offset += field.getSize();
         }
         return offset;
@@ -180,17 +182,17 @@ public class Scope {
      * Returns if possible the FieldDescriptor specifying the desired variable
      * if it does not exist, an empty optional is returned instead.
      * 
-     * @param identifier - the String identifier of the target variable
+     * @param variable - the target variable
      * @return
      */
-	public Optional<FieldDescriptor> getFromScope(String identifier){
-		if(isInScope(identifier)){
-			for(FieldDescriptor var: variables){
-				if(identifier.equals(var.name))
+	public Optional<FieldDescriptor> getFromScope(Variable variable){
+		if(isInScope(variable)){
+			for(FieldDescriptor var: entries){
+				if(variable.equals(var.variable))
 					return Optional.of(var);
 			}
 			if(parent.isPresent())
-				return parent.get().getFromScope(identifier);
+				return parent.get().getFromScope(variable);
 		}
 		return Optional.<FieldDescriptor>absent();
 	}
@@ -201,7 +203,7 @@ public class Scope {
         int result = 1;
         result = prime * result + ((parent == null) ? 0 : parent.hashCode());
         result = prime * result
-                + ((variables == null) ? 0 : variables.hashCode());
+                + ((entries == null) ? 0 : entries.hashCode());
         return result;
     }
 
@@ -224,11 +226,11 @@ public class Scope {
         } else if (!parent.equals(other.parent)) {
             return false;
         }
-        if (variables == null) {
-            if (other.variables != null) {
+        if (entries == null) {
+            if (other.entries != null) {
                 return false;
             }
-        } else if (!variables.equals(other.variables)) {
+        } else if (!entries.equals(other.entries)) {
             return false;
         }
         return true;

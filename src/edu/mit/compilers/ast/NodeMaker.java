@@ -57,6 +57,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import edu.mit.compilers.AntlrASTWithLines;
+import edu.mit.compilers.common.Variable;
 
 /** Utility class for dealing with ANTLR's ASTs. */
 public class NodeMaker {
@@ -151,13 +152,15 @@ public class NodeMaker {
             int column = namedField.getColumn();
             if (namedField.getType() == ID) {
                 String name = namedField.getText();
-                builder.add(new FieldDescriptor(name, type, sourceLoc(namedField)));
+                builder.add(new FieldDescriptor(
+                        Variable.forUser(name), type, sourceLoc(namedField)));
             } else if (namedField.getType() == ARRAY_FIELD_DECL) {
                 checkChildCount(2, namedField);
                 List<AST> arrayInfo = children(namedField);
                 String name = stringFromId(arrayInfo.get(0));
                 IntLiteral length = intLiteral(arrayInfo.get(1));
-                builder.add(new FieldDescriptor(name, length, type, sourceLoc(namedField)));
+                builder.add(new FieldDescriptor(
+                        Variable.forUser(name), length, type, sourceLoc(namedField)));
             } else {
                 throw new AssertionError("AST " + fieldDecl + " is not an ID or an ARRAY_FIELD_DECL.");
             }
@@ -231,7 +234,7 @@ public class NodeMaker {
         checkChildCount(1, nameNode);
         BaseType type = baseType(nameNode.getFirstChild());
 
-        return new FieldDescriptor(name, type, sourceLoc(signatureArg));
+        return new FieldDescriptor(Variable.forUser(name), type, sourceLoc(signatureArg));
     }
 
     public static Block block(AST block, Scope scope) {
@@ -576,14 +579,18 @@ public class NodeMaker {
 
     public static ScalarLocation scalarLocation(AST scalarLocation) {
         // All sanity checks are performed in stringFromId.
-        return new ScalarLocation(stringFromId(scalarLocation), sourceLoc(scalarLocation));
+        return new ScalarLocation(
+                Variable.forUser(stringFromId(scalarLocation)),
+                sourceLoc(scalarLocation));
     }
 
     public static ArrayLocation arrayLocation(AST arrayLocation) {
         checkType(arrayLocation, ARRAY_LOCATION);
         checkChildCount(2, arrayLocation);
         List<AST> children = children(arrayLocation);
-        return new ArrayLocation(stringFromId(children.get(0)), nativeExpression(children.get(1)),
+        return new ArrayLocation(
+                Variable.forUser(stringFromId(children.get(0))),
+                nativeExpression(children.get(1)),
                 sourceLoc(arrayLocation));
     }
 
@@ -612,8 +619,8 @@ public class NodeMaker {
      */
     public static GeneralExpression generalExpression(AST methodCallArg) {
         if (methodCallArg.getType() == STRING) {
-        	StringLiteral retVal = stringLiteral(methodCallArg);
-        	StringLiteral.addString(retVal);
+            StringLiteral retVal = stringLiteral(methodCallArg);
+            StringLiteral.addString(retVal);
             return retVal;
         } else {
             // Just delegate to the NativeExpression generator. If it's an

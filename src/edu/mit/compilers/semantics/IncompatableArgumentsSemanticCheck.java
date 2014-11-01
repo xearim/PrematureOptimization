@@ -35,29 +35,29 @@ import edu.mit.compilers.semantics.errors.SemanticError;
 
 public class IncompatableArgumentsSemanticCheck implements SemanticCheck{
 
-	Program prog;
+    Program prog;
     List<SemanticError> errors = new ArrayList<SemanticError>();
     
     public IncompatableArgumentsSemanticCheck(Program prog) {
         this.prog = prog;
     }
     
-	@Override
-	public List<SemanticError> doCheck() {
-		Iterable<Method> methods = this.prog.getMethods().getChildren();
+    @Override
+    public List<SemanticError> doCheck() {
+        Iterable<Method> methods = this.prog.getMethods().getChildren();
 
         for (Method method: methods) {
             checkBlock(method.getBlock());
         }
         
         return errors;
-	}
-	
-	private void checkBlock(Block block) {
+    }
+    
+    private void checkBlock(Block block) {
 
-		// recurse down blocks
+        // recurse down blocks
         for (Statement stmt : block.getStatements()) {
-        	Iterable<Block> subBlocks = stmt.getBlocks();
+            Iterable<Block> subBlocks = stmt.getBlocks();
             for (Block subBlock: subBlocks){
                 checkBlock(subBlock);
             }
@@ -65,25 +65,25 @@ public class IncompatableArgumentsSemanticCheck implements SemanticCheck{
             if (stmt instanceof Assignment){
                 continue;
             } else if (stmt instanceof BreakStatement) {
-            	continue;
+                continue;
             } else if (stmt instanceof ContinueStatement) {
-            	continue;
+                continue;
             } else if (stmt instanceof ForLoop) {
-            	continue;
+                continue;
             } else if (stmt instanceof IfStatement) {
-            	continue;
+                continue;
             } else if (stmt instanceof MethodCall) {
-            	checkMethodCall((MethodCall) stmt, block.getScope());
+                checkMethodCall((MethodCall) stmt, block.getScope());
             } else if (stmt instanceof ReturnStatement) {
                 continue;
             } else if (stmt instanceof WhileLoop) {
-            	continue;
+                continue;
             }
         }
     }
 
-	// Skip doing anything but recursing on anything but Scalars, where you check for 
-	// Arrays being used as inputs
+    // Skip doing anything but recursing on anything but Scalars, where you check for 
+    // Arrays being used as inputs
     private void checkNativeExpression(NativeExpression ne, Scope scope, boolean isInCallout) {
         if (ne instanceof BinaryOperation) {
             @SuppressWarnings("unchecked")
@@ -95,15 +95,15 @@ public class IncompatableArgumentsSemanticCheck implements SemanticCheck{
         } else if (ne instanceof ArrayLocation) {
             return;
         } else if (ne instanceof ScalarLocation) {
-            Optional<FieldDescriptor> var = scope.getFromScope(((ScalarLocation) ne).getVariableName());
+            Optional<FieldDescriptor> var = scope.getFromScope(((ScalarLocation) ne).getVariable());
             if(var.isPresent() && var.get().getLength().isPresent() && !isInCallout)
-				errors.add(new IncompatableArgumentsSemanticError("Array " + var.get().getName(), var.get().getLocationDescriptor()));
+                errors.add(new IncompatableArgumentsSemanticError("Array " + var.get().getVariable().generateName(), var.get().getLocationDescriptor()));
         } else if (ne instanceof MethodCall) {
             checkMethodCall((MethodCall) ne, scope);
         } else if (ne instanceof NativeLiteral) {
             if(ne instanceof CharLiteral){
-            	if(!isInCallout)
-					errors.add(new IncompatableArgumentsSemanticError("Char " + ((CharLiteral) ne).getName(), ne.getLocationDescriptor()));
+                if(!isInCallout)
+                    errors.add(new IncompatableArgumentsSemanticError("Char " + ((CharLiteral) ne).getName(), ne.getLocationDescriptor()));
             }
         } else if (ne instanceof TernaryOperation) {
             @SuppressWarnings("unchecked")
@@ -116,23 +116,23 @@ public class IncompatableArgumentsSemanticCheck implements SemanticCheck{
             checkNativeExpression(((UnaryOperation) ne).getArgument(), scope, isInCallout);
         }
     }
-	
-	private void checkMethodCall(MethodCall mc, Scope scope){
-		// Pass forward a variable telling if the current method being checked is a callout or not
-		boolean isCallout = false;
-		for(Callout c : prog.getCallouts()){
-			if(c.getName().equals(mc.getMethodName())){
-				isCallout = true;
-			}
-		}
-		// If you have a string, and are not a callout, error
-		for(GeneralExpression param : mc.getParameterValues().getChildren()){
-			if(param instanceof StringLiteral){
-				if(!isCallout)
-					errors.add(new IncompatableArgumentsSemanticError("String " + ((StringLiteral) param).getName(), param.getLocationDescriptor()));
-			} else if(param instanceof NativeExpression) {
-				checkNativeExpression((NativeExpression) param, scope, isCallout);
-			}
-		}
-	}
+    
+    private void checkMethodCall(MethodCall mc, Scope scope){
+        // Pass forward a variable telling if the current method being checked is a callout or not
+        boolean isCallout = false;
+        for(Callout c : prog.getCallouts()){
+            if(c.getName().equals(mc.getMethodName())){
+                isCallout = true;
+            }
+        }
+        // If you have a string, and are not a callout, error
+        for(GeneralExpression param : mc.getParameterValues().getChildren()){
+            if(param instanceof StringLiteral){
+                if(!isCallout)
+                    errors.add(new IncompatableArgumentsSemanticError("String " + ((StringLiteral) param).getName(), param.getLocationDescriptor()));
+            } else if(param instanceof NativeExpression) {
+                checkNativeExpression((NativeExpression) param, scope, isCallout);
+            }
+        }
+    }
 }

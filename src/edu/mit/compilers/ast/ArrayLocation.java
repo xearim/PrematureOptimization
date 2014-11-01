@@ -2,15 +2,17 @@ package edu.mit.compilers.ast;
 
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.common.Variable;
+
 public class ArrayLocation implements Location {
 
-    private final String variableName;
+    private final Variable variable;
     private final NativeExpression index;
     private final LocationDescriptor locationDescriptor;
     
-    public ArrayLocation(String variableName, NativeExpression index,
+    public ArrayLocation(Variable variable, NativeExpression index,
             LocationDescriptor locationDescriptor) {
-        this.variableName = variableName;
+        this.variable = variable;
         this.index = index;
         this.locationDescriptor = locationDescriptor;
     }
@@ -22,7 +24,7 @@ public class ArrayLocation implements Location {
 
     @Override
     public String getName() {
-        return variableName + "[" + index +"]";
+        return variable + "[" + index +"]";
     }
     
     public LocationDescriptor getLocationDescriptor() {
@@ -30,8 +32,8 @@ public class ArrayLocation implements Location {
     }
 
     @Override
-    public String getVariableName() {
-        return variableName;
+    public Variable getVariable() {
+        return variable;
     }
 
     public NativeExpression getIndex() {
@@ -44,7 +46,7 @@ public class ArrayLocation implements Location {
         int result = 1;
         result = prime * result + ((index == null) ? 0 : index.hashCode());
         result = prime * result
-                + ((variableName == null) ? 0 : variableName.hashCode());
+                + ((variable == null) ? 0 : variable.hashCode());
         return result;
     }
 
@@ -67,11 +69,11 @@ public class ArrayLocation implements Location {
         } else if (!index.equals(other.index)) {
             return false;
         }
-        if (variableName == null) {
-            if (other.variableName != null) {
+        if (variable == null) {
+            if (other.variable != null) {
                 return false;
             }
-        } else if (!variableName.equals(other.variableName)) {
+        } else if (!variable.equals(other.variable)) {
             return false;
         }
         return true;
