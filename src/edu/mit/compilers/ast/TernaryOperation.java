@@ -3,13 +3,10 @@ package edu.mit.compilers.ast;
 import com.google.common.collect.ImmutableList;
 
 public class TernaryOperation implements NativeExpression {
-	private static long ternaryOpIDGenerator = 0;
-
     private final NativeExpression condition;
     private final NativeExpression trueResult;
     private final NativeExpression falseResult;
     private final LocationDescriptor locationDescriptor;
-    private final long ternaryOpID;
 
     public TernaryOperation(NativeExpression condition, NativeExpression trueResult,
             NativeExpression falseResult, LocationDescriptor locationDescriptor) {
@@ -17,7 +14,6 @@ public class TernaryOperation implements NativeExpression {
         this.trueResult = trueResult;
         this.falseResult = falseResult;
         this.locationDescriptor = locationDescriptor;
-        this.ternaryOpID = ternaryOpIDGenerator++;
     }
 
     @Override
@@ -45,8 +41,53 @@ public class TernaryOperation implements NativeExpression {
     public NativeExpression getFalseResult() {
         return falseResult;
     }
-    
-    public String getID(){
-    	return Long.toString(ternaryOpID);
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((condition == null) ? 0 : condition.hashCode());
+        result = prime * result
+                + ((falseResult == null) ? 0 : falseResult.hashCode());
+        result = prime * result
+                + ((trueResult == null) ? 0 : trueResult.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof TernaryOperation)) {
+            return false;
+        }
+        TernaryOperation other = (TernaryOperation) obj;
+        if (condition == null) {
+            if (other.condition != null) {
+                return false;
+            }
+        } else if (!condition.equals(other.condition)) {
+            return false;
+        }
+        if (falseResult == null) {
+            if (other.falseResult != null) {
+                return false;
+            }
+        } else if (!falseResult.equals(other.falseResult)) {
+            return false;
+        }
+        if (trueResult == null) {
+            if (other.trueResult != null) {
+                return false;
+            }
+        } else if (!trueResult.equals(other.trueResult)) {
+            return false;
+        }
+        return true;
     }
 }

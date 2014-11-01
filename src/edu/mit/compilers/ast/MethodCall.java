@@ -53,7 +53,44 @@ public class MethodCall implements Statement, NativeExpression {
     public NodeSequence<GeneralExpression> getParameterValues() {
         return parameterValues;
     }
-    
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((methodName == null) ? 0 : methodName.hashCode());
+        result = prime * result
+                + ((parameterValues == null) ? 0 : parameterValues.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof MethodCall)) {
+            return false;
+        }
+        MethodCall other = (MethodCall) obj;
+        if (methodName == null) {
+            if (other.methodName != null) {
+                return false;
+            }
+        } else if (!methodName.equals(other.methodName)) {
+            return false;
+        }
+        if (parameterValues == null) {
+            if (other.parameterValues != null) {
+                return false;
+            }
+        } else if (!parameterValues.equals(other.parameterValues)) {
+            return false;
+        }
+        return true;
+    }
 }

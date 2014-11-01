@@ -4,13 +4,10 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class IfStatement implements Statement {
-	private static long ifStatementIDGenerator = 0;
-
     private final NativeExpression condition;
     private final Block thenBlock;
     private final Optional<Block> elseBlock;
     private final LocationDescriptor locationDescriptor;
-    private final long ifStatementID;
 
     private IfStatement(NativeExpression condition, Block thenBlock,
             Optional<Block> elseBlock, LocationDescriptor locationDescriptor) {
@@ -18,7 +15,6 @@ public class IfStatement implements Statement {
         this.thenBlock = thenBlock;
         this.elseBlock = elseBlock;
         this.locationDescriptor = locationDescriptor;
-        this.ifStatementID = ifStatementIDGenerator++;
     }
 
     public static IfStatement ifThen(NativeExpression condition, Block thenBlock,
@@ -94,11 +90,53 @@ public class IfStatement implements Statement {
     public Optional<Block> getElseBlock() {
         return elseBlock;
     }
-    
-    public String getID() {
-    	return Long.toString(ifStatementID);
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((condition == null) ? 0 : condition.hashCode());
+        result = prime * result
+                + ((elseBlock == null) ? 0 : elseBlock.hashCode());
+        result = prime * result
+                + ((thenBlock == null) ? 0 : thenBlock.hashCode());
+        return result;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof IfStatement)) {
+            return false;
+        }
+        IfStatement other = (IfStatement) obj;
+        if (condition == null) {
+            if (other.condition != null) {
+                return false;
+            }
+        } else if (!condition.equals(other.condition)) {
+            return false;
+        }
+        if (elseBlock == null) {
+            if (other.elseBlock != null) {
+                return false;
+            }
+        } else if (!elseBlock.equals(other.elseBlock)) {
+            return false;
+        }
+        if (thenBlock == null) {
+            if (other.thenBlock != null) {
+                return false;
+            }
+        } else if (!thenBlock.equals(other.thenBlock)) {
+            return false;
+        }
+        return true;
+    }
 }

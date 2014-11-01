@@ -38,6 +38,42 @@ public class ArrayLocation implements Location {
         return index;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((index == null) ? 0 : index.hashCode());
+        result = prime * result
+                + ((variableName == null) ? 0 : variableName.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof ArrayLocation)) {
+            return false;
+        }
+        ArrayLocation other = (ArrayLocation) obj;
+        if (index == null) {
+            if (other.index != null) {
+                return false;
+            }
+        } else if (!index.equals(other.index)) {
+            return false;
+        }
+        if (variableName == null) {
+            if (other.variableName != null) {
+                return false;
+            }
+        } else if (!variableName.equals(other.variableName)) {
+            return false;
+        }
+        return true;
+    }
 }

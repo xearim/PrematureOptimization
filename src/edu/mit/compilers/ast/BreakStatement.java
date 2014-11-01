@@ -39,5 +39,15 @@ public class BreakStatement implements Statement {
         return locationDescriptor;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
+    // All BreakStatements are equal, since Node specifies that we ignore the LocationDescriptor.
+    @Override
+    public int hashCode() {
+        return 0;
+    }
+
+    // All BreakStatements are equal, since Node specifies that we ignore the LocationDescriptor.
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof BreakStatement;
+    }
 }

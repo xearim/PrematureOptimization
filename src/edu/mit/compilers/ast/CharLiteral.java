@@ -53,6 +53,37 @@ public class CharLiteral implements NativeLiteral {
                 && this.getLocationDescriptor().equals(cl.getLocationDescriptor());
     }
 
-    // TODO(jasonpr): Implement hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (longValue ^ (longValue >>> 32));
+        result = prime * result + ((value == null) ? 0 : value.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof CharLiteral)) {
+            return false;
+        }
+        CharLiteral other = (CharLiteral) obj;
+        if (longValue != other.longValue) {
+            return false;
+        }
+        if (value == null) {
+            if (other.value != null) {
+                return false;
+            }
+        } else if (!value.equals(other.value)) {
+            return false;
+        }
+        return true;
+    }
 }

@@ -43,6 +43,38 @@ public class Type implements Node {
         return locationDescriptor;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((baseType == null) ? 0 : baseType.hashCode());
+        result = prime * result + ((length == null) ? 0 : length.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Type)) {
+            return false;
+        }
+        Type other = (Type) obj;
+        if (baseType != other.baseType) {
+            return false;
+        }
+        if (length == null) {
+            if (other.length != null) {
+                return false;
+            }
+        } else if (!length.equals(other.length)) {
+            return false;
+        }
+        return true;
+    }
 }

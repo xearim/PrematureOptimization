@@ -54,6 +54,50 @@ public class Block implements Node {
 	return locationDescriptor;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+        result = prime * result
+                + ((statements == null) ? 0 : statements.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Block)) {
+            return false;
+        }
+        Block other = (Block) obj;
+        if (name == null) {
+            if (other.name != null) {
+                return false;
+            }
+        } else if (!name.equals(other.name)) {
+            return false;
+        }
+        if (scope == null) {
+            if (other.scope != null) {
+                return false;
+            }
+        } else if (!scope.equals(other.scope)) {
+            return false;
+        }
+        if (statements == null) {
+            if (other.statements != null) {
+                return false;
+            }
+        } else if (!statements.equals(other.statements)) {
+            return false;
+        }
+        return true;
+    }
 }

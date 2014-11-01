@@ -195,4 +195,43 @@ public class Scope {
 		return Optional.<FieldDescriptor>absent();
 	}
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((parent == null) ? 0 : parent.hashCode());
+        result = prime * result
+                + ((variables == null) ? 0 : variables.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Scope)) {
+            return false;
+        }
+        Scope other = (Scope) obj;
+        if (parent == null) {
+            if (other.parent != null) {
+                return false;
+            }
+        } else if (!parent.equals(other.parent)) {
+            return false;
+        }
+        if (variables == null) {
+            if (other.variables != null) {
+                return false;
+            }
+        } else if (!variables.equals(other.variables)) {
+            return false;
+        }
+        return true;
+    }
+
 }

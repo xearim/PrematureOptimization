@@ -4,13 +4,10 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class WhileLoop implements Statement {
-	private static long whileLoopIDGenerator = 0;
-
     private final NativeExpression condition;
     private final Optional<IntLiteral> maxRepetitions;
     private final Block body;
     private final LocationDescriptor locationDescriptor;
-    private final long whileLoopID;
 
     private WhileLoop(NativeExpression condition, Optional<IntLiteral> maxRepetitions,
             Block body, LocationDescriptor locationDescriptor) {
@@ -18,7 +15,6 @@ public class WhileLoop implements Statement {
         this.maxRepetitions = maxRepetitions;
         this.body = body;
         this.locationDescriptor = locationDescriptor;
-        this.whileLoopID = whileLoopIDGenerator++;
     }
     
     @Override
@@ -81,11 +77,52 @@ public class WhileLoop implements Statement {
     public Block getBody() {
     	return body;
     }
-    
-    public String getID() {
-    	return Long.toString(whileLoopID);
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((body == null) ? 0 : body.hashCode());
+        result = prime * result
+                + ((condition == null) ? 0 : condition.hashCode());
+        result = prime * result
+                + ((maxRepetitions == null) ? 0 : maxRepetitions.hashCode());
+        return result;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof WhileLoop)) {
+            return false;
+        }
+        WhileLoop other = (WhileLoop) obj;
+        if (body == null) {
+            if (other.body != null) {
+                return false;
+            }
+        } else if (!body.equals(other.body)) {
+            return false;
+        }
+        if (condition == null) {
+            if (other.condition != null) {
+                return false;
+            }
+        } else if (!condition.equals(other.condition)) {
+            return false;
+        }
+        if (maxRepetitions == null) {
+            if (other.maxRepetitions != null) {
+                return false;
+            }
+        } else if (!maxRepetitions.equals(other.maxRepetitions)) {
+            return false;
+        }
+        return true;
+    }
 }

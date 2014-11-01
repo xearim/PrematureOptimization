@@ -14,6 +14,4 @@ public enum AssignmentOperation {
     public String getSymbol() {
         return symbol;
     }
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
 }
