@@ -13,11 +13,12 @@ import edu.mit.compilers.codegen.controllinker.MethodCallGraphFactory;
 import edu.mit.compilers.codegen.controllinker.RegisterSaver;
 
 public class MethodCallStatementGraphFactory implements ControlTerminalGraphFactory {
-
-    private final ControlTerminalGraph graph;
+	private MethodCall call;
+	private Scope scope;
 
     public MethodCallStatementGraphFactory(MethodCall call, Scope scope) {
-        this.graph = calculateGraph(call, scope);
+        this.call = call;
+        this.scope = scope;
     }
 
     private ControlTerminalGraph calculateGraph(MethodCall call, Scope scope) {
@@ -33,6 +34,6 @@ public class MethodCallStatementGraphFactory implements ControlTerminalGraphFact
 
     @Override
     public ControlTerminalGraph getGraph() {
-        return graph;
+        return calculateGraph(call, scope);
     }
 }

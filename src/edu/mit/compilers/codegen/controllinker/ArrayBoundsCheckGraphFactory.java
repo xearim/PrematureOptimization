@@ -49,51 +49,27 @@ public class ArrayBoundsCheckGraphFactory implements GraphFactory {
     	BiTerminalGraph compareArrayLowerBounds = BiTerminalGraph.ofInstructions(
     			compareFlagged(Register.R10, new Literal(0)));
     	
-    	// Set up the original bp for the exit operation
-    	BiTerminalGraph startExit = BiTerminalGraph.ofInstructions(
-    			move(Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE, Register.R10)
-    			);
+    	// If it isnt, we are going to exit with an error Array out of Bounds
+    	BiTerminalGraph exit = new ErrorExitGraphFactory(Literal.ARRAY_OUT_OF_BOUNDS_EXIT).getGraph();
     	
     	BranchingControlFlowNode boundsUpperBranch = new BranchingControlFlowNode(
     			JumpType.JGE,
     			compareArrayLowerBounds.getBeginning(),
-    			startExit.getBeginning()
+    			exit.getBeginning()
     			);
     	
     	BranchingControlFlowNode boundsLowerBranch = new BranchingControlFlowNode(
     			JumpType.JL,
     			valid,
-    			startExit.getBeginning()
+    			exit.getBeginning()
     			);
     	
-    	// If it isnt, we are going to recurse into the old RBP
-    	BiTerminalGraph cleanMethodScope = BiTerminalGraph.ofInstructions(
-    			move(new Location(Register.RBP, 0*Architecture.BYTES_PER_ENTRY), Register.RBP));
     	
-    	// Check if the current RBP is the initial RBP
-    	BiTerminalGraph compareBasePointer = BiTerminalGraph.ofInstructions(
-                compareFlagged(Register.RBP, Register.R10));
-    	
-    	// When we exit, we need to restore RBP and RSP and then put the error code into RAX
-    	BiTerminalGraph exit = BiTerminalGraph.ofInstructions(
-    			move(Register.RBP, Register.RSP),
-    			pop(Register.RBP),
-    			move(Literal.ARRAY_OUT_OF_BOUNDS_EXIT, Register.RAX),
-    			ret());
-    	
-    	// We branch between recursively setting RBP and just exiting with our error code
-    	BranchingControlFlowNode exitBranch = new BranchingControlFlowNode(
-    			JumpType.JE,
-    			cleanMethodScope.getBeginning(),
-    			exit.getBeginning());
     	
     	// Link all the graph nodes up
     	initialize.getEnd().setNext(compareArrayUpperBounds.getBeginning());
     	compareArrayUpperBounds.getEnd().setNext(boundsUpperBranch);
     	compareArrayLowerBounds.getEnd().setNext(boundsLowerBranch);
-    	startExit.getEnd().setNext(compareBasePointer.getBeginning());
-    	compareBasePointer.getEnd().setNext(exitBranch);
-    	cleanMethodScope.getEnd().setNext(startExit.getBeginning());
 
         return new BiTerminalGraph(initialize.getBeginning(), valid);
     }

@@ -23,10 +23,12 @@ import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
 import edu.mit.compilers.codegen.controllinker.NativeExprGraphFactory;
 
 public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
-    private final ControlTerminalGraph graph;
+    private WhileLoop whileLoop;
+    private Scope scope;
 
     public WhileLoopGraphFactory(WhileLoop whileLoop, Scope scope) {
-        this.graph = calculateGraph(whileLoop,scope);
+        this.whileLoop = whileLoop;
+        this.scope = scope;
     }
 
     private ControlTerminalGraph calculateGraph(WhileLoop whileLoop, Scope scope) {
@@ -118,7 +120,7 @@ public class WhileLoopGraphFactory implements ControlTerminalGraphFactory {
 
     @Override
     public ControlTerminalGraph getGraph() {
-        return graph;
+        return calculateGraph(whileLoop, scope);
     }
 
 }
