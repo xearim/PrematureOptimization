@@ -12,7 +12,7 @@ public class Return implements Instruction {
 
     @Override
     public String inAttSyntax() {
-    	// just call return
-    	return "ret ";
+        // just call return
+        return "ret ";
     }
 }

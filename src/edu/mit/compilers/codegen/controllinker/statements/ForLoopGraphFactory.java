@@ -40,7 +40,7 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
         SequentialControlFlowNode returnNode = SequentialControlFlowNode.terminal(pop(Register.R10)); 
         SequentialControlFlowNode loopStart = SequentialControlFlowNode.namedNop("FL loopStart");
 
-        VariableReference loopVar = new VariableReference(forLoop.getLoopVariable().getName(),
+        VariableReference loopVar = new VariableReference(forLoop.getLoopVariable().getVariable(),
                 scope);
 
         BiTerminalGraph minAssigner = BiTerminalGraph.sequenceOf(
@@ -51,8 +51,8 @@ public class ForLoopGraphFactory implements ControlTerminalGraphFactory {
         
         // We actually want to leave the value that we get on the stack, as thats where we expect to find it forever
         BiTerminalGraph endExpressionEvaluator = BiTerminalGraph.sequenceOf(
-        		new NativeExprGraphFactory(forLoop.getRangeEnd(), scope).getGraph()
-        		);
+                new NativeExprGraphFactory(forLoop.getRangeEnd(), scope).getGraph()
+                );
 
         BiTerminalGraph loopComparator = BiTerminalGraph.sequenceOf(
                 new VariableLoadGraphFactory(forLoop.getLoopVariable(), scope).getGraph(),

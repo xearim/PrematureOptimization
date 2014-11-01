@@ -2,13 +2,15 @@ package edu.mit.compilers.ast;
 
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.common.Variable;
+
 public class ScalarLocation implements Location {
 
-    private final String variableName;
+    private final Variable variable;
     private final LocationDescriptor locationDescriptor;
 
-    public ScalarLocation(String variableName, LocationDescriptor locationDescriptor) {
-        this.variableName = variableName;
+    public ScalarLocation(Variable variable, LocationDescriptor locationDescriptor) {
+        this.variable = variable;
 	this.locationDescriptor = locationDescriptor;
     }
     
@@ -18,13 +20,13 @@ public class ScalarLocation implements Location {
     }
 
     @Override
-    public String getVariableName() {
-        return variableName;
+    public Variable getVariable() {
+        return variable;
     }
 
     @Override
     public String getName() {
-        return variableName;
+        return variable.generateName();
     }
 
     public LocationDescriptor getLocationDescriptor() {
@@ -36,7 +38,7 @@ public class ScalarLocation implements Location {
         final int prime = 31;
         int result = 1;
         result = prime * result
-                + ((variableName == null) ? 0 : variableName.hashCode());
+                + ((variable == null) ? 0 : variable.hashCode());
         return result;
     }
 
@@ -52,11 +54,11 @@ public class ScalarLocation implements Location {
             return false;
         }
         ScalarLocation other = (ScalarLocation) obj;
-        if (variableName == null) {
-            if (other.variableName != null) {
+        if (variable == null) {
+            if (other.variable != null) {
                 return false;
             }
-        } else if (!variableName.equals(other.variableName)) {
+        } else if (!variable.equals(other.variable)) {
             return false;
         }
         return true;

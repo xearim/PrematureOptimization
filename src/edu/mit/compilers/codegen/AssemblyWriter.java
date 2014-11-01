@@ -9,6 +9,7 @@ import edu.mit.compilers.ast.StringLiteral;
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
+import edu.mit.compilers.common.Variable;
 
 public class AssemblyWriter {
     private final static String METHODS_COMMENT = "// All methods.";
@@ -41,7 +42,7 @@ public class AssemblyWriter {
             globalPrinter(global, outputStream);
         }
         for (FieldDescriptor errorVar : Architecture.ERROR_VARIABLES.getVariables()){
-        	errorVarPrinter(errorVar, outputStream);
+            errorVarPrinter(errorVar, outputStream);
         }
     }
 
@@ -57,13 +58,13 @@ public class AssemblyWriter {
 
     private static void stringPrinter(StringLiteral sl, PrintStream outputStream) {
         outputStream.println(String.format("\t%s: .asciz %s",
-                new Label(LabelType.STRING, sl.getID()).labelText(),
+                new Label(LabelType.STRING, Variable.forCompiler(sl.getID())).labelText(),
                 sl.getName()));
     }
 
     private static void globalPrinter(FieldDescriptor fd, PrintStream outputStream) {
         outputStream.println(String.format("\t.comm %s, %d*%d",
-                new Label(LabelType.GLOBAL, fd.getName()).labelText(),
+                new Label(LabelType.GLOBAL, fd.getVariable()).labelText(),
                 Architecture.WORD_SIZE,
                 (fd.getLength().isPresent())
                         ? fd.getLength().get().get64BitValue()
@@ -72,7 +73,7 @@ public class AssemblyWriter {
     
     private static void errorVarPrinter(FieldDescriptor fd, PrintStream outputStream) {
         outputStream.println(String.format("\t%s: .quad %d",
-                new Label(LabelType.ERROR, fd.getName()).inAttSyntax(),
+                new Label(LabelType.ERROR, fd.getVariable()).inAttSyntax(),
                 (fd.getLength().isPresent())
                 ? fd.getLength().get().get64BitValue()
                         : GLOBAL_INITIAL_VALUE));

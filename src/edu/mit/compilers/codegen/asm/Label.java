@@ -1,5 +1,7 @@
 package edu.mit.compilers.codegen.asm;
 
+import edu.mit.compilers.common.Variable;
+
 public class Label implements Value {
     public static enum LabelType {
         // A global variable.
@@ -30,6 +32,10 @@ public class Label implements Value {
     public Label(LabelType type, String name) {
         this.type = type;
         this.name = name;
+    }
+    
+    public Label(LabelType type, Variable variable) {
+        this(type, variable.generateName());
     }
 
     @Override
