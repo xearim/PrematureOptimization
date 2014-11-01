@@ -4,13 +4,35 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
+/*
+ * TODO(Manny): Consider making these TreeSets instead of Set or HashSets
+ * Provides ordering, so retrieval of first element wouldn't require an iterator.
+ */
 public class AvailabilityCalculator {
     private Map<BasicBlock, InOutSets> basicBlock2inOutSets; // basic block -> (in, out)
 
     public AvailabilityCalculator (BasicBlock entryBlock) {
         calculateInOutSets(entryBlock);
+    }
+
+    private void setInOfBlock(BasicBlock b, Set<Subexpression> inSet) {
+        basicBlock2inOutSets.get(b).setIn(inSet);
+    }
+    
+    // TODO(Manny): Is this necessary?
+    private Set<Subexpression> getIn(BasicBlock b) {
+        return basicBlock2inOutSets.get(b).getIn();
+    }
+
+    private void setOutOfBlock(BasicBlock b, Set<Subexpression> outSet) {
+        basicBlock2inOutSets.get(b).setOut(outSet);
+    }
+    
+    private Set<Subexpression> getOut(BasicBlock b) {
+        return basicBlock2inOutSets.get(b).getOut();
     }
 
     private ImmutableSet<Subexpression> getAllSubexpressions() {
@@ -25,15 +47,10 @@ public class AvailabilityCalculator {
         return new HashSet<BasicBlock>(basicBlock2inOutSets.keySet());
     }
 
-//    private Map<BasicBlock, GenKillSets> calculateGenKillSets(Set<BasicBlock> blocks) {
-//        throw new RuntimeException("Availability.java#calculateGenKillSets unimplemented");
-//    }
-
     /**
      * Creates in and out sets for all blocks. Does not initialize any values.
      */
     private void createInOutSets(BasicBlock entryBlock) {
-        // TODO(Manny): Consider making these TreeSets
         Set<BasicBlock> visited = new HashSet<BasicBlock>();
         Set<BasicBlock> toBeVisited = new HashSet<BasicBlock>();
         toBeVisited.add(entryBlock);
@@ -56,41 +73,66 @@ public class AvailabilityCalculator {
     
     
     private void calculateInOutSets(BasicBlock entryBlock) {
+        // Initialize variables
         Map<BasicBlock, Set<Subexpression>> block2gen;
         Map<BasicBlock, Set<Subexpression>> block2kill;
+        Set<BasicBlock> changed;
         
         createInOutSets(entryBlock);
         block2gen = calculateGen(copyOfBasicBlocksSet());
         block2kill = calculateKill(copyOfBasicBlocksSet());
         
+        // Begin running algorithm 
         /*
          * for all nodes n in N
          *   OUT[n] = E;
          * IN[Entry] = emptySet;
          * OUT[Entry] = GEN[Entry];
-         * Changed = N - {Entry};
          */
         initializeInOutSets(entryBlock, block2gen.get(entryBlock));
         
-        
+        // Changed = N - {Entry};
+        changed = copyOfBasicBlocksSet();
+        Preconditions.checkState(changed.remove(entryBlock),
+                "entryBlock not in set of all blocks");
 
         // While (Changed != emptyset)
+        while (!changed.isEmpty()) {
+            BasicBlock block;
+            Set<Subexpression> temp;
+            
             // Choose a node n in Changed
+            block = changed.iterator().next();
             // Changed = N - {n}
+            changed.remove(block);
             
             // IN[n] = E
+            temp = getAllSubexpressions();
             // for all nodes p in predecessors(n)
+            for (BasicBlock predecessor : block.getPredecessorBlocks()) {
                 // IN[n] = intersection( IN[n], OUT[p] )
-
-        // Save old OUT[n] for later comparison
+                temp.retainAll(getOut(predecessor));
+            }
+            
+            // Store new IN[n]
+            setInOfBlock(block, temp);
             
             // OUT[n] = union( GEN[n], IN[n] - KILL[n] )
+            temp.removeAll(block2kill.get(block));
+            temp.addAll(block2gen.get(block));
             
             // If (OUT[n] changed)
+            if (!temp.equals(getOut(block))) {
+                // Store new OUT[n]
+                setOutOfBlock(block, temp);
+                
                 /*
                  * for all nodes s in successors(n)
                  *   Changed = union( Changed, {s} )
-                 */ 
+                 */
+                changed.addAll(block.getSuccessorBlocks());
+            }
+        }
     }
 
     private Map<BasicBlock, Set<Subexpression>> calculateGen(
