@@ -1,10 +1,9 @@
 package edu.mit.compilers.codegen.controllinker;
 
 import static edu.mit.compilers.codegen.asm.Register.R11;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.add;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.movePointer;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.moveFromMemory;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.movePointer;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.moveToMemory;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
@@ -16,9 +15,9 @@ import edu.mit.compilers.ast.ScopeType;
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
-import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.VariableReference;
+import edu.mit.compilers.common.Variable;
 
 
 public class VariableLoadGraphFactory implements GraphFactory {
@@ -65,7 +64,7 @@ public class VariableLoadGraphFactory implements GraphFactory {
      * location.
      */
     public static BiTerminalGraph setupArrayRegisters(ArrayLocation location, Scope scope) {
-        Scope immediateScope = scope.getLocation(location.getVariableName());
+        Scope immediateScope = scope.getLocation(location.getVariable());
         ScopeType scopeType = immediateScope.getScopeType();
         if (scopeType == ScopeType.LOCAL) {
             return BiTerminalGraph.sequenceOf(
@@ -86,7 +85,7 @@ public class VariableLoadGraphFactory implements GraphFactory {
                     new ArrayBoundsCheckGraphFactory(location, scope).getGraph(),
                     BiTerminalGraph.ofInstructions(
                             pop(Register.R11),
-                            movePointer(new Label(LabelType.GLOBAL, location.getVariableName()),
+                            movePointer(new Label(LabelType.GLOBAL, location.getVariable()),
                                     Register.R10)));
         } else {
             throw new AssertionError("Unexepected ScopeType for array: " + scopeType);
@@ -94,15 +93,15 @@ public class VariableLoadGraphFactory implements GraphFactory {
     }
     
     private static long offset(ArrayLocation location, Scope scope) {
-        return scope.offsetFromBasePointer(location.getVariableName())
+        return scope.offsetFromBasePointer(location.getVariable())
                 * Architecture.WORD_SIZE
                 * -1;
     }
 
     private BiTerminalGraph calculateLoadFromScalar(ScalarLocation location, Scope scope) {
-        String name = location.getName();
+        Variable var = location.getVariable();
         return BiTerminalGraph.ofInstructions(
-                move(new VariableReference(name, scope), R11),
+                move(new VariableReference(var, scope), R11),
                 push(R11));
     }
 

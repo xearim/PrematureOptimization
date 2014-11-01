@@ -40,6 +40,31 @@ public class IntLiteral implements NativeLiteral {
                 && this.getLocationDescriptor().equals(il.getLocationDescriptor());
     }
 
-    // TODO(jasonpr): Implement hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    // For equals and hashCode, we use the longValue, not the value.
+    // Thus, "0x1" and "1" will be considered equal, as they should be.
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (longValue ^ (longValue >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof IntLiteral)) {
+            return false;
+        }
+        IntLiteral other = (IntLiteral) obj;
+        if (longValue != other.longValue) {
+            return false;
+        }
+        return true;
+    }
 }

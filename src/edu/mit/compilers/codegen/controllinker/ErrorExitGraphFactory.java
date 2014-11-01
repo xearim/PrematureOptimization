@@ -11,15 +11,14 @@ import edu.mit.compilers.codegen.asm.Location;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 
-public class ControlFallOffGraphFactory implements GraphFactory {
-
+public class ErrorExitGraphFactory implements GraphFactory {
     private final BiTerminalGraph graph;
 
-    public ControlFallOffGraphFactory() {
-        this.graph = constructGraph();
+    public ErrorExitGraphFactory(Literal exitValue) {
+        this.graph = constructGraph(exitValue);
     }
 
-    private BiTerminalGraph constructGraph() {
+    private BiTerminalGraph constructGraph(Literal exitValue) {
     	
     	// Set R10 to the global for the intial RBP
     	BiTerminalGraph initialize = BiTerminalGraph.ofInstructions(
@@ -38,7 +37,7 @@ public class ControlFallOffGraphFactory implements GraphFactory {
     	BiTerminalGraph exit = BiTerminalGraph.ofInstructions(
     			move(Register.RBP, Register.RSP),
     			pop(Register.RBP),
-    			move(Literal.CONTROL_DROP_OFF_EXIT, Register.RAX),
+    			move(exitValue, Register.RAX),
     			ret());
     	
     	// We branch between recursively setting RBP and just exiting with our error code

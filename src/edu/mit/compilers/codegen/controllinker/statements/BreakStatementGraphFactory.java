@@ -6,11 +6,8 @@ import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
 
 public class BreakStatementGraphFactory implements ControlTerminalGraphFactory {
-    private ControlTerminalGraph graph;
 
-    public BreakStatementGraphFactory() {
-        this.graph = calculateGraph();
-    }
+    public BreakStatementGraphFactory() {}
     
     private ControlTerminalGraph calculateGraph() {
         SequentialControlFlowNode start = SequentialControlFlowNode.namedNop("BS start");
@@ -27,7 +24,7 @@ public class BreakStatementGraphFactory implements ControlTerminalGraphFactory {
     
     @Override
     public ControlTerminalGraph getGraph() {
-        return graph;
+        return calculateGraph();
     }
 
 }

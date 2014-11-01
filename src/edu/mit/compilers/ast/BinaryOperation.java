@@ -43,6 +43,48 @@ public class BinaryOperation implements NativeExpression {
         return rightArgument;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((leftArgument == null) ? 0 : leftArgument.hashCode());
+        result = prime * result
+                + ((operator == null) ? 0 : operator.hashCode());
+        result = prime * result
+                + ((rightArgument == null) ? 0 : rightArgument.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof BinaryOperation)) {
+            return false;
+        }
+        BinaryOperation other = (BinaryOperation) obj;
+        if (leftArgument == null) {
+            if (other.leftArgument != null) {
+                return false;
+            }
+        } else if (!leftArgument.equals(other.leftArgument)) {
+            return false;
+        }
+        if (operator != other.operator) {
+            return false;
+        }
+        if (rightArgument == null) {
+            if (other.rightArgument != null) {
+                return false;
+            }
+        } else if (!rightArgument.equals(other.rightArgument)) {
+            return false;
+        }
+        return true;
+    }
 }

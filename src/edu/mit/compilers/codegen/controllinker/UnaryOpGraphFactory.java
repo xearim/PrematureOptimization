@@ -40,7 +40,7 @@ public class UnaryOpGraphFactory implements GraphFactory {
         // TODO(jasonpr): Eliminate the need for this cast.
         Location targetLocation = (Location) operation.getArgument();
         // If these get()s fails, our semantic checker is broken.
-        FieldDescriptor descriptor = scope.getFromScope(targetLocation.getVariableName()).get();
+        FieldDescriptor descriptor = scope.getFromScope(targetLocation.getVariable()).get();
         IntLiteral length = descriptor.getLength().get();
         return BiTerminalGraph.ofInstructions(push(new Literal(length)));
     }

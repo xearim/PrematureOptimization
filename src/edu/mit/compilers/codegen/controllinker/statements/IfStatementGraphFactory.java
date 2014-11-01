@@ -22,10 +22,12 @@ import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
 import edu.mit.compilers.codegen.controllinker.NativeExprGraphFactory;
 
 public class IfStatementGraphFactory implements ControlTerminalGraphFactory {
-    private final ControlTerminalGraph graph;
+    private IfStatement ifStatement;
+    private Scope scope;
 
     public IfStatementGraphFactory(IfStatement ifStatement, Scope scope) {
-        this.graph = calculateGraph(ifStatement, scope);
+        this.ifStatement = ifStatement;
+        this.scope = scope;
     }
 
     private ControlTerminalGraph calculateGraph(IfStatement ifStatement,
@@ -79,7 +81,7 @@ public class IfStatementGraphFactory implements ControlTerminalGraphFactory {
 
     @Override
     public ControlTerminalGraph getGraph() {
-        return graph;
+        return calculateGraph(ifStatement, scope);
     }
 
 }

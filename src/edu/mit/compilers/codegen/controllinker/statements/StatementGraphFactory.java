@@ -14,10 +14,12 @@ import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
 
 public class StatementGraphFactory implements ControlTerminalGraphFactory {
-    private final ControlTerminalGraph graph;
+    private Statement statement;
+    private Scope scope;
 
     public StatementGraphFactory(Statement statement, Scope scope) {
-        this.graph = calculateGraph(statement, scope);
+        this.statement = statement;
+        this.scope = scope;
     }
 
     private ControlTerminalGraph calculateGraph(Statement statement, Scope scope) {
@@ -49,7 +51,7 @@ public class StatementGraphFactory implements ControlTerminalGraphFactory {
 
     @Override
     public ControlTerminalGraph getGraph() {
-        return graph;
+        return calculateGraph(statement, scope);
     }
 
 }

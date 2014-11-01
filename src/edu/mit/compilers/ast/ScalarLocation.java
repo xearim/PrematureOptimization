@@ -2,13 +2,15 @@ package edu.mit.compilers.ast;
 
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.common.Variable;
+
 public class ScalarLocation implements Location {
 
-    private final String variableName;
+    private final Variable variable;
     private final LocationDescriptor locationDescriptor;
 
-    public ScalarLocation(String variableName, LocationDescriptor locationDescriptor) {
-        this.variableName = variableName;
+    public ScalarLocation(Variable variable, LocationDescriptor locationDescriptor) {
+        this.variable = variable;
 	this.locationDescriptor = locationDescriptor;
     }
     
@@ -18,19 +20,47 @@ public class ScalarLocation implements Location {
     }
 
     @Override
-    public String getVariableName() {
-        return variableName;
+    public Variable getVariable() {
+        return variable;
     }
 
     @Override
     public String getName() {
-        return variableName;
+        return variable.generateName();
     }
 
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
     }
 
-    // TODO(jasonpr): Implement equals, hashCode, and toString.
-    // TODO(jasonpr): Implement class-specific accessors.
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((variable == null) ? 0 : variable.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof ScalarLocation)) {
+            return false;
+        }
+        ScalarLocation other = (ScalarLocation) obj;
+        if (variable == null) {
+            if (other.variable != null) {
+                return false;
+            }
+        } else if (!variable.equals(other.variable)) {
+            return false;
+        }
+        return true;
+    }
 }

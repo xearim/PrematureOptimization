@@ -140,7 +140,7 @@ public class TypesSemanticCheck implements SemanticCheck {
         if (loopVariableType.isPresent()) {
             Utils.check(loopVariableType.get().equals(BaseType.INTEGER), errorAccumulator,
                     "Type mismatch for loop variable %s at %s: expected integer but got %s",
-                    loopVariable.getVariableName(), loopVariable.getLocationDescriptor(),
+                    loopVariable.getVariable(), loopVariable.getLocationDescriptor(),
                     loopVariableType.get());
         }
         checkBlock(Iterables.getOnlyElement(forLoop.getBlocks()), errorAccumulator, returnType);
@@ -365,7 +365,7 @@ public class TypesSemanticCheck implements SemanticCheck {
             // Make sure it's an array.
             Utils.check(descriptor.get().getLength().isPresent(), errorAccumulator,
                     "Type mismatch for %s at %s: expected an array, but got ",
-                    location.getVariableName(), location.getLocationDescriptor());
+                    location.getVariable(), location.getLocationDescriptor());
         }
     }
 
@@ -586,7 +586,7 @@ public class TypesSemanticCheck implements SemanticCheck {
         if (descriptor.get().getLength().isPresent()) {
             Utils.check(false, errorAccumulator,
                     "Type mismatch: expected a scalar location for variable %s at %s, but got an array.",
-                    location.getVariableName(), location.getLocationDescriptor());
+                    location.getVariable(), location.getLocationDescriptor());
             return Optional.absent();
         }
         return Optional.of(descriptor.get().getType());
@@ -595,13 +595,13 @@ public class TypesSemanticCheck implements SemanticCheck {
     /** Get the descriptor for a variable, and log an error if it's not found. */
     private Optional<FieldDescriptor> lookup(Location location, Scope scope,
             List<SemanticError> errorAccumulator) {
-        Optional<FieldDescriptor> descriptor = scope.getFromScope(location.getVariableName());
+        Optional<FieldDescriptor> descriptor = scope.getFromScope(location.getVariable());
         if (descriptor.isPresent()) {
             return descriptor;
         } else {
             Utils.check(false, errorAccumulator,
                     "Failed lookup: could not find variable named %s at %s.",
-                    location.getVariableName(), location.getLocationDescriptor());
+                    location.getVariable(), location.getLocationDescriptor());
             return Optional.absent();
         }
 

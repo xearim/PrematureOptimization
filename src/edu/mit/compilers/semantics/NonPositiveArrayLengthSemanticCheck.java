@@ -50,7 +50,7 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
                 if (isNonPositiveIntLiteral(length)) {
                     errors.add(new NonPositiveArrayLengthSemanticError(
                             field.getLocationDescriptor(), this.prog.getName(),
-                            field.getName(), length));
+                            field.getVariable().generateName(), length));
                 }
             }
         }

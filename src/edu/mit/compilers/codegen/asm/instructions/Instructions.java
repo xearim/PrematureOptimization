@@ -121,22 +121,22 @@ public final class Instructions {
     
     /** Does `jmp label.inAttSyntax`. */
     public static Instruction jump(Label target) {
-    	return new Jump(target);
+        return new Jump(target);
     }
     
     /** Does `jmp(type) label.inAttSyntax`. */
     public static Instruction jumpTyped(JumpType type, Label target) {
-    	return new JumpTyped(type, target);
+        return new JumpTyped(type, target);
     }
     
     /** Does `enter $x, $0`. Calculated appropriately for a given method */
     public static Instruction enter(Block methodBlock){
-    	return new Enter(methodBlock);
+        return new Enter(methodBlock);
     }
     
     /** Does `leave` */
     public static Instruction leave(){
-    	return new Leave();
+        return new Leave();
     }
 
     /** Exits with some error code. */
