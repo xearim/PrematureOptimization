@@ -1,5 +1,7 @@
 package edu.mit.compilers.optimization;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -9,11 +11,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.MethodCallDataFlowNode;
 import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
+import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.codegen.SequentialDataFlowNode;
 
 /**
  * Given a basic block, the AvailabilityCalculator computes all available
@@ -239,8 +244,13 @@ public class AvailabilityCalculator {
     }
 
     /** Return whether an expression is available at a DataFlowNode. */
-    public boolean isAvailable(GeneralExpression expr, DataFlowNode node) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+    public boolean isAvailable(GeneralExpression expr, SequentialDataFlowNode node) {
+        if (!(expr instanceof NativeExpression)) {
+            // Only NativeExpressions are ever available.
+            return false;
+        }
+        Subexpression scopedExpr = new Subexpression((NativeExpression) expr, node.getScope());
+
+        return inSets.get(node).contains(scopedExpr);
     }
 }

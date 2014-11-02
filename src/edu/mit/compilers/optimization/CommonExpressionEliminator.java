@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.codegen.DataFlowNode;
+import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.dataflow.DataFlowUtil;
 import edu.mit.compilers.common.Variable;
 
@@ -54,7 +55,9 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         public void optimize() {
             for (DataFlowNode node : DataFlowUtil.reachableFrom(head)) {
                 for (GeneralExpression expr : nodeExprs(node)) {
-                    if (availCalc.isAvailable(expr, node)) {
+                    // The cast will always succeed: non-sequential nodes have no
+                    // expressions, so we'll never enter this loop if the cast would fail.
+                    if (availCalc.isAvailable(expr, (SequentialDataFlowNode) node)) {
                         replace(node, useTemp(node, expr));
                     } else {
                         // For now, we alway generate if it's not available.
