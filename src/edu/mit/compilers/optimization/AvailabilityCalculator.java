@@ -16,7 +16,6 @@ import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.MethodCallDataFlowNode;
 import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
-import edu.mit.compilers.codegen.SequentialControlFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 
 /**
@@ -225,8 +224,20 @@ public class AvailabilityCalculator {
         for (DataFlowNode block : blocks) {
             if (block instanceof AssignmentDataFlowNode) {
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
+                // TODO(Manny): figure out what happens with += and -=
             } else if (block instanceof CompareDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: CompareDataFlowNode path unimplemented.");
+                // leftArg
+                // scope
+                subexpressions.add(
+                        new Subexpression(
+                                ((CompareDataFlowNode) block).getLeftArg(),
+                                ((CompareDataFlowNode) block).getScope()));
+
+                // rightArg
+                subexpressions.add(
+                        new Subexpression(
+                                ((CompareDataFlowNode) block).getRightArg(),
+                                ((CompareDataFlowNode) block).getScope()));
             } else if (block instanceof MethodCallDataFlowNode) {
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
             } else if (block instanceof ReturnStatementDataFlowNode) {
