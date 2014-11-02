@@ -1,6 +1,11 @@
 package edu.mit.compilers.codegen;
 
+import java.util.Collection;
+
+import com.google.common.collect.ImmutableList;
+
 import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.Scope;
 
 public class AssignmentDataFlowNode extends SequentialDataFlowNode{
@@ -20,6 +25,11 @@ public class AssignmentDataFlowNode extends SequentialDataFlowNode{
 	
 	public Assignment getAssignment() {
 		return assignment;
+	}
+
+	@Override
+	public Collection<GeneralExpression> getExpressions() {
+	    return ImmutableList.<GeneralExpression>of(assignment.getExpression());
 	}
 
 }
