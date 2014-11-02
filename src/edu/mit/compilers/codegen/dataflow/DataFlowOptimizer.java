@@ -1,5 +1,7 @@
 package edu.mit.compilers.codegen.dataflow;
 
+import edu.mit.compilers.codegen.DataFlowNode;
+
 public interface DataFlowOptimizer {
 
     /**

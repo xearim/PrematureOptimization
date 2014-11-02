@@ -3,6 +3,7 @@ package edu.mit.compilers.codegen.dataflow;
 import java.util.Set;
 
 import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.codegen.DataFlowNode;
 
 /**
  * Finds the availablility of expressions in a data flow graph. 
