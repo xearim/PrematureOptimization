@@ -1,13 +1,12 @@
 package edu.mit.compilers.optimization;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.GeneralExpression;
@@ -68,7 +67,7 @@ public class AvailabilityCalculator {
 
         // Changed = N - {Entry};
         changed = copyOfBasicBlocksSet();
-        Preconditions.checkState(changed.remove(entryBlock),
+        checkState(changed.remove(entryBlock),
                 "entryBlock is not in set of all blocks.");
 
         // While (Changed != emptyset)
@@ -243,7 +242,16 @@ public class AvailabilityCalculator {
         return inSets.get(b);
     }
 
-    /** Return whether an expression is available at a DataFlowNode. */
+    /**
+     * Returns all subexpressions available at that node.
+     */
+    public Set<Subexpression> availableSubexpressionsAt(DataFlowNode node) {
+        return this.inSets.get(node);
+    }
+
+    /**
+     * Return whether an expression is available at a DataFlowNode.
+     */
     public boolean isAvailable(GeneralExpression expr, SequentialDataFlowNode node) {
         if (!(expr instanceof NativeExpression)) {
             // Only NativeExpressions are ever available.
