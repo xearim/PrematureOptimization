@@ -12,6 +12,10 @@ public class LocationDescriptor {
 		this.colNo = colNo;
 	}
 	
+	public static LocationDescriptor machineCode(){
+		return new LocationDescriptor("dummy", -1, -1);
+	}
+	
 	public String getFileName(){
 		return fileName;
 	}

@@ -20,11 +20,15 @@ public class Architecture {
     
     public static final Scope ERROR_VARIABLES = constructErrors();
     
+	public static final long FOR_LOOP_VAR_SIZE = 0;
+	public static final long WHILE_LOOP_VAR_SIZE = 0;
+    
     private static Scope constructErrors() {
         return new Scope(ImmutableList.of(new FieldDescriptor(
                 Variable.forCompiler("mainbaseptr"),
                 BaseType.INTEGER,
                 new LocationDescriptor("unknown", -1, -1))));
     }
-    
+
+
 }
