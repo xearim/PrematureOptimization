@@ -1,16 +1,17 @@
 package edu.mit.compilers.codegen;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 
-public class DataFlowNode {
-	private static long nodeIDGenerator = 0;
-	private final long nodeID;
-	
-	public DataFlowNode(){
-		this.nodeID = nodeIDGenerator++;
-	}
+public abstract class DataFlowNode {
+    private static long nodeIDGenerator = 0;
+    private final long nodeID;
+
+    public DataFlowNode(){
+        this.nodeID = nodeIDGenerator++;
+    }
 
     /**
      * Get all the DataFlowNodes that this node can flow to.
@@ -19,7 +20,9 @@ public class DataFlowNode {
      * because we will need more specific getters to actually do meaningful
      * computation.
      */
-    public Collection<DataFlowNode> getSinks(){ return ImmutableList.of();};
+    public Collection<DataFlowNode> getSinks(){
+        return ImmutableList.of();
+    };
 
     /**
      * Some text that represents the contents of this node.
@@ -29,13 +32,16 @@ public class DataFlowNode {
     public String nodeText(){ return ""; };
 
     public long getNodeID(){
-    	return nodeID;
+        return nodeID;
     }
 
     @Override
     public int hashCode() {
         return (int) nodeID; 
     }
+
+    public abstract Set<DataFlowNode> getPredecessors();
+    public abstract Set<DataFlowNode> getSuccessors();
 
     @Override
     public boolean equals(Object obj) {
