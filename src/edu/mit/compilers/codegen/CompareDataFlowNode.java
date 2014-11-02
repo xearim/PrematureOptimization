@@ -21,7 +21,8 @@ public class CompareDataFlowNode extends SequentialDataFlowNode{
 		this.leftArg = leftArg;
 		this.rightArg = rightArg;
 	}
-	
+
+	@Override
 	public Scope getScope() {
 		return scope;
 	}

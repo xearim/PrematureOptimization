@@ -18,7 +18,8 @@ public class MethodCallDataFlowNode extends SequentialDataFlowNode{
 		this.scope = scope;
 		this.methodCall = methodCall;
 	}
-	
+
+	@Override
 	public Scope getScope() {
 		return scope;
 	}

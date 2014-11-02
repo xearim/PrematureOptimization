@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.Scope;
 
 public class SequentialDataFlowNode extends DataFlowNode{
 
@@ -119,5 +120,10 @@ public class SequentialDataFlowNode extends DataFlowNode{
     @Override
     public Collection<GeneralExpression> getExpressions() {
         return ImmutableList.of();
+    }
+
+    // TODO(jasonpr): Make this method abstract, when you fix getExpressions().
+    public Scope getScope() {
+        throw new UnsupportedOperationException("I should really be an abstract method!");
     }
 }
