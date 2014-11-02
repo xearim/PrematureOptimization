@@ -221,13 +221,21 @@ public class AvailabilityCalculator {
     private ImmutableSet<Subexpression> getAllSubexpressions(Set<DataFlowNode> blocks) {
         Set<Subexpression> subexpressions = new HashSet<Subexpression>();
 
+        /*
+         * TODO(Manny): figure out when NativeExpression is "complex-enough" to
+         * be worth saving.
+         */
         for (DataFlowNode block : blocks) {
             if (block instanceof AssignmentDataFlowNode) {
+                // Native expression on the right hand side
+                subexpressions.add(
+                        new Subexpression(
+                                ((AssignmentDataFlowNode) block).getAssignment().getExpression(),
+                                ((AssignmentDataFlowNode) block).getScope()));
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
                 // TODO(Manny): figure out what happens with += and -=
             } else if (block instanceof CompareDataFlowNode) {
                 // leftArg
-                // scope
                 subexpressions.add(
                         new Subexpression(
                                 ((CompareDataFlowNode) block).getLeftArg(),
@@ -238,7 +246,9 @@ public class AvailabilityCalculator {
                         new Subexpression(
                                 ((CompareDataFlowNode) block).getRightArg(),
                                 ((CompareDataFlowNode) block).getScope()));
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: CompareDataFlowNode path unimplemented.");
             } else if (block instanceof MethodCallDataFlowNode) {
+                // Add each parameter to the method call
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
             } else if (block instanceof ReturnStatementDataFlowNode) {
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
