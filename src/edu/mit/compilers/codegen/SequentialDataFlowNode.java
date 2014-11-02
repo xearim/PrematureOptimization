@@ -8,6 +8,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.Scope;
+
 public class SequentialDataFlowNode extends DataFlowNode{
 
     private Optional<DataFlowNode> prev, next;
@@ -108,5 +111,19 @@ public class SequentialDataFlowNode extends DataFlowNode{
         return (hasNext())
                 ? ImmutableSet.<DataFlowNode>of(getPrev())
                 : ImmutableSet.<DataFlowNode>of();
+    }
+
+    // It's dangerous for this class to implement getExpressions, because now
+    // subclasses could forget to implement their own correct version of
+    // getExpressions.
+    // TODO(jasonpr): Keep this method abstract in SequentialDataFlowNode.
+    @Override
+    public Collection<GeneralExpression> getExpressions() {
+        return ImmutableList.of();
+    }
+
+    // TODO(jasonpr): Make this method abstract, when you fix getExpressions().
+    public Scope getScope() {
+        throw new UnsupportedOperationException("I should really be an abstract method!");
     }
 }

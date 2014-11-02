@@ -1,5 +1,12 @@
 package edu.mit.compilers.codegen;
 
+import java.util.Collection;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+
+import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.Scope;
 
@@ -13,7 +20,8 @@ public class ReturnStatementDataFlowNode extends SequentialDataFlowNode{
 		this.scope = scope;
 		this.returnStatement = returnStatement;
 	}
-	
+
+	@Override
 	public Scope getScope() {
 		return scope;
 	}
@@ -22,4 +30,11 @@ public class ReturnStatementDataFlowNode extends SequentialDataFlowNode{
 		return returnStatement;
 	}
 
+	@Override
+	public Collection<GeneralExpression> getExpressions() {
+	    Optional<NativeExpression> returnValue = returnStatement.getValue();
+	    return returnValue.isPresent()
+	            ? ImmutableList.<GeneralExpression>of(returnValue.get())
+	            : ImmutableList.<GeneralExpression>of();
+	}
 }

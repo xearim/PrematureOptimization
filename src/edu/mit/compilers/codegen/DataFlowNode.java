@@ -5,6 +5,8 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.ast.GeneralExpression;
+
 public abstract class DataFlowNode {
     private static long nodeIDGenerator = 0;
     private final long nodeID;
@@ -42,6 +44,7 @@ public abstract class DataFlowNode {
 
     public abstract Set<DataFlowNode> getPredecessors();
     public abstract Set<DataFlowNode> getSuccessors();
+    public abstract Collection<GeneralExpression> getExpressions();
 
     @Override
     public boolean equals(Object obj) {
