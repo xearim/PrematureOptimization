@@ -54,37 +54,18 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         public void optimize() {
             for (DataFlowNode node : DataFlowUtil.reachableFrom(head)) {
                 for (GeneralExpression expr : nodeExprs(node)) {
-                    if (isWasted(node, expr)) {
+                    if (availCalc.isAvailable(expr, node)) {
                         replace(node, useTemp(node, expr));
-                    } else if (mustFillTemp(node, expr)) {
-                        replace(node, genAndUseTemp(node, expr));
+                    } else {
+                        // For now, we alway generate if it's not available.
+                        // TODO(jasonpr): Use 'reasons' or 'benefactors' to reduce
+                        // amount of unnecessary temp filling.
+                        replace(node, fillAndUseTemp(node, expr));
                     }
                 }
             }
         }
 
-        /**
-         * Return whether an expression is "wasted" at a node.
-         *
-         * <p>An expression is wasted if it is used at the node, and also
-         * available at the node.
-         */
-        private boolean isWasted(DataFlowNode node, GeneralExpression expr) {
-            // TODO(jasonpr): Implement!
-            throw new RuntimeException("Not yet implemented!");
-        }
-
-        /**
-         * Return whether it is necessary to fill a temp variable with the value
-         * of its expression.
-         *
-         * <p>Currently, we simply say we must fill the temp variable whenever
-         * an expression is used but not available yet.
-         */
-        private boolean mustFillTemp(DataFlowNode node, GeneralExpression expr) {
-            // TODO(jasonpr): Implement!
-            throw new RuntimeException("Not yet implemented!");
-        }
 
         /**
          * Return a replacement for 'node' that does not call for 'expr' to be
@@ -103,7 +84,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
          * its temp variable, and uses that temp variable when executing the
          * node's statement.
          */
-        private DataFlowNode genAndUseTemp(DataFlowNode node, GeneralExpression expr) {
+        private DataFlowNode fillAndUseTemp(DataFlowNode node, GeneralExpression expr) {
             // TODO(jasonpr): Implement!
             throw new RuntimeException("Not yet implemented!");
         }
