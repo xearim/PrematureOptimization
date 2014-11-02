@@ -2,8 +2,6 @@ package edu.mit.compilers.codegen.dataflow;
 
 import java.util.Set;
 
-import javax.management.RuntimeErrorException;
-
 import edu.mit.compilers.ast.GeneralExpression;
 
 /**
