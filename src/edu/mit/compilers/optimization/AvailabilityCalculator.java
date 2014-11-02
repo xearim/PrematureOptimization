@@ -8,6 +8,7 @@ import java.util.Set;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
@@ -235,5 +236,11 @@ public class AvailabilityCalculator {
 
     public Set<Subexpression> getAvailableSubexpressionsOfBasicBlock(DataFlowNode b) {
         return inSets.get(b);
+    }
+
+    /** Return whether an expression is available at a DataFlowNode. */
+    public boolean isAvailable(GeneralExpression expr, DataFlowNode node) {
+        // TODO(jasonpr): Implement!
+        throw new RuntimeException("Not yet implemented!");
     }
 }
