@@ -76,9 +76,10 @@ public class Subexpression {
         return scope;
     }
 
-    public boolean equals(Subexpression se) {
-        //        return this.ne.equals(se.getNativeExpresion());
-        //                && this.scope() == se.getScope()
-        throw new UnsupportedOperationException("Subexpression#equals unimplemented.");
-    }
+    //TODO(Manny): implement equals and hashcode
+//    public boolean equals(Subexpression se) {
+//        //        return this.ne.equals(se.getNativeExpresion());
+//        //                && this.scope() == se.getScope()
+//        throw new UnsupportedOperationException("Subexpression#equals unimplemented.");
+//    }
 }
