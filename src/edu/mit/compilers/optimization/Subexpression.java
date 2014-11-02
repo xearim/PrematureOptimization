@@ -76,10 +76,34 @@ public class Subexpression {
         return scope;
     }
 
-    //TODO(Manny): implement equals and hashcode
-//    public boolean equals(Subexpression se) {
-//        //        return this.ne.equals(se.getNativeExpresion());
-//        //                && this.scope() == se.getScope()
-//        throw new UnsupportedOperationException("Subexpression#equals unimplemented.");
-//    }
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((ne == null) ? 0 : ne.hashCode());
+        result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Subexpression other = (Subexpression) obj;
+        if (ne == null) {
+            if (other.ne != null)
+                return false;
+        } else if (!ne.equals(other.ne))
+            return false;
+        if (scope == null) {
+            if (other.scope != null)
+                return false;
+        } else if (!scope.equals(other.scope))
+            return false;
+        return true;
+    }
 }
