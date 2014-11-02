@@ -10,6 +10,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.ast.GeneralExpression;
+
 public class BranchSinkDataFlowNode extends DataFlowNode{
 
     private String name;
@@ -90,5 +92,10 @@ public class BranchSinkDataFlowNode extends DataFlowNode{
         return (hasNext())
                 ? ImmutableSet.<DataFlowNode>of(getNext())
                 : ImmutableSet.<DataFlowNode>of();
+    }
+
+    @Override
+    public Collection<GeneralExpression> getExpressions() {
+        return ImmutableList.of();
     }
 }

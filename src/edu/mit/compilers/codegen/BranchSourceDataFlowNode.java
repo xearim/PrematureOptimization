@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 
 public class BranchSourceDataFlowNode extends DataFlowNode{
@@ -103,5 +104,10 @@ public class BranchSourceDataFlowNode extends DataFlowNode{
         return (hasNext())
                 ? ImmutableSet.<DataFlowNode>of(getTrueBranch(), getFalseBranch())
                 : ImmutableSet.<DataFlowNode>of();
+    }
+
+    @Override
+    public Collection<GeneralExpression> getExpressions() {
+        return ImmutableList.of();
     }
 }
