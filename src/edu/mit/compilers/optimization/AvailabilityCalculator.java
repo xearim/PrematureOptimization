@@ -8,14 +8,20 @@ import java.util.Set;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.codegen.AssignmentDataFlowNode;
+import edu.mit.compilers.codegen.CompareDataFlowNode;
+import edu.mit.compilers.codegen.DataFlowNode;
+import edu.mit.compilers.codegen.MethodCallDataFlowNode;
+import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
+
 /**
  * Given a basic block, the AvailabilityCalculator computes all available
  * subexpressions at each block accessible from the input basic block.
  */
 public class AvailabilityCalculator {
-    private Map<BasicBlock, Set<Subexpression>> inSets;
+    private Map<DataFlowNode, Set<Subexpression>> inSets;
 
-    public AvailabilityCalculator (BasicBlock entryBlock) {
+    public AvailabilityCalculator (DataFlowNode entryBlock) {
         calculateAvailability(entryBlock);
     }
 
@@ -24,7 +30,7 @@ public class AvailabilityCalculator {
      * Afterwards, can be asked what the available expressions are at each
      * basic block.
      */
-    private void calculateAvailability(BasicBlock entryBlock) {
+    private void calculateAvailability(DataFlowNode entryBlock) {
         /*
          * Set up variables for algorithm:
          * - IN and OUT
@@ -33,17 +39,17 @@ public class AvailabilityCalculator {
          * - all subexpressions (E)
          */
         createInSets(entryBlock);
-        Set<BasicBlock> allBlocks = ImmutableSet.copyOf(this.inSets.keySet());
-        Map<BasicBlock, Set<Subexpression>> outSets =
-                new HashMap<BasicBlock, Set<Subexpression>>();
-        Map<BasicBlock, Set<Subexpression>> genSets = calculateGenSets(allBlocks);
-        Map<BasicBlock, Set<Subexpression>> killSets = calculateKillSets(allBlocks);
-        Set<BasicBlock> changed;
+        Set<DataFlowNode> allBlocks = ImmutableSet.copyOf(this.inSets.keySet());
         Set<Subexpression> allSubexpressions = getAllSubexpressions(allBlocks);
+        Map<DataFlowNode, Set<Subexpression>> outSets =
+                new HashMap<DataFlowNode, Set<Subexpression>>();
+        Map<DataFlowNode, Set<Subexpression>> genSets = calculateGenSets(allBlocks);
+        Map<DataFlowNode, Set<Subexpression>> killSets = calculateKillSets(allBlocks);
+        Set<DataFlowNode> changed;
 
         // Run algorithm
         // for all nodes n in N
-        for (BasicBlock block : inSets.keySet()) {
+        for (DataFlowNode block : inSets.keySet()) {
             // OUT[n] = E;
             outSets.put(block, new HashSet<Subexpression>(allSubexpressions));
         }
@@ -61,7 +67,7 @@ public class AvailabilityCalculator {
 
         // While (Changed != emptyset)
         while (!changed.isEmpty()) {
-            BasicBlock block;
+            DataFlowNode block;
             Set<Subexpression> newOut;
 
             // Choose a node n in Changed
@@ -72,7 +78,7 @@ public class AvailabilityCalculator {
             // IN[n] = E
             this.inSets.put(block, new HashSet<Subexpression>(allSubexpressions));
             // for all nodes p in predecessors(n)
-            for (BasicBlock predecessor : block.getPredecessorBlocks()) {
+            for (DataFlowNode predecessor : block.getPredecessors()) {
                 // IN[n] = intersection( IN[n], OUT[p] )
                 this.inSets.get(block).retainAll(outSets.get(predecessor));
             }
@@ -91,7 +97,7 @@ public class AvailabilityCalculator {
                  * for all nodes s in successors(n)
                  *   Changed = union( Changed, {s} )
                  */
-                changed.addAll(block.getSuccessorBlocks());
+                changed.addAll(block.getSuccessors());
             }
         }
     }
@@ -100,17 +106,17 @@ public class AvailabilityCalculator {
      * Creates IN sets for all blocks. Does not initialize any values. Makes
      * sure that each block is included only once.
      */
-    private void createInSets(BasicBlock entryBlock) {
-        Set<BasicBlock> visited = new HashSet<BasicBlock>();
-        Set<BasicBlock> toBeVisited = new HashSet<BasicBlock>();
+    private void createInSets(DataFlowNode entryBlock) {
+        Set<DataFlowNode> visited = new HashSet<DataFlowNode>();
+        Set<DataFlowNode> toBeVisited = new HashSet<DataFlowNode>();
         toBeVisited.add(entryBlock);
-        this.inSets = new HashMap<BasicBlock, Set<Subexpression>>();
+        this.inSets = new HashMap<DataFlowNode, Set<Subexpression>>();
 
         while (!toBeVisited.isEmpty()) {
-            BasicBlock block = toBeVisited.iterator().next();
+            DataFlowNode block = toBeVisited.iterator().next();
             toBeVisited.remove(block);
 
-            for (BasicBlock newBlock : block.getSuccessorBlocks()) {
+            for (DataFlowNode newBlock : block.getSuccessors()) {
                 // In case there are multiple paths to that block
                 if (!visited.contains(newBlock)) {
                     visited.add(newBlock);
@@ -120,37 +126,114 @@ public class AvailabilityCalculator {
         }
     }
 
-    private Map<BasicBlock, Set<Subexpression>> calculateGenSets(
-            Set<BasicBlock> blocks) {
-        for (BasicBlock block : blocks) {
+    /**
+     * Produces a mapping from DataFlowNodes to a list of subexpressions that
+     * they generate. The types of DataFlowNodes that generate subexpressions
+     * are Assignments, Compare, MethodCalls and Return Statements.
+     * 
+     * Assignments generate whatever is evaluated on the right.
+     * 
+     * Compares generate their left and right arguments.
+     * 
+     * MethodCalls generate their parameters.
+     * 
+     * ReturnStatements generate their return values.
+     */
+    private Map<DataFlowNode, Set<Subexpression>> calculateGenSets(
+            Set<DataFlowNode> blocks) {
+        Map<DataFlowNode, Set<Subexpression>> genSets =
+                new HashMap<DataFlowNode, Set<Subexpression>>();
+
+        for (DataFlowNode block : blocks) {
+            if (block instanceof AssignmentDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
+            } else if (block instanceof CompareDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: CompareDataFlowNode path unimplemented.");
+            } else if (block instanceof MethodCallDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
+            } else if (block instanceof ReturnStatementDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: ReturnStatementDataFlowNode path unimplemented.");
+            } else {
+                /*
+                 * If not any of these nodes, then it doesn't have any
+                 * expressions. The GEN set is empty for this block.
+                 */
+                genSets.put(block, ImmutableSet.<Subexpression>of());
+            }
         }
 
-        throw new UnsupportedOperationException(
-                "AvailabilityCalculator#calculateGen unimplemented.");
+        return genSets;
     }
 
-    private Map<BasicBlock, Set<Subexpression>> calculateKillSets(
-            Set<BasicBlock> blocks) {
-        for (BasicBlock block : blocks) {
+    /**
+     * Produces a mapping from DataFlowNodes to a list of subexpressions that
+     * they kill. The types of DataFlowNodes that makes subexpressions
+     * unavailable are Assignments, MethodCalls, and Return Statements.
+     * 
+     * Assignments kill all subexpressions that rely on the variable being
+     * assigned.
+     * 
+     * MethodCalls kill all subexpressions that rely on global variables.
+     * TODO(Manny): Make methods only kill globals that they change.
+     * 
+     * ReturnStatements kill all subexpressions of that method scope level.
+     */
+    // TODO(Manny): Should this be calculated separately, or with the GEN sets?
+    private Map<DataFlowNode, Set<Subexpression>> calculateKillSets(
+            Set<DataFlowNode> blocks) {
+        Map<DataFlowNode, Set<Subexpression>> killSets =
+                new HashMap<DataFlowNode, Set<Subexpression>>();
+
+        for (DataFlowNode block : blocks) {
+            if (block instanceof AssignmentDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
+            } else if (block instanceof MethodCallDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
+            } else if (block instanceof ReturnStatementDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: ReturnStatementDataFlowNode path unimplemented.");
+            } else {
+                /*
+                 * If not any of these nodes, then it doesn't have any
+                 * expressions. The KILL set is empty for this block.
+                 */
+                killSets.put(block, ImmutableSet.<Subexpression>of());
+            }
         }
 
-        throw new UnsupportedOperationException(
-                "AvailabilityCalculator#calculateKill unimplemented.");
+        return killSets;
     }
 
     /**
      * Returns shallow copy. Want this to be modifiable but to not mess up the
      * original keyset.
      */
-    private Set<BasicBlock> copyOfBasicBlocksSet() {
-        return new HashSet<BasicBlock>(this.inSets.keySet());
+    private Set<DataFlowNode> copyOfBasicBlocksSet() {
+        return new HashSet<DataFlowNode>(this.inSets.keySet());
     }
 
-    private ImmutableSet<Subexpression> getAllSubexpressions(Set<BasicBlock> blocks) {
-        throw new UnsupportedOperationException("Availability.java: getAllSubexpressions unimplemented");
+    /**
+     * Goes through all DataFlowNodes and gets their subexpressions.
+     */
+    private ImmutableSet<Subexpression> getAllSubexpressions(Set<DataFlowNode> blocks) {
+        Set<Subexpression> subexpressions = new HashSet<Subexpression>();
+
+        for (DataFlowNode block : blocks) {
+            if (block instanceof AssignmentDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
+            } else if (block instanceof CompareDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: CompareDataFlowNode path unimplemented.");
+            } else if (block instanceof MethodCallDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
+            } else if (block instanceof ReturnStatementDataFlowNode) {
+                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
+            }
+            // The other nodes don't produce any subexpressions
+        }
+
+        return ImmutableSet.<Subexpression>copyOf(subexpressions);
     }
 
-    public Set<Subexpression> getAvailableSubexpressionsOfBasicBlock(BasicBlock b) {
+    public Set<Subexpression> getAvailableSubexpressionsOfBasicBlock(DataFlowNode b) {
         return inSets.get(b);
     }
 }

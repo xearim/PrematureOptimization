@@ -14,33 +14,33 @@ import edu.mit.compilers.ast.Scope;
  * - an expressions is derived only from variables from higher scopes.
  */
 public class Subexpression {
-    private NativeExpression ne;
-    private Scope scope;
+    private final NativeExpression ne;
+    private final Scope scope;
 
     /**
      * The Scope is the immediate scope.
      */
     public Subexpression(NativeExpression ne, Scope scope) {
         this.ne = ne;
-        this.scope = scope;
+        this.scope = getGeneralScope(scope);
     }
 
     /**
      * Finds the first scope that contains a variable from the subexpression
      */
-    public Scope getGeneralScope() {
+    public Scope getGeneralScope(Scope scope) {
         Set<Location> variables = getVariables();
 
         // Check immediate scope
-        if (containsAVariable(this.scope, variables)) {
-            return this.scope;
+        if (containsAVariable(scope, variables)) {
+            return scope;
         }
 
         /*
          * If no variable is in immediate scope, recurse through scopes until
          * a scope that contains at least on variable is found.
          */
-        Scope s = this.scope;
+        Scope s = scope;
         while (s.getParent().isPresent()) {
             s = s.getParent().get();
             if (containsAVariable(s, variables)) {
@@ -52,6 +52,7 @@ public class Subexpression {
     }
 
     public boolean containsMethodCall() {
+
         throw new UnsupportedOperationException("Subexpression#containsMethodCall unimplemented.");
     }
 
@@ -65,5 +66,19 @@ public class Subexpression {
 
     private Set<Location> getVariables() {
         throw new RuntimeException("Subexpression#getVariables unimplemented.");
+    }
+
+    public NativeExpression getNativeExpression() {
+        return this.ne;
+    }
+
+    public Scope getScope() {
+        return scope;
+    }
+
+    public boolean equals(Subexpression se) {
+        //        return this.ne.equals(se.getNativeExpresion());
+        //                && this.scope() == se.getScope()
+        throw new UnsupportedOperationException("Subexpression#equals unimplemented.");
     }
 }
