@@ -234,6 +234,7 @@ public class AvailabilityCalculator {
                                 ((AssignmentDataFlowNode) block).getScope()));
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
                 // TODO(Manny): figure out what happens with += and -=
+
             } else if (block instanceof CompareDataFlowNode) {
                 // leftArg
                 subexpressions.add(
@@ -247,11 +248,23 @@ public class AvailabilityCalculator {
                                 ((CompareDataFlowNode) block).getRightArg(),
                                 ((CompareDataFlowNode) block).getScope()));
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: CompareDataFlowNode path unimplemented.");
+
             } else if (block instanceof MethodCallDataFlowNode) {
                 // Add each parameter to the method call
+                for (GeneralExpression ge : ((MethodCallDataFlowNode) block).getMethodCall().getParameterValues()) {
+                    if (ge instanceof NativeExpression) {
+                        subexpressions.add(
+                                new Subexpression(
+                                        (NativeExpression) ge,
+                                        ((MethodCallDataFlowNode) block).getScope()));
+                    }
+                }
+                ((MethodCallDataFlowNode) block).getScope();
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
+
             } else if (block instanceof ReturnStatementDataFlowNode) {
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
+
             }
             // The other nodes don't produce any subexpressions
         }
