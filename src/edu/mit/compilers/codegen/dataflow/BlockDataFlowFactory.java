@@ -1,5 +1,7 @@
 package edu.mit.compilers.codegen.dataflow;
 
+import static edu.mit.compilers.codegen.SequentialDataFlowNode.link;
+
 import edu.mit.compilers.ast.ArrayLocation;
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.AssignmentOperation;
@@ -40,8 +42,7 @@ public class BlockDataFlowFactory implements DataFlowFactory{
 			
 			nextDataFlow.getControlNodes().attach(breakNode, continueNode, returnNode);
 			
-			currentNode.setNext(nextDataFlow.getBeginning());
-			nextDataFlow.getBeginning().setPrev(currentNode);
+			link(currentNode, nextDataFlow.getBeginning());
 			currentNode = nextDataFlow.getEnd();
 		}
 		
@@ -53,8 +54,7 @@ public class BlockDataFlowFactory implements DataFlowFactory{
 			statementDataFlow.getControlNodes().attach(breakNode, continueNode, returnNode);
 			
 			// Hook ourselves to the previous
-			currentNode.setNext(statementDataFlow.getBeginning());
-			statementDataFlow.getBeginning().setPrev(currentNode);
+			link(currentNode, statementDataFlow.getBeginning());
 			currentNode = statementDataFlow.getEnd();
 		}
 		
