@@ -18,7 +18,8 @@ public class AssignmentDataFlowNode extends SequentialDataFlowNode{
 		this.scope = scope;
 		this.assignment = assignment;
 	}
-	
+
+	@Override
 	public Scope getScope() {
 		return scope;
 	}

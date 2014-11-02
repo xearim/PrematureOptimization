@@ -20,7 +20,8 @@ public class ReturnStatementDataFlowNode extends SequentialDataFlowNode{
 		this.scope = scope;
 		this.returnStatement = returnStatement;
 	}
-	
+
+	@Override
 	public Scope getScope() {
 		return scope;
 	}
