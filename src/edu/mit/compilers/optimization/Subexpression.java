@@ -37,7 +37,7 @@ public class Subexpression {
         }
 
         /*
-         * If no variable in is immediate scope, recurse through scopes until
+         * If no variable is in immediate scope, recurse through scopes until
          * a scope that contains at least on variable is found.
          */
         Scope s = this.scope;
@@ -47,10 +47,10 @@ public class Subexpression {
                 return s;
             }
         }
-        
+
         throw new AssertionError("Subexpression.java: Subexpression variables don't exist in Scope.");
     }
-    
+
     public boolean containsMethodCall() {
         throw new UnsupportedOperationException("Subexpression#containsMethodCall unimplemented.");
     }
