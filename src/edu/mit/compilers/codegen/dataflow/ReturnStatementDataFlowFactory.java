@@ -5,7 +5,7 @@ import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
 import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
-import edu.mit.compilers.codegen.dataflow.DataFlow.ControlNodes;
+import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 
 public class ReturnStatementDataFlowFactory implements DataFlowFactory{
 	
@@ -39,9 +39,8 @@ public class ReturnStatementDataFlowFactory implements DataFlowFactory{
 			returnNode.setPrev(start);
 		}
 		
-		
 		return new DataFlow(start, end,
-				new ControlNodes(breakNode, continueNode, returnNode));
+				new DataControlNodes(breakNode, continueNode, returnNode));
 	}
 
 	@Override

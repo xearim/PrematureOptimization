@@ -5,7 +5,6 @@ import java.util.List;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 
 /**

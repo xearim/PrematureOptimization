@@ -13,14 +13,14 @@ public class BranchSourceDataFlowNode extends DataFlowNode{
 	private String name;
 	private JumpType type;
 	private Optional<SequentialDataFlowNode> prev;
-	private Optional<SequentialDataFlowNode> trueBranch, falseBranch;
+	private SequentialDataFlowNode trueBranch, falseBranch;
 	
 	public BranchSourceDataFlowNode(JumpType type, String name){
 		super();
 		this.type = type;
 		this.prev = Optional.<SequentialDataFlowNode>absent();
-		this.trueBranch = Optional.<SequentialDataFlowNode>absent();
-		this.falseBranch = Optional.<SequentialDataFlowNode>absent();
+		this.trueBranch = SequentialDataFlowNode.nop();
+		this.falseBranch = SequentialDataFlowNode.nop();
 	}
 	
 	public BranchSourceDataFlowNode(JumpType type){
@@ -28,7 +28,7 @@ public class BranchSourceDataFlowNode extends DataFlowNode{
 	}
 	
 	public boolean hasNext() {
-        return trueBranch.isPresent() && falseBranch.isPresent();
+        return true;
     }
     
     public boolean hasPrev() {
@@ -40,38 +40,20 @@ public class BranchSourceDataFlowNode extends DataFlowNode{
     }
 
     public SequentialDataFlowNode getTrueBranch() {
-        return trueBranch.get();
+        return trueBranch;
     }
     
     public SequentialDataFlowNode getFalseBranch() {
-        return falseBranch.get();
+        return falseBranch;
     }
     
     public SequentialDataFlowNode getPrev() {
         return prev.get();
     }
     
-    public void setTrueBranch(SequentialDataFlowNode trueBranch) {
-        Preconditions.checkState(!this.equals(trueBranch));
-        this.trueBranch = Optional.of(trueBranch);
-    }
-    
-    public void setFalseBranch(SequentialDataFlowNode falseBranch) {
-        Preconditions.checkState(!this.equals(trueBranch));
-        this.trueBranch = Optional.of(falseBranch);
-    }
-    
     public void setPrev(SequentialDataFlowNode prev) {
         Preconditions.checkState(!this.equals(prev));
         this.prev = Optional.of(prev);
-    }
-    
-    public void clearTrueBranch() {
-        this.trueBranch = Optional.absent();
-    }
-    
-    public void clearFalseBranch() {
-        this.falseBranch = Optional.absent();
     }
     
     public void clearPrev() {

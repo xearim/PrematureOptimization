@@ -76,6 +76,7 @@ public class Variable {
         if (creator == VariableCreator.USER) {
             return name;
         } else {
+        	//Apparently WE cant use dollar signs?
             return creator + "$" + name;
         }
     }

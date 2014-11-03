@@ -14,6 +14,13 @@ public class IntLiteral implements NativeLiteral {
         this.longValue = Long.parseLong(value);
         this.locationDescriptor = locationDescriptor;
     }
+    
+    // Create a machine literal, pretty useful IMHO
+    public IntLiteral(Long value) {
+    	this.value = Long.toString(value);
+    	this.longValue = value;
+    	this.locationDescriptor = LocationDescriptor.machineCode();
+    }
 
     @Override
     public Iterable<? extends Node> getChildren() {

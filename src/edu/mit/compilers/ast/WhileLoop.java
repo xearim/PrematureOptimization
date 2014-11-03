@@ -51,7 +51,7 @@ public class WhileLoop implements Statement {
 	
 	@Override
 	public long getMemorySize() {
-		return body.getMemorySize() + Architecture.WHILE_LOOP_VAR_SIZE;
+		return body.getMemorySize();
 	}
 
     public static WhileLoop

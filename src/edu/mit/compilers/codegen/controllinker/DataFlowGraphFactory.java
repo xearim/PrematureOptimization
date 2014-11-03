@@ -1,6 +1,8 @@
 package edu.mit.compilers.codegen.controllinker;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import com.google.common.base.Preconditions;
 
@@ -24,173 +26,153 @@ import edu.mit.compilers.codegen.dataflow.DataFlow;
 public class DataFlowGraphFactory implements ControlTerminalGraphFactory {
 
     private final ControlTerminalGraph graph;
+    private HashSet<DataFlowNode> visited; 
+    private HashMap<DataFlowNode,ControlFlowNode> conversion;
+    private SequentialControlFlowNode terminal;
+    private SequentialControlFlowNode returnNode, continueNode, breakNode;
 
     public DataFlowGraphFactory(DataFlow dataFlow) {
         this.graph = calculateGraph(dataFlow);
     }
 
     private ControlTerminalGraph calculateGraph(DataFlow dataFlow) {
-
-    	SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal();
-    	SequentialControlFlowNode continueNode = SequentialControlFlowNode.namedNop("DF cont");
-        SequentialControlFlowNode breakNode = SequentialControlFlowNode.namedNop("DF break");
-        SequentialControlFlowNode returnNode = SequentialControlFlowNode.namedNop("DF return");
+    	SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal(); 
+    	terminal = SequentialControlFlowNode.nopTerminal();
+        returnNode = SequentialControlFlowNode.namedNop("DF return");
+        continueNode = SequentialControlFlowNode.namedNop("DF cont");
+        breakNode = SequentialControlFlowNode.namedNop("DF break");
+    
+        visited = new HashSet<DataFlowNode>();
+        conversion = new HashMap<DataFlowNode,ControlFlowNode>();
+    	
+        ProcessDataFlowNode(dataFlow.getBeginning(), start);
         
-        HashMap<Long,ControlFlowNode> visited = new HashMap<Long,ControlFlowNode>();
-        
-        SequentialControlFlowNode end = 
-        		ProcessDataFlowNode(dataFlow.getBeginning(), visited, returnNode, start);
-
-        return new ControlTerminalGraph(start, end,
+        return new ControlTerminalGraph(start, terminal,
         		new ControlNodes(breakNode, continueNode, returnNode));
     }
     
-    private SequentialControlFlowNode ProcessDataFlowNode(DataFlowNode currentNode, 
-    		HashMap<Long,ControlFlowNode> visited, SequentialControlFlowNode returnNode, SequentialControlFlowNode end){
+    private void ProcessDataFlowNode(DataFlowNode currentNode, SequentialControlFlowNode end){
     	if(currentNode instanceof SequentialDataFlowNode){
-    		return ProcessSequentialDataFlowNode((SequentialDataFlowNode) currentNode, 
-    				   visited, returnNode, end);
+    		ProcessSequentialDataFlowNode((SequentialDataFlowNode) currentNode, end);
     	} else if(currentNode instanceof BranchSinkDataFlowNode){
-    		return ProcessBranchSinkDataFlowNode((BranchSinkDataFlowNode) currentNode, 
-    					visited, returnNode, end);
+    		ProcessBranchSinkDataFlowNode((BranchSinkDataFlowNode) currentNode, end);
     	} else if(currentNode instanceof BranchSourceDataFlowNode){
-    		return ProcessBranchSourceDataFlowNode((BranchSourceDataFlowNode) currentNode, 
-    				   visited, returnNode, end);
+    		ProcessBranchSourceDataFlowNode((BranchSourceDataFlowNode) currentNode, end);
     	} else {
     		throw new AssertionError("Invalid DataFlowNode in DataFlow");
     	}
     }
     
-    private SequentialControlFlowNode ProcessSequentialDataFlowNode(SequentialDataFlowNode currentNode,
-    		HashMap<Long,ControlFlowNode> visited, SequentialControlFlowNode returnNode, SequentialControlFlowNode end){
+    private void ProcessSequentialDataFlowNode(SequentialDataFlowNode currentNode, SequentialControlFlowNode end){
     	if(currentNode instanceof AssignmentDataFlowNode){
-    		return ProcessAssignmentDataFlowNode((AssignmentDataFlowNode) currentNode,
-    				visited, returnNode, end);
+    		ProcessAssignmentDataFlowNode((AssignmentDataFlowNode) currentNode, end);
     	} else if(currentNode instanceof CompareDataFlowNode){
-    		return ProcessCompareDataFlowNode((CompareDataFlowNode) currentNode,
-    				visited, returnNode, end);
+    		ProcessCompareDataFlowNode((CompareDataFlowNode) currentNode, end);
     	} else if(currentNode instanceof MethodCallDataFlowNode){
-    		return ProcessMethodCallDataFlowNode((MethodCallDataFlowNode) currentNode,
-    				visited, returnNode, end);
+    		ProcessMethodCallDataFlowNode((MethodCallDataFlowNode) currentNode, end);
     	} else if(currentNode instanceof ReturnStatementDataFlowNode){
-    		return ProcessReturnStatementDataFlowNode((ReturnStatementDataFlowNode) currentNode,
-    				visited, returnNode, end);
+    		ProcessReturnStatementDataFlowNode((ReturnStatementDataFlowNode) currentNode, end);
     	} else {
-    		throw new AssertionError("Invalid SequentialDataFlowNode in DataFlow");
+    		ProcessNopDataFlowNode(currentNode, end);
     	}
     }
     
-    private SequentialControlFlowNode ProcessAssignmentDataFlowNode(AssignmentDataFlowNode currentNode,
-    		HashMap<Long,ControlFlowNode> visited, SequentialControlFlowNode returnNode, SequentialControlFlowNode end){
+    private void ProcessAssignmentDataFlowNode(AssignmentDataFlowNode currentNode, 
+    		SequentialControlFlowNode end){
     	// Build the assignment graph
     	BiTerminalGraph assignmentGraph = new AssignmentGraphFactory(currentNode.getAssignment().getLocation(),
     			currentNode.getAssignment().getOperation(), currentNode.getAssignment().getExpression(), 
-    			currentNode.getScope()).getGraph();	
+    			currentNode.getScope(), currentNode.getAssignment().getFromCompiler()).getGraph();	
     	end.setNext(assignmentGraph.getBeginning());
-    	// Put this node in our visited list, it should not already be there
-    	Preconditions.checkState(visited.get(currentNode.getNodeID()) == null);
-    	visited.put(currentNode.getNodeID(),assignmentGraph.getBeginning());
-    	// Add the next node to the visiting set if it exists
+    	// Recurse if we can, else we have hit the end, set the final node
     	if(currentNode.hasNext()){
-    		return ProcessDataFlowNode(currentNode.getNext(), visited, returnNode,
-    				assignmentGraph.getEnd());
+    		ProcessDataFlowNode(currentNode.getNext(), assignmentGraph.getEnd());
     	} else {
-    		return assignmentGraph.getEnd();
+    		assignmentGraph.getEnd().setNext(terminal);
     	}
     }
     
-    private SequentialControlFlowNode ProcessCompareDataFlowNode(CompareDataFlowNode currentNode,
-    		HashMap<Long,ControlFlowNode> visited, SequentialControlFlowNode returnNode, SequentialControlFlowNode end){
+    private void ProcessCompareDataFlowNode(CompareDataFlowNode currentNode,
+    		SequentialControlFlowNode end){
     	// Build the compare graph
     	BiTerminalGraph compareGraph = new CompareGraphFactory(currentNode.getLeftArg(),
     			currentNode.getRightArg(), currentNode.getScope()).getGraph();	
     	end.setNext(compareGraph.getBeginning());
-    	// Put this node in our visited list, it should not already be there
-    	Preconditions.checkState(visited.get(currentNode.getNodeID()) == null);
-    	visited.put(currentNode.getNodeID(),compareGraph.getBeginning());
-    	// Add the next node to the visiting set if it exists
+    	// Recurse if we can, else we have hit the end, set the final node
     	if(currentNode.hasNext()){
-    		return ProcessDataFlowNode(currentNode.getNext(), visited, returnNode,
-    				compareGraph.getEnd());
+    		ProcessDataFlowNode(currentNode.getNext(), compareGraph.getEnd());
     	} else {
-    		return compareGraph.getEnd();
+    		compareGraph.getEnd().setNext(terminal);
     	}
     }
     
-    private SequentialControlFlowNode ProcessMethodCallDataFlowNode(MethodCallDataFlowNode currentNode,
-    		HashMap<Long,ControlFlowNode> visited, SequentialControlFlowNode returnNode, SequentialControlFlowNode end){
+    private void ProcessMethodCallDataFlowNode(MethodCallDataFlowNode currentNode,
+    		SequentialControlFlowNode end){
     	// Build the method call graph
     	BiTerminalGraph methodCallGraph = new MethodCallGraphFactory(currentNode.getMethodCall(),
     			currentNode.getScope()).getGraph();	
-    	
     	end.setNext(methodCallGraph.getBeginning());
-    	// Put this node in our visited list, it should not already be there
-    	Preconditions.checkState(visited.get(currentNode.getNodeID()) == null);
-    	visited.put(currentNode.getNodeID(),methodCallGraph.getBeginning());
-    	// Add the next node to the visiting set if it exists
+    	// Recurse if we can, else we have hit the end, set the final node
     	if(currentNode.hasNext()){
-    		return ProcessDataFlowNode(currentNode.getNext(), visited, returnNode,
-    				methodCallGraph.getEnd());
+    		ProcessDataFlowNode(currentNode.getNext(), methodCallGraph.getEnd());
     	} else {
-    		return methodCallGraph.getEnd();
+    		methodCallGraph.getEnd().setNext(terminal);
     	}
     }
     
-    private SequentialControlFlowNode ProcessReturnStatementDataFlowNode(ReturnStatementDataFlowNode currentNode,
-    		HashMap<Long,ControlFlowNode> visited, SequentialControlFlowNode returnNode, SequentialControlFlowNode end){
+    private void ProcessReturnStatementDataFlowNode(ReturnStatementDataFlowNode currentNode,
+    		SequentialControlFlowNode end){
     	// Build the return statement graph
     	ControlTerminalGraph returnStatementGraph = new ReturnStatementGraphFactory(currentNode.getReturnStatement(),
     			currentNode.getScope()).getGraph();	
-    	// Put this node in our visited list, it should not already be there
-    	Preconditions.checkState(visited.get(currentNode.getNodeID()) == null);
-    	visited.put(currentNode.getNodeID(),returnStatementGraph.getBeginning());
-    	// There should be no following nodes, this is a return
-    	Preconditions.checkState(!currentNode.hasNext());
-    	// We are just going to hook the return directly to the return node
+    	end.setNext(returnStatementGraph.getBeginning());
     	returnStatementGraph.getControlNodes().getReturnNode().setNext(returnNode);
-    	// And we dont recurse because we are done here
-    	return returnStatementGraph.getEnd();
+    	// Recurse if we can, else we have hit the end, set the final node
+    	if(currentNode.hasNext()){
+    		ProcessDataFlowNode(currentNode.getNext(), returnStatementGraph.getEnd());
+    	} else {
+    		returnStatementGraph.getEnd().setNext(terminal);
+    	}
+    }
+    
+    private void ProcessNopDataFlowNode(SequentialDataFlowNode currentNode,
+    		SequentialControlFlowNode end){
+    	// Now just go forward
+    	if(currentNode.hasNext()){
+    		ProcessDataFlowNode(currentNode.getNext(), end);
+    	} else {
+    		end.setNext(terminal);
+    	}
     }
 
-    private SequentialControlFlowNode ProcessBranchSinkDataFlowNode(BranchSinkDataFlowNode currentNode,
-    		HashMap<Long,ControlFlowNode> visited, SequentialControlFlowNode returnNode, SequentialControlFlowNode end){
+    private void ProcessBranchSinkDataFlowNode(BranchSinkDataFlowNode currentNode,
+    		SequentialControlFlowNode end){
     	// Check to see if we have been to this node before
-    	if(visited.get(currentNode.getNodeID()) != null){
-    		end.setNext(visited.get(currentNode.getNodeID()));
-    		return (SequentialControlFlowNode) visited.get(currentNode.getNodeID());
+    	if(visited.contains(currentNode)){
+    		end.setNext(conversion.get(currentNode));
     	} else {
-    		SequentialControlFlowNode sink = SequentialControlFlowNode.nopTerminal();
-    		visited.put(currentNode.getNodeID(), sink);
+    		SequentialControlFlowNode sink = SequentialControlFlowNode.namedNop("Sink");
     		end.setNext(sink);
+    		visited.add(currentNode);
+    		conversion.put(currentNode, sink);
     		if(currentNode.hasNext()){
-    			return ProcessDataFlowNode(currentNode.getNext(), visited, returnNode,
-        				sink);
+    			ProcessDataFlowNode(currentNode.getNext(), sink);
     		} else {
-    			return sink;
+    			sink.setNext(terminal);
     		}
     	}
     }
     
-    private SequentialControlFlowNode ProcessBranchSourceDataFlowNode(BranchSourceDataFlowNode currentNode,
-    		HashMap<Long,ControlFlowNode> visited, SequentialControlFlowNode returnNode, SequentialControlFlowNode end){
-    	SequentialControlFlowNode trueBranch = SequentialControlFlowNode.nopTerminal();
-    	SequentialControlFlowNode falseBranch = SequentialControlFlowNode.nopTerminal();
-    	
+    private void ProcessBranchSourceDataFlowNode(BranchSourceDataFlowNode currentNode,
+    		SequentialControlFlowNode end){
+    	SequentialControlFlowNode trueBranch = SequentialControlFlowNode.namedNop("True Branch");
+    	SequentialControlFlowNode falseBranch = SequentialControlFlowNode.namedNop("False Branch");
     	BranchingControlFlowNode branch = new BranchingControlFlowNode(currentNode.getType(), trueBranch, falseBranch);
-    	
     	end.setNext(branch);
-    	visited.put(currentNode.getNodeID(), branch);
-    	
-    	SequentialControlFlowNode terminalTrue = ProcessDataFlowNode(currentNode.getTrueBranch(), visited, returnNode,
-    												trueBranch);
-    	SequentialControlFlowNode terminalFalse = ProcessDataFlowNode(currentNode.getFalseBranch(), visited, returnNode,
-				falseBranch);
-    	
-    	if(visited.containsKey(terminalTrue.getNodeID())){
-    		return terminalTrue;
-    	} else {
-    		return terminalFalse;
-    	}
+    	// Only one of these will set terminal, because eventually all control flow
+    	// is re-unified at the bottom
+    	ProcessDataFlowNode(currentNode.getTrueBranch(), trueBranch);
+    	ProcessDataFlowNode(currentNode.getFalseBranch(), falseBranch);
     }
     
     @Override

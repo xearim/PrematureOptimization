@@ -28,7 +28,7 @@ public class StatementGraphFactory implements ControlTerminalGraphFactory {
             return ControlTerminalGraph.ofBiTerminalGraph(
                     new AssignmentGraphFactory(assignment.getLocation(),
                             assignment.getOperation(), assignment.getExpression(),
-                            scope).getGraph());
+                            scope, true).getGraph());
         } else if (statement instanceof BreakStatement) {
             return new BreakStatementGraphFactory().getGraph();
         } else if (statement instanceof ContinueStatement) {

@@ -47,7 +47,7 @@ public class ForLoop implements Statement {
 	
 	@Override
 	public long getMemorySize() {
-		return body.getMemorySize() + Architecture.FOR_LOOP_VAR_SIZE;
+		return body.getMemorySize();
 	}
 
     public LocationDescriptor getLocationDescriptor() {

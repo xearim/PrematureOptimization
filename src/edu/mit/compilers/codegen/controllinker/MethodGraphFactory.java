@@ -7,6 +7,8 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
 import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.codegen.ControlFlowNode;
+import edu.mit.compilers.codegen.dataflow.BlockDataFlowFactory;
+import edu.mit.compilers.codegen.dataflow.DataFlow;
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
@@ -35,7 +37,11 @@ public class MethodGraphFactory implements GraphFactory {
         				enter(block),
         				move(Register.RBP, Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE))
         		: BiTerminalGraph.ofInstructions(enter(block));
-        ControlTerminalGraph blockGraph = new BlockGraphFactory(block).getGraph();
+        	
+        //DataFlow test = new BlockDataFlowFactory(block).getDataFlow();				
+        ControlTerminalGraph blockGraph = new DataFlowGraphFactory(
+        		new BlockDataFlowFactory(block).getDataFlow()).getGraph();			
+        //ControlTerminalGraph blockGraph = new BlockGraphFactory(block).getGraph();
         // Link the Entry instruction to the start of the block
         enterInstruction.getEnd().setNext(blockGraph.getBeginning());
 

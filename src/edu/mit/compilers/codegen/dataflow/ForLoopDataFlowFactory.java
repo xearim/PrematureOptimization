@@ -17,7 +17,7 @@ import edu.mit.compilers.codegen.BranchSourceDataFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
-import edu.mit.compilers.codegen.dataflow.DataFlow.ControlNodes;
+import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 import edu.mit.compilers.common.Variable;
 import static edu.mit.compilers.codegen.SequentialDataFlowNode.link;
 
@@ -70,7 +70,7 @@ public class ForLoopDataFlowFactory implements DataFlowFactory{
 		
 		// We need the comparison we would usually do for being at the end of the loop
 		CompareDataFlowNode loopComparator = new CompareDataFlowNode(loopingVar,
-				rangeEndVar, scope);
+				rangeEndVar, forLoopScope);
 		
 		// And the incrementing step at the end of the loop
 		// TODO:Name this 1 plz
@@ -101,8 +101,7 @@ public class ForLoopDataFlowFactory implements DataFlowFactory{
 		body.getControlNodes().attach(endSink, incrementStart, returnNode);
 		
 		return new DataFlow(start, end,
-				new ControlNodes(breakNode, continueNode, returnNode));
-		
+				new DataControlNodes(breakNode, continueNode, returnNode));
 	}
 
 	@Override

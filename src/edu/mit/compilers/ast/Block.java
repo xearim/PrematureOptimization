@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.codegen.asm.Architecture;
+
 public class Block implements Node {
     
     private final String name;

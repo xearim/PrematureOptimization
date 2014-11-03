@@ -3,6 +3,7 @@ package edu.mit.compilers.codegen;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -13,6 +14,7 @@ public class SourceCounter {
     public Set<ControlFlowNode> getMultiSourceNodes(ControlFlowNode node) {
         // Reset sourceCounts
         sourceCounts = new HashMap<ControlFlowNode, Integer>();
+
         countFrom(node);
         
         ImmutableSet.Builder<ControlFlowNode> resultBuilder = ImmutableSet.builder();

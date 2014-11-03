@@ -45,7 +45,7 @@ public class DataFlowNode {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        ControlFlowNode other = (ControlFlowNode) obj;
+        DataFlowNode other = (DataFlowNode) obj;
         if (nodeID != other.getNodeID())
             return false;
         return true;

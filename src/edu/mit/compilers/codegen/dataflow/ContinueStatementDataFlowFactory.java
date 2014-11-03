@@ -2,7 +2,7 @@ package edu.mit.compilers.codegen.dataflow;
 
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
-import edu.mit.compilers.codegen.dataflow.DataFlow.ControlNodes;
+import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 
 public class ContinueStatementDataFlowFactory implements DataFlowFactory{
 	
@@ -19,7 +19,7 @@ public class ContinueStatementDataFlowFactory implements DataFlowFactory{
 		continueNode.setPrev(start);
 		
 		return new DataFlow(start, end,
-				new ControlNodes(breakNode, continueNode, returnNode));
+				new DataControlNodes(breakNode, continueNode, returnNode));
 	}
 
 	@Override
