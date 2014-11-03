@@ -8,7 +8,7 @@ void conditionallyReturns() {
   // What am I doing?
   boolean d;
   int emptyArray[4];
-  a("foo",emptyArray);
+  a("foo",emptyArray@);
   if (d) {
     d = false;
   } else {

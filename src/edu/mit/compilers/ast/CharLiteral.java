@@ -16,16 +16,18 @@ public class CharLiteral implements NativeLiteral {
 
         this.value = value;
         // casting converts between longs and chars
-        this.longValue = value.charAt(0);
+        this.longValue = value.charAt(1);
         this.locationDescriptor = locationDescriptor;
     }
 
     /*
      * TODO(Manny): Initial testing suggest that we don't have to do anything
      * different for irregular characters. This should be fully verified.
+     * 
+     * A Char is a string of "'" + "char" + "'"
      */
     private boolean isChar(String value) {
-        return value.length() == 1;
+        return value.length() == 3;
     }
 
     @Override
@@ -35,7 +37,7 @@ public class CharLiteral implements NativeLiteral {
 
     @Override
     public String getName() {
-        return "'" + value + "'";
+        return value;
     }
 
     public LocationDescriptor getLocationDescriptor() {

@@ -40,6 +40,7 @@ import edu.mit.compilers.ast.Statement;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.ast.WhileLoop;
+import edu.mit.compilers.common.Variable;
 import edu.mit.compilers.semantics.errors.SemanticError;
 
 public class TypesSemanticCheck implements SemanticCheck {
@@ -52,6 +53,7 @@ public class TypesSemanticCheck implements SemanticCheck {
 
     @Override
     public List<SemanticError> doCheck() {
+
         return doCheck(program);
     }
     
@@ -215,8 +217,9 @@ public class TypesSemanticCheck implements SemanticCheck {
         String methodName = methodCall.getMethodName();
         Optional<Method> calledMethod = lookupMethodWithName(methodName);
         boolean isMethod = calledMethod.isPresent();
+        boolean isVariable = scope.isInScope(Variable.forUser(methodName));
 
-        if (!isMethod && !isCallout(methodName)) {
+        if (isVariable || (!isMethod && !isCallout(methodName))) {
             Utils.check(false, errorAccumulator,
                     "Failed lookup: Could not find method or callout %s at %s", methodName,
                     methodCall.getLocationDescriptor());
