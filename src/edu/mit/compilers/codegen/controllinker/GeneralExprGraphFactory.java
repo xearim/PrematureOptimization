@@ -25,7 +25,7 @@ public class GeneralExprGraphFactory implements GraphFactory {
         if (expr instanceof StringLiteral) {
             return new StringLiteralGraphFactory((StringLiteral) expr);
         } else if (expr instanceof NativeExpression) {
-            return new NativeExprGraphFactory((NativeExpression) expr, scope);
+            return new NativeExprGraphFactory((NativeExpression) expr, scope, true);
         } else {
             throw new AssertionError("Unexpeced GeneralExpression: " + expr);
         }

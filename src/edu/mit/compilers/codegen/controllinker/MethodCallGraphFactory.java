@@ -12,6 +12,8 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.add;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.call;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.subtract;
 
 import java.util.List;
 
@@ -21,7 +23,9 @@ import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
+import edu.mit.compilers.codegen.asm.Location;
 import edu.mit.compilers.codegen.asm.Register;
 
 /**
@@ -56,18 +60,29 @@ public class MethodCallGraphFactory implements GraphFactory {
         BiTerminalGraph saveArgRegisters = RegisterSaver.pushAll();
         preCallStart.setNext(saveArgRegisters.getBeginning());
         
-        SequentialControlFlowNode preCallEnd = saveArgRegisters.getEnd();
-
+        BiTerminalGraph offsetStackOnOverflow = (args.size() > ARG_REGISTERS.size())
+        		? BiTerminalGraph.ofInstructions(subtract(new Literal((args.size() - ARG_REGISTERS.size()) * Architecture.WORD_SIZE), RSP))
+        		: BiTerminalGraph.ofInstructions();
+        saveArgRegisters.getEnd().setNext(offsetStackOnOverflow.getBeginning());
+        
+        SequentialControlFlowNode preCallEnd = offsetStackOnOverflow.getEnd();
+        
+        
         // Setup args for call.
-        int argNumber = args.size() - 1;
-        while (argNumber >= 0) {
+        int argNumber = 0;
+        while (argNumber < args.size() ) {
             BiTerminalGraph argEvaluator =
                     new GeneralExprGraphFactory(args.get(argNumber), scope).getGraph();
 
             BiTerminalGraph argSetup;
             if (argNumber >= ARG_REGISTERS.size()) {
                 // Once it's on the stack, we leave it there for the function call.
-                argSetup = argEvaluator;
+                argSetup = BiTerminalGraph.sequenceOf(argEvaluator,
+                				BiTerminalGraph.ofInstructions(
+                				pop(Register.R10),
+                				move(Register.R10, 
+                					new Location(Register.RSP, (argNumber - ARG_REGISTERS.size())*Architecture.BYTES_PER_ENTRY))
+                					));
             } else {
                 // Take if off the stack and put it in a register for the function call.
                 argSetup = BiTerminalGraph.sequenceOf(argEvaluator,
@@ -78,7 +93,7 @@ public class MethodCallGraphFactory implements GraphFactory {
             preCallEnd.setNext(argSetup.getBeginning());
             preCallEnd = argSetup.getEnd();
 
-            argNumber--;
+            argNumber++;
         }
         BiTerminalGraph preCall = new BiTerminalGraph(preCallStart, preCallEnd);
 
@@ -88,7 +103,7 @@ public class MethodCallGraphFactory implements GraphFactory {
         BiTerminalGraph postCall = (numOverflowingArgs > 0)
                 ? BiTerminalGraph.sequenceOf(
                         // Remove the pushed arguments from the stack.
-                        BiTerminalGraph.ofInstructions(add(new Literal(numOverflowingArgs * 8L), RSP)),
+                        BiTerminalGraph.ofInstructions(add(new Literal(numOverflowingArgs * Architecture.WORD_SIZE), RSP)),
                         // Restore Arg Registers
                         RegisterSaver.popAll(),
                         // Put the return value on the stack
@@ -100,7 +115,10 @@ public class MethodCallGraphFactory implements GraphFactory {
                 		BiTerminalGraph.ofInstructions(push(RAX)));
 
         // TODO(jasonpr): Do 16-byte alignment.
-        return BiTerminalGraph.sequenceOf(preCall, call, postCall);
+        return BiTerminalGraph.sequenceOf(
+        		preCall, 
+        		call, 
+        		postCall);
     }
 
     @Override

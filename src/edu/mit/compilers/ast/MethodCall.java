@@ -14,7 +14,7 @@ public class MethodCall implements Statement, NativeExpression {
             LocationDescriptor locationDescriptor) {
         this.methodName = methodName;
         this.parameterValues = new NodeSequence<GeneralExpression>(parameterValues, "parameters");
-	this.locationDescriptor = locationDescriptor;
+        this.locationDescriptor = locationDescriptor;
     }
     
     @Override

@@ -14,10 +14,16 @@ public class NativeExprGraphFactory implements GraphFactory {
 
     private final NativeExpression expr;
     private final Scope scope;
+    private final boolean inMethodCall;
 
-    public NativeExprGraphFactory(NativeExpression expr, Scope scope) {
+    public NativeExprGraphFactory(NativeExpression expr, Scope scope, boolean inMethodCall) {
         this.expr = expr;
         this.scope = scope;
+        this.inMethodCall = inMethodCall;
+    }
+    
+    public NativeExprGraphFactory(NativeExpression expr, Scope scope){
+    	this(expr, scope, false);
     }
 
     @Override
@@ -27,15 +33,15 @@ public class NativeExprGraphFactory implements GraphFactory {
 
     private GraphFactory getDelegate() {
         if (expr instanceof BinaryOperation) {
-            return new BinOpGraphFactory((BinaryOperation) expr, scope);
+            return new BinOpGraphFactory((BinaryOperation) expr, scope, inMethodCall);
         } else if (expr instanceof MethodCall) {
             return new MethodCallGraphFactory((MethodCall) expr, scope);
         } else if (expr instanceof TernaryOperation) {
-            return new TernaryOpGraphFactory((TernaryOperation) expr, scope);
+            return new TernaryOpGraphFactory((TernaryOperation) expr, scope, inMethodCall);
         } else if (expr instanceof UnaryOperation) {
-            return new UnaryOpGraphFactory((UnaryOperation) expr, scope);
+            return new UnaryOpGraphFactory((UnaryOperation) expr, scope, inMethodCall);
         } else if (expr instanceof Location) {
-            return new VariableLoadGraphFactory((Location) expr, scope);
+            return new VariableLoadGraphFactory((Location) expr, scope, inMethodCall);
         } else if (expr instanceof NativeLiteral) {
             return new NativeLiteralGraphFactory((NativeLiteral) expr);
         } else {
