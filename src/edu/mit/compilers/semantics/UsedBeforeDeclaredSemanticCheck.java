@@ -56,7 +56,7 @@ public class UsedBeforeDeclaredSemanticCheck implements SemanticCheck {
         Iterable<Method> methods = (Iterable<Method>) this.prog.getMethods().getChildren();
 
         for (Method method: methods) {
-            checkBlock(method.getBlock());
+            checkBlock(method.getBlock(), method);
         }
 
         return errors;
@@ -66,48 +66,48 @@ public class UsedBeforeDeclaredSemanticCheck implements SemanticCheck {
      * Goes through the block's statements and finds its identifiers.
      * Recurses on 'if', 'while', and 'for' loop blocks.
      */
-    private void checkBlock(Block block) {
+    private void checkBlock(Block block, Method method) {
         Scope blockScope = block.getScope();
 
         for (Statement stmt : block.getStatements()) {
             // Recurse on 'if', 'while', and 'for'
             Iterable<Block> subBlocks = stmt.getBlocks();
             for (Block subBlock: subBlocks){
-                checkBlock(subBlock);
+                checkBlock(subBlock, method);
             }
 
             // Check immediate fields
             if (stmt instanceof Assignment){
-                checkLocation(((Assignment) stmt).getLocation(), blockScope);
-                checkNativeExpression(((Assignment) stmt).getExpression(), blockScope);
+                checkLocation(((Assignment) stmt).getLocation(), blockScope, method);
+                checkNativeExpression(((Assignment) stmt).getExpression(), blockScope, method);
             } else if (stmt instanceof BreakStatement) {
                 continue;
             } else if (stmt instanceof ContinueStatement) {
                 continue;
             } else if (stmt instanceof ForLoop) {
                 checkScalarLocation(((ForLoop) stmt).getLoopVariable(), blockScope);
-                checkNativeExpression(((ForLoop) stmt).getRangeStart(), blockScope);
-                checkNativeExpression(((ForLoop) stmt).getRangeEnd(), blockScope);
+                checkNativeExpression(((ForLoop) stmt).getRangeStart(), blockScope, method);
+                checkNativeExpression(((ForLoop) stmt).getRangeEnd(), blockScope, method);
             } else if (stmt instanceof IfStatement) {
-                checkNativeExpression(((IfStatement) stmt).getCondition(), blockScope);
+                checkNativeExpression(((IfStatement) stmt).getCondition(), blockScope, method);
             } else if (stmt instanceof MethodCall) {
-                checkMethodCall((MethodCall) stmt, blockScope);
+                checkMethodCall((MethodCall) stmt, blockScope, method);
             } else if (stmt instanceof ReturnStatement) {
                 Optional<NativeExpression> rtnVal = ((ReturnStatement) stmt).getValue();
                 if (rtnVal.isPresent()){
-                    checkNativeExpression(rtnVal.get(), blockScope);
+                    checkNativeExpression(rtnVal.get(), blockScope, method);
                 }
             } else if (stmt instanceof WhileLoop) {
-                checkNativeExpression(((WhileLoop) stmt).getCondition(), blockScope);
+                checkNativeExpression(((WhileLoop) stmt).getCondition(), blockScope, method);
             } else {
                 // TODO(Manny) throw error
             }
         }
     }
 
-    private void checkLocation(Location loc, Scope scope) {
+    private void checkLocation(Location loc, Scope scope, Method method) {
         if (loc instanceof ArrayLocation) {
-            checkArrayLocation((ArrayLocation) loc, scope);
+            checkArrayLocation((ArrayLocation) loc, scope, method);
         } else if (loc instanceof ScalarLocation) {
             checkScalarLocation((ScalarLocation) loc, scope);
         } else {
@@ -118,19 +118,30 @@ public class UsedBeforeDeclaredSemanticCheck implements SemanticCheck {
     /**
      * Recurses through the general expressions in the method call.
      */
-    private void checkMethodCall(MethodCall mc, Scope scope) {
+    private void checkMethodCall(MethodCall mc, Scope scope, Method method) {
+    	checkMethod(mc, method);
         Iterable<GeneralExpression> geItr = mc.getParameterValues();
         for (GeneralExpression ge : geItr) {
-            checkGeneralExpression(ge, scope);
+            checkGeneralExpression(ge, scope, method);
         }
+    }
+    
+    private void checkMethod(MethodCall mc, Method method) {
+    	for(Method methodCalled : prog.getMethods().getChildren()){
+    		if(methodCalled.getName().equals(mc.getMethodName()) &&
+    		   prog.getMethods().getSequence().lastIndexOf(mc) <= prog.getMethods().getSequence().lastIndexOf(method)){
+    				errors.add(new UsedBeforeDeclaredSemanticError(
+                        mc.getName(), mc.getLocationDescriptor()));
+    		}
+    	}
     }
 
     /**
      * Distinguishes between StringLiteral and NativeExpressions
      */
-    private void checkGeneralExpression(GeneralExpression ge, Scope scope) {
+    private void checkGeneralExpression(GeneralExpression ge, Scope scope, Method method) {
         if (ge instanceof NativeExpression) {
-            checkNativeExpression((NativeExpression) ge, scope);
+            checkNativeExpression((NativeExpression) ge, scope, method);
         } else if (ge instanceof StringLiteral) {
             return;
         } else {
@@ -141,20 +152,20 @@ public class UsedBeforeDeclaredSemanticCheck implements SemanticCheck {
     /**
      * Checks all possibilities for a native expression.
      */
-    private void checkNativeExpression(NativeExpression ne, Scope scope) {
+    private void checkNativeExpression(NativeExpression ne, Scope scope, Method method) {
         if (ne instanceof BinaryOperation) {
             @SuppressWarnings("unchecked")
             Iterable<NativeExpression> children = (Iterable<NativeExpression>) ne.getChildren();
 
             for (NativeExpression operand : children) {
-                checkNativeExpression(operand, scope);
+                checkNativeExpression(operand, scope, method);
             }
         } else if (ne instanceof ArrayLocation) {
-            checkArrayLocation((ArrayLocation) ne, scope);
+            checkArrayLocation((ArrayLocation) ne, scope, method);
         } else if (ne instanceof ScalarLocation) {
             checkScalarLocation((ScalarLocation) ne, scope);
         } else if (ne instanceof MethodCall) {
-            checkMethodCall((MethodCall) ne, scope);
+            checkMethodCall((MethodCall) ne, scope, method);
         } else if (ne instanceof NativeLiteral) {
             return;
         } else if (ne instanceof TernaryOperation) {
@@ -162,22 +173,22 @@ public class UsedBeforeDeclaredSemanticCheck implements SemanticCheck {
             Iterable<NativeExpression> children = (Iterable<NativeExpression>) ((TernaryOperation) ne).getChildren();
 
             for (NativeExpression subNE : children) {
-                checkNativeExpression(subNE,scope);
+                checkNativeExpression(subNE,scope, method);
             }
         } else if (ne instanceof UnaryOperation) {
-            checkNativeExpression(((UnaryOperation) ne).getArgument(), scope);
+            checkNativeExpression(((UnaryOperation) ne).getArgument(), scope, method);
         }
     }
 
     /**
      * Check variable and index
      */
-    private void checkArrayLocation(ArrayLocation al, Scope scope) {
+    private void checkArrayLocation(ArrayLocation al, Scope scope, Method method) {
         if (!EvaluateCheck.evaluatesTo(al, scope).isPresent()){
             errors.add(new UsedBeforeDeclaredSemanticError(
                     al.getVariable().generateName(), al.getLocationDescriptor()));
         }
-        checkNativeExpression(al.getIndex(), scope);
+        checkNativeExpression(al.getIndex(), scope, method);
     }
 
     private void checkScalarLocation(ScalarLocation sl, Scope scope) {
