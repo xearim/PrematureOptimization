@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 
-public class BranchSourceDataFlowNode extends DataFlowNode{
+public class BranchSourceDataFlowNode implements DataFlowNode{
 
     private String name;
     private JumpType type;
@@ -80,18 +80,6 @@ public class BranchSourceDataFlowNode extends DataFlowNode{
 
     public void clearPrev() {
         this.prev = Optional.absent();
-    }
-
-    @Override
-    public Collection<DataFlowNode> getSinks() {
-        return hasNext()
-                ? ImmutableList.<DataFlowNode>of(getTrueBranch(), getFalseBranch())
-                        : ImmutableList.<DataFlowNode>of();
-    }
-
-    @Override
-    public String nodeText() {
-        return name;
     }
 
     public Set<DataFlowNode> getPredecessors() {

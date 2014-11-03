@@ -12,16 +12,16 @@ import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.GeneralExpression;
 
-public class BranchSinkDataFlowNode extends DataFlowNode{
+public class BranchSinkDataFlowNode implements DataFlowNode{
 
     private String name;
-    private HashMap<Long, DataFlowNode> prev;
+    private Set<DataFlowNode> prev;
     private Optional<DataFlowNode> next;
 
     public BranchSinkDataFlowNode(String name){
         super();
         this.name = name;
-        this.prev = new HashMap<Long, DataFlowNode>();
+        this.prev = new HashSet<DataFlowNode>();
         this.next = Optional.<DataFlowNode>absent();
     }
 
@@ -38,7 +38,7 @@ public class BranchSinkDataFlowNode extends DataFlowNode{
     }
 
     public boolean prevContains(DataFlowNode node){
-        return this.prev.containsKey(node.getNodeID());
+        return prev.contains(node);
     }
 
     public DataFlowNode getNext() {
@@ -46,7 +46,7 @@ public class BranchSinkDataFlowNode extends DataFlowNode{
     }
 
     public Collection<DataFlowNode> getPrev() {
-        return prev.values();
+        return prev;
     }
 
     public void setNext(DataFlowNode next) {
@@ -56,7 +56,7 @@ public class BranchSinkDataFlowNode extends DataFlowNode{
 
     public void setPrev(DataFlowNode prev) {
         Preconditions.checkState(!this.equals(prev));
-        this.prev.put(prev.getNodeID(), prev);
+        this.prev.add(prev);
     }
 
     public void clearNext() {
@@ -64,28 +64,17 @@ public class BranchSinkDataFlowNode extends DataFlowNode{
     }
 
     public void removeFromPrev(DataFlowNode prev) {
-        Preconditions.checkState(this.prev.containsKey(prev.getNodeID()));
-        this.prev.remove(prev.getNodeID());
+        Preconditions.checkState(this.prev.contains(prev));
+        this.prev.remove(prev);
     }
 
     public void clearPrev() {
-        this.prev = new HashMap<Long, DataFlowNode>();
+        this.prev.clear();
     }
 
-    @Override
-    public Collection<DataFlowNode> getSinks() {
-        return hasNext()
-                ? ImmutableList.<DataFlowNode>of(getNext())
-                        : ImmutableList.<DataFlowNode>of();
-    }
-
-    @Override
-    public String nodeText() {
-        return name;
-    }
 
     public Set<DataFlowNode> getPredecessors() {
-        return new HashSet<DataFlowNode>(prev.values());
+        return new HashSet<DataFlowNode>(prev);
     }
 
     public Set<DataFlowNode> getSuccessors() {

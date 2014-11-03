@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.Scope;
 
-public class SequentialDataFlowNode extends DataFlowNode{
+public class SequentialDataFlowNode implements DataFlowNode{
 
     private Optional<DataFlowNode> prev, next;
     private final String name;
@@ -87,18 +87,6 @@ public class SequentialDataFlowNode extends DataFlowNode{
 
     public void clearPrev() {
         this.prev = Optional.absent();
-    }
-
-    @Override
-    public Collection<DataFlowNode> getSinks() {
-        return hasNext()
-                ? ImmutableList.<DataFlowNode>of(getNext())
-                        : ImmutableList.<DataFlowNode>of();
-    }
-
-    @Override
-    public String nodeText() {
-        return name;
     }
 
     public Set<DataFlowNode> getPredecessors() {
