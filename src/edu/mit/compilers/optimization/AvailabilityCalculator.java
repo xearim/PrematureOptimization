@@ -226,50 +226,45 @@ public class AvailabilityCalculator {
      */
     private ImmutableSet<Subexpression> getAllSubexpressions(Set<DataFlowNode> blocks) {
         Set<Subexpression> subexpressions = new HashSet<Subexpression>();
+        GeneralExpression candidate;
 
         /*
          * TODO(Manny): figure out when NativeExpression is "complex-enough" to
          * be worth saving.
+         * NOTES: Save top level
+         * don't save method calls
          */
         for (DataFlowNode block : blocks) {
             if (block instanceof AssignmentDataFlowNode) {
-                // Native expression on the right hand side
-                subexpressions.add(
-                        new Subexpression(
-                                ((AssignmentDataFlowNode) block).getAssignment().getExpression(),
-                                ((AssignmentDataFlowNode) block).getScope()));
+                // Add NativeExpression on the right hand side
+                conditionalAdd(((AssignmentDataFlowNode) block).getAssignment().getExpression(),
+                        ((AssignmentDataFlowNode) block).getScope(), subexpressions);
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
                 // TODO(Manny): figure out what happens with += and -=
 
             } else if (block instanceof CompareDataFlowNode) {
-                // leftArg
-                subexpressions.add(
-                        new Subexpression(
-                                ((CompareDataFlowNode) block).getLeftArg(),
-                                ((CompareDataFlowNode) block).getScope()));
+                // Add leftArg
+                conditionalAdd(((CompareDataFlowNode) block).getLeftArg(),
+                        ((CompareDataFlowNode) block).getScope(), subexpressions);
 
-                // rightArg
-                subexpressions.add(
-                        new Subexpression(
-                                ((CompareDataFlowNode) block).getRightArg(),
-                                ((CompareDataFlowNode) block).getScope()));
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: CompareDataFlowNode path unimplemented.");
+                // Add rightArg
+                conditionalAdd(((CompareDataFlowNode) block).getRightArg(),
+                        ((CompareDataFlowNode) block).getScope(), subexpressions);
 
             } else if (block instanceof MethodCallDataFlowNode) {
                 // Add each parameter to the method call
                 for (GeneralExpression ge : ((MethodCallDataFlowNode) block).getMethodCall().getParameterValues()) {
-                    if (ge instanceof NativeExpression) {
-                        subexpressions.add(
-                                new Subexpression(
-                                        (NativeExpression) ge,
-                                        ((MethodCallDataFlowNode) block).getScope()));
-                    }
+                    conditionalAdd(ge, ((MethodCallDataFlowNode) block).getScope(), subexpressions);
                 }
-                ((MethodCallDataFlowNode) block).getScope();
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
 
             } else if (block instanceof ReturnStatementDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
+                // Add the expression if the return statement has one
+                if (((ReturnStatementDataFlowNode) block).getReturnStatement().getValue().isPresent()) {
+                    conditionalAdd(
+                            ((ReturnStatementDataFlowNode) block).getReturnStatement().getValue().get(),
+                            ((ReturnStatementDataFlowNode) block).getScope(),
+                            subexpressions);
+                }
 
             }
             // The other nodes don't produce any subexpressions
