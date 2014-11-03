@@ -3,7 +3,6 @@ package edu.mit.compilers.codegen;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import com.google.common.collect.ImmutableSet;
 

@@ -2,8 +2,6 @@ package edu.mit.compilers.ast;
 
 import com.google.common.collect.ImmutableList;
 
-import edu.mit.compilers.codegen.asm.Architecture;
-
 public class ForLoop implements Statement {
 
     private final ScalarLocation loopVariable;
