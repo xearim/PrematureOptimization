@@ -10,7 +10,6 @@ import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
 import edu.mit.compilers.codegen.controllinker.MethodCallGraphFactory;
-import edu.mit.compilers.codegen.controllinker.RegisterSaver;
 
 public class MethodCallStatementGraphFactory implements ControlTerminalGraphFactory {
 	private MethodCall call;

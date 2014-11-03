@@ -16,12 +16,14 @@ public class Architecture {
     public static final long BYTES_PER_ENTRY = 8;
     
     public static final Label MAIN_BASE_POINTER_ERROR_VARIABLE =
-            new Label(LabelType.ERROR, Variable.forCompiler("mainbaseptr"));
+            new Label(LabelType.ERROR, Variable.forCompiler("mainbaseptr"));    		
     
     public static final Scope ERROR_VARIABLES = constructErrors();
     
-	public static final long FOR_LOOP_VAR_SIZE = 0;
-	public static final long WHILE_LOOP_VAR_SIZE = 0;
+    public static boolean CONTAINS_ARRAYS = false;
+    
+    public static final long ARRAY_INIT_SIZE = 2 * Architecture.BYTES_PER_ENTRY;
+	public static final long LOOP_VAR_SIZE = 1;
     
     private static Scope constructErrors() {
         return new Scope(ImmutableList.of(new FieldDescriptor(

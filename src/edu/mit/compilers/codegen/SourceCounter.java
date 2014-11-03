@@ -13,6 +13,7 @@ public class SourceCounter {
     public Set<ControlFlowNode> getMultiSourceNodes(ControlFlowNode node) {
         // Reset sourceCounts
         sourceCounts = new HashMap<ControlFlowNode, Integer>();
+
         countFrom(node);
         
         ImmutableSet.Builder<ControlFlowNode> resultBuilder = ImmutableSet.builder();

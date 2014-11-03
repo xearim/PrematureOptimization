@@ -3,8 +3,6 @@ package edu.mit.compilers.ast;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-import edu.mit.compilers.codegen.asm.Architecture;
-
 public class WhileLoop implements Statement {
     private final NativeExpression condition;
     private final Optional<IntLiteral> maxRepetitions;
@@ -51,7 +49,7 @@ public class WhileLoop implements Statement {
 	
 	@Override
 	public long getMemorySize() {
-		return body.getMemorySize() + Architecture.WHILE_LOOP_VAR_SIZE;
+		return body.getMemorySize();
 	}
 
     public static WhileLoop

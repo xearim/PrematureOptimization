@@ -8,12 +8,20 @@ public class Assignment implements Statement {
     private final NativeExpression expression;
     private final LocationDescriptor locationDescriptor;
     
+    private final boolean fromCompiler;
+    
     public Assignment(Location location, AssignmentOperation operation,
-            NativeExpression expression, LocationDescriptor locationDescriptor) {
+            NativeExpression expression, LocationDescriptor locationDescriptor, boolean fromCompiler) {
         this.location = location;
         this.operation = operation;
         this.expression = expression;
         this.locationDescriptor = locationDescriptor;
+        this.fromCompiler = fromCompiler;
+    }
+    
+    public Assignment(Location location, AssignmentOperation operation,
+            NativeExpression expression, LocationDescriptor locationDescriptor) {
+        this(location, operation, expression, locationDescriptor, false);
     }
     
     @Override
@@ -55,6 +63,10 @@ public class Assignment implements Statement {
 
     public NativeExpression getExpression() {
         return expression;
+    }
+    
+    public boolean getFromCompiler() {
+    	return fromCompiler;
     }
 
     @Override

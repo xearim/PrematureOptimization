@@ -13,7 +13,6 @@ import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.VariableReference;
-import edu.mit.compilers.codegen.asm.instructions.CompareFlagged;
 import edu.mit.compilers.codegen.asm.instructions.Instructions;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes;

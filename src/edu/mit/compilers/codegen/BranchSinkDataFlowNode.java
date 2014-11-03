@@ -1,7 +1,9 @@
 package edu.mit.compilers.codegen;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,16 +14,16 @@ import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.GeneralExpression;
 
-public class BranchSinkDataFlowNode extends DataFlowNode{
+public class BranchSinkDataFlowNode implements DataFlowNode{
 
     private String name;
-    private HashMap<Long, DataFlowNode> prev;
+    private Set<DataFlowNode> prev;
     private Optional<DataFlowNode> next;
 
     public BranchSinkDataFlowNode(String name){
         super();
         this.name = name;
-        this.prev = new HashMap<Long, DataFlowNode>();
+        this.prev = new HashSet<DataFlowNode>();
         this.next = Optional.<DataFlowNode>absent();
     }
 
@@ -38,7 +40,7 @@ public class BranchSinkDataFlowNode extends DataFlowNode{
     }
 
     public boolean prevContains(DataFlowNode node){
-        return this.prev.containsKey(node.getNodeID());
+        return prev.contains(node);
     }
 
     public DataFlowNode getNext() {
@@ -46,7 +48,7 @@ public class BranchSinkDataFlowNode extends DataFlowNode{
     }
 
     public Collection<DataFlowNode> getPrev() {
-        return prev.values();
+        return prev;
     }
 
     public void setNext(DataFlowNode next) {
@@ -56,7 +58,7 @@ public class BranchSinkDataFlowNode extends DataFlowNode{
 
     public void setPrev(DataFlowNode prev) {
         Preconditions.checkState(!this.equals(prev));
-        this.prev.put(prev.getNodeID(), prev);
+        this.prev.add(prev);
     }
 
     public void clearNext() {
@@ -64,28 +66,17 @@ public class BranchSinkDataFlowNode extends DataFlowNode{
     }
 
     public void removeFromPrev(DataFlowNode prev) {
-        Preconditions.checkState(this.prev.containsKey(prev.getNodeID()));
-        this.prev.remove(prev.getNodeID());
+        Preconditions.checkState(this.prev.contains(prev));
+        this.prev.remove(prev);
     }
 
     public void clearPrev() {
-        this.prev = new HashMap<Long, DataFlowNode>();
+        this.prev.clear();
     }
 
-    @Override
-    public Collection<DataFlowNode> getSinks() {
-        return hasNext()
-                ? ImmutableList.<DataFlowNode>of(getNext())
-                        : ImmutableList.<DataFlowNode>of();
-    }
-
-    @Override
-    public String nodeText() {
-        return name;
-    }
 
     public Set<DataFlowNode> getPredecessors() {
-        return new HashSet<DataFlowNode>(prev.values());
+        return new HashSet<DataFlowNode>(prev);
     }
 
     public Set<DataFlowNode> getSuccessors() {
@@ -97,5 +88,18 @@ public class BranchSinkDataFlowNode extends DataFlowNode{
     @Override
     public Collection<GeneralExpression> getExpressions() {
         return ImmutableList.of();
+    }
+
+    @Override
+    public void replacePredecessor(DataFlowNode replaced,
+            DataFlowNode replacement) {
+        checkState(prev.remove(replaced));
+        prev.add(replacement);
+    }
+
+    @Override
+    public void replaceSuccessor(DataFlowNode replaced, DataFlowNode replacement) {
+        checkArgument(replaced.equals(next.get()));
+        next = Optional.of(replacement);
     }
 }

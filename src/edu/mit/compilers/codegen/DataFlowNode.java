@@ -3,60 +3,20 @@ package edu.mit.compilers.codegen;
 import java.util.Collection;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableList;
-
 import edu.mit.compilers.ast.GeneralExpression;
 
-public abstract class DataFlowNode {
-    private static long nodeIDGenerator = 0;
-    private final long nodeID;
-
-    public DataFlowNode(){
-        this.nodeID = nodeIDGenerator++;
-    }
-
+public interface DataFlowNode {
+    public Set<DataFlowNode> getPredecessors();
+    public Set<DataFlowNode> getSuccessors();
+    public Collection<GeneralExpression> getExpressions();
     /**
-     * Get all the DataFlowNodes that this node can flow to.
-     * 
-     * This method will probably only be used for printing Control Flow Graphs,
-     * because we will need more specific getters to actually do meaningful
-     * computation.
+     * Remove the 'replaced' DFN from the node's predecessors, and put the
+     * 'replacement' in its place.
      */
-    public Collection<DataFlowNode> getSinks(){
-        return ImmutableList.of();
-    };
-
+    public void replacePredecessor(DataFlowNode replaced, DataFlowNode replacement);
     /**
-     * Some text that represents the contents of this node.
-     *
-     * <p>When a node is rendered in a graph, this text is printed inside the rendered node.
+     * Remove the 'replaced' DFN from the node's successors, and put the
+     * 'replacement' in its place.
      */
-    public String nodeText(){ return ""; };
-
-    public long getNodeID(){
-        return nodeID;
-    }
-
-    @Override
-    public int hashCode() {
-        return (int) nodeID; 
-    }
-
-    public abstract Set<DataFlowNode> getPredecessors();
-    public abstract Set<DataFlowNode> getSuccessors();
-    public abstract Collection<GeneralExpression> getExpressions();
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ControlFlowNode other = (ControlFlowNode) obj;
-        if (nodeID != other.getNodeID())
-            return false;
-        return true;
-    }
+    public void replaceSuccessor(DataFlowNode replaced, DataFlowNode replacement);
 }

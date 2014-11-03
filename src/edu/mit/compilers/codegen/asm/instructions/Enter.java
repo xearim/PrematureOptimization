@@ -15,7 +15,9 @@ public class Enter implements Instruction {
     @Override
     public String inAttSyntax() {
         // get the stack size of the block, call enter for that size
-        return "enter " + new Literal(Architecture.BYTES_PER_ENTRY * methodBlock.getMemorySize()).inAttSyntax() + 
+        return "enter " + new Literal(Architecture.CONTAINS_ARRAYS
+        		? Architecture.BYTES_PER_ENTRY * methodBlock.getMemorySize() + Architecture.ARRAY_INIT_SIZE
+        		: Architecture.BYTES_PER_ENTRY * methodBlock.getMemorySize()).inAttSyntax() + 
                ", " + new Literal(0).inAttSyntax();
     }
 }

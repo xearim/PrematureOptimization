@@ -1,5 +1,7 @@
 package edu.mit.compilers.codegen;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Collection;
 import java.util.Set;
 
@@ -11,7 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.Scope;
 
-public class SequentialDataFlowNode extends DataFlowNode{
+public class SequentialDataFlowNode implements DataFlowNode{
 
     private Optional<DataFlowNode> prev, next;
     private final String name;
@@ -89,18 +91,6 @@ public class SequentialDataFlowNode extends DataFlowNode{
         this.prev = Optional.absent();
     }
 
-    @Override
-    public Collection<DataFlowNode> getSinks() {
-        return hasNext()
-                ? ImmutableList.<DataFlowNode>of(getNext())
-                        : ImmutableList.<DataFlowNode>of();
-    }
-
-    @Override
-    public String nodeText() {
-        return name;
-    }
-
     public Set<DataFlowNode> getPredecessors() {
         return (hasPrev())
                 ? ImmutableSet.<DataFlowNode>of(getNext())
@@ -125,5 +115,18 @@ public class SequentialDataFlowNode extends DataFlowNode{
     // TODO(jasonpr): Make this method abstract, when you fix getExpressions().
     public Scope getScope() {
         throw new UnsupportedOperationException("I should really be an abstract method!");
+    }
+
+    @Override
+    public void replacePredecessor(DataFlowNode replaced,
+            DataFlowNode replacement) {
+        checkArgument(replaced.equals(prev.get()));
+        prev = Optional.of(replacement);
+    }
+
+    @Override
+    public void replaceSuccessor(DataFlowNode replaced, DataFlowNode replacement) {
+        checkArgument(replaced.equals(next.get()));
+        next = Optional.of(replacement);
     }
 }

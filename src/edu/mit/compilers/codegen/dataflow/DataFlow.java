@@ -9,14 +9,14 @@ public class DataFlow {
 
 	private final SequentialDataFlowNode beginning;
 	private final SequentialDataFlowNode end;
-	private final ControlNodes controlNodes;
+	private final DataControlNodes controlNodes;
 
-    public static class ControlNodes {
+    public static class DataControlNodes {
         private final BranchSinkDataFlowNode breakNode;
         private final BranchSinkDataFlowNode continueNode;
         private final BranchSinkDataFlowNode returnNode;
 
-        public ControlNodes(BranchSinkDataFlowNode breakNode,
+        public DataControlNodes(BranchSinkDataFlowNode breakNode,
         		BranchSinkDataFlowNode continueNode, BranchSinkDataFlowNode returnNode) {
             this.breakNode = breakNode;
             this.continueNode = continueNode;
@@ -57,7 +57,7 @@ public class DataFlow {
     }
 	
 	public DataFlow(SequentialDataFlowNode beginning, SequentialDataFlowNode end,
-			ControlNodes controlNodes){
+			DataControlNodes controlNodes){
 		this.beginning = beginning;
 		this.end = end;
 		this.controlNodes = controlNodes;
@@ -71,7 +71,7 @@ public class DataFlow {
 		return end;
 	}
 	
-	public ControlNodes getControlNodes() {
+	public DataControlNodes getControlNodes() {
 		return controlNodes;
 	}
 	
@@ -82,6 +82,7 @@ public class DataFlow {
 		BranchSinkDataFlowNode continueNode = new BranchSinkDataFlowNode();
 		BranchSinkDataFlowNode breakNode = new BranchSinkDataFlowNode();
 		BranchSinkDataFlowNode returnNode = new BranchSinkDataFlowNode();
+		first.getControlNodes().attach(breakNode, continueNode, returnNode);
 		
 		for (DataFlow graph : rest) {
 			// Hook ourselves upwards for control statements
@@ -95,7 +96,7 @@ public class DataFlow {
 		}
 		
 		return new DataFlow(beginning, end,
-				new ControlNodes(breakNode, continueNode, returnNode));
+				new DataControlNodes(breakNode, continueNode, returnNode));
 	}
 	
 	public static DataFlow sequenceOf(DataFlowFactory first, DataFlowFactory... rest){
@@ -115,14 +116,14 @@ public class DataFlow {
 		BranchSinkDataFlowNode breakNode = new BranchSinkDataFlowNode();
 		BranchSinkDataFlowNode returnNode = new BranchSinkDataFlowNode();
 		
-		for( int i = 1; i < nodes.length - 1; i++ ){
+		for( int i = 1; i < nodes.length; i++ ){
 			end.setNext(nodes[i]);
 			nodes[i].setPrev(end);
 			end = nodes[i];
 		}
 		
 		return new DataFlow(nodes[0], end,
-				new ControlNodes(breakNode, continueNode, returnNode));
+				new DataControlNodes(breakNode, continueNode, returnNode));
 	}
 	
 }

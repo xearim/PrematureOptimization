@@ -26,12 +26,14 @@ public class AssignmentGraphFactory implements GraphFactory {
     private final AssignmentOperation op;
     private final Scope scope;
     private final Location target;
+    private final boolean check;
     
-    public AssignmentGraphFactory(Location target, AssignmentOperation op, NativeExpression expr, Scope scope){
+    public AssignmentGraphFactory(Location target, AssignmentOperation op, NativeExpression expr, Scope scope, boolean check){
         this.target = target;
         this.op = op;
         this.expr = expr;
         this.scope = scope;
+        this.check = check;
     }
     
     private BiTerminalGraph calculateStore(Location target, Scope scope){
@@ -46,7 +48,7 @@ public class AssignmentGraphFactory implements GraphFactory {
     
     private BiTerminalGraph calculateStoreToArray(ArrayLocation target, Scope scope){
         // TODO(jasonpr): Have this code live somewhere sensible.
-        return VariableLoadGraphFactory.calculateStoreToArray(target, scope);
+        return VariableLoadGraphFactory.calculateStoreToArray(target, scope, check);
     }
     
     private BiTerminalGraph calculateStoreToScalar(ScalarLocation target, Scope scope){
