@@ -505,8 +505,6 @@ public class NodeMaker {
         LocationDescriptor location = sourceLoc(nativeLiteral);
         int type = nativeLiteral.getType();
         if (type == CHAR) {
-            // TODO(jasonpr): Check that this is handled properly. Is the text
-            // "a" or "'a'"?
             return new CharLiteral(nativeLiteral.getText(), location);
         } else if (type == TRUE || type == FALSE) {
             return new BooleanLiteral(nativeLiteral.getText(), location);

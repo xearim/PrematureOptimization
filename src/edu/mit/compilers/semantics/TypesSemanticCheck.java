@@ -52,6 +52,7 @@ public class TypesSemanticCheck implements SemanticCheck {
 
     @Override
     public List<SemanticError> doCheck() {
+
         return doCheck(program);
     }
     
