@@ -1,6 +1,7 @@
 package edu.mit.compilers.codegen;
 
 import java.io.PrintStream;
+import java.util.Set;
 
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.Method;
@@ -19,11 +20,12 @@ public class AssemblyWriter {
     private final static String GLOBALS_DECLARATION = "\n.bss";
     private final static int GLOBAL_INITIAL_VALUE = 1;
 
-    public static void writeAttAssembly(Program program, PrintStream outputStream) {
+    public static void writeAttAssembly(Program program, PrintStream outputStream,
+            Set<String> optimizationNames) {
         // Get one graph per method
         outputStream.println(METHODS_COMMENT);
         for (Method method : program.getMethods()) {
-            methodPrinter(method,outputStream);
+            methodPrinter(method,outputStream, optimizationNames);
         }
 
 
@@ -46,7 +48,10 @@ public class AssemblyWriter {
         }
     }
 
-    private static void methodPrinter(Method method, PrintStream outputStream) {
+    private static void methodPrinter(Method method, PrintStream outputStream,
+            Set<String> optimizationNames) {
+        // TODO(jasonpr): Pass this through until we get to the point of
+        // actually performing the optimizations.
         if (method.isMain()) {
             outputStream.println("\t.globl main");
         }
