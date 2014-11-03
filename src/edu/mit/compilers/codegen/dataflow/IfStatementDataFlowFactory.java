@@ -55,9 +55,15 @@ public class IfStatementDataFlowFactory implements DataFlowFactory {
 		// Time to hook everything up
 		link(start,ifComparator);
 		link(ifComparator, ifCmpBranch);
-		link(ifCmpBranch.getTrueBranch(), thenBlock.getBeginning());
+		
+		ifCmpBranch.setTrueBranch(thenBlock.getBeginning());
+		thenBlock.getBeginning().setPrev(ifCmpBranch);
+		
 		link(thenBlock.getEnd(), endSink);
-		link(ifCmpBranch.getFalseBranch(), elseBlock.getBeginning());
+		
+		ifCmpBranch.setFalseBranch(elseBlock.getBeginning());
+		elseBlock.getBeginning().setPrev(ifCmpBranch);
+
 		link(elseBlock.getEnd(), endSink);
 		link(endSink, end);
 		

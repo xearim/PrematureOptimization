@@ -91,8 +91,12 @@ public class ForLoopDataFlowFactory implements DataFlowFactory{
 		link(setRangeEnd,loopStart);
 		link(loopStart,loopComparator);
 		link(loopComparator,loopCmpBranch);
-		link(loopCmpBranch.getTrueBranch(), body.getBeginning());
-		link(loopCmpBranch.getFalseBranch(), endSink);
+		
+		loopCmpBranch.setTrueBranch(body.getBeginning());
+		body.getBeginning().setPrev(loopCmpBranch);
+		loopCmpBranch.setFalseBranch(endSink);
+		endSink.setPrev(loopCmpBranch);
+		
 		link(endSink, end);
 		link(body.getEnd(), incrementStart);
 		link(incrementStart, increment);

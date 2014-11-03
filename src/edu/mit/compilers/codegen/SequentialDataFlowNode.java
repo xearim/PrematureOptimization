@@ -1,5 +1,7 @@
 package edu.mit.compilers.codegen;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Collection;
 import java.util.Set;
 
@@ -113,5 +115,18 @@ public class SequentialDataFlowNode implements DataFlowNode{
     // TODO(jasonpr): Make this method abstract, when you fix getExpressions().
     public Scope getScope() {
         throw new UnsupportedOperationException("I should really be an abstract method!");
+    }
+
+    @Override
+    public void replacePredecessor(DataFlowNode replaced,
+            DataFlowNode replacement) {
+        checkArgument(replaced.equals(prev.get()));
+        prev = Optional.of(replacement);
+    }
+
+    @Override
+    public void replaceSuccessor(DataFlowNode replaced, DataFlowNode replacement) {
+        checkArgument(replaced.equals(next.get()));
+        next = Optional.of(replacement);
     }
 }

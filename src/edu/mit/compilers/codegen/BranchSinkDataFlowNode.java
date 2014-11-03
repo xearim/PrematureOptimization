@@ -1,7 +1,9 @@
 package edu.mit.compilers.codegen;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -86,5 +88,18 @@ public class BranchSinkDataFlowNode implements DataFlowNode{
     @Override
     public Collection<GeneralExpression> getExpressions() {
         return ImmutableList.of();
+    }
+
+    @Override
+    public void replacePredecessor(DataFlowNode replaced,
+            DataFlowNode replacement) {
+        checkState(prev.remove(replaced));
+        prev.add(replacement);
+    }
+
+    @Override
+    public void replaceSuccessor(DataFlowNode replaced, DataFlowNode replacement) {
+        checkArgument(replaced.equals(next.get()));
+        next = Optional.of(replacement);
     }
 }
