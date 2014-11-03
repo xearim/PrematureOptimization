@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
+import edu.mit.compilers.codegen.dataflow.DataFlow;
 import edu.mit.compilers.codegen.dataflow.DataFlowUtil;
 import edu.mit.compilers.common.Variable;
 
@@ -54,16 +55,17 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
 
         public void optimize() {
             for (DataFlowNode node : DataFlowUtil.reachableFrom(head)) {
+                SequentialDataFlowNode seqNode = (SequentialDataFlowNode) node;
                 for (GeneralExpression expr : nodeExprs(node)) {
                     // The cast will always succeed: non-sequential nodes have no
                     // expressions, so we'll never enter this loop if the cast would fail.
-                    if (availCalc.isAvailable(expr, (SequentialDataFlowNode) node)) {
-                        replace(node, useTemp(node, expr));
+                    if (availCalc.isAvailable(expr, seqNode)) {
+                        replace(seqNode, useTemp(node, expr));
                     } else {
                         // For now, we alway generate if it's not available.
                         // TODO(jasonpr): Use 'reasons' or 'benefactors' to reduce
                         // amount of unnecessary temp filling.
-                        replace(node, fillAndUseTemp(node, expr));
+                        replace(seqNode, fillAndUseTemp(node, expr));
                     }
                 }
             }
@@ -77,7 +79,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
          *
          * <p>Requires that the expression is available at the node.
          */
-        private DataFlowNode useTemp(DataFlowNode node, GeneralExpression expr) {
+        private DataFlow useTemp(DataFlowNode node, GeneralExpression expr) {
             // TODO(jasonpr): Implement!
             throw new RuntimeException("Not yet implemented!");
         }
@@ -87,7 +89,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
          * its temp variable, and uses that temp variable when executing the
          * node's statement.
          */
-        private DataFlowNode fillAndUseTemp(DataFlowNode node, GeneralExpression expr) {
+        private DataFlow fillAndUseTemp(DataFlowNode node, GeneralExpression expr) {
             // TODO(jasonpr): Implement!
             throw new RuntimeException("Not yet implemented!");
         }
@@ -126,8 +128,11 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
      *
      * <p>The replacement will be hooked up to the old node's predecessor and successor.
      */
-    private static void replace(DataFlowNode old, DataFlowNode replacement) {
-        // TODO(jasonpr): Implement!
-        throw new RuntimeException("Not yet implemented!");
+    private static void replace(SequentialDataFlowNode old, DataFlow replacement) {
+        old.getPrev().replaceSuccessor(old, replacement.getBeginning());
+        replacement.getBeginning().setPrev(old.getPrev());
+
+        old.getNext().replacePredecessor(old, replacement.getEnd());
+        replacement.getEnd().setNext(old.getNext());
     }
 }
