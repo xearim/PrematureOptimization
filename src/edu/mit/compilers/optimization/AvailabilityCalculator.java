@@ -50,13 +50,14 @@ public class AvailabilityCalculator {
          */
         createInSets(entryBlock);
         Set<DataFlowNode> allBlocks = ImmutableSet.copyOf(this.inSets.keySet());
-        Set<Subexpression> allSubexpressions = getAllSubexpressions(allBlocks);
+
+        Set<Subexpression> allSubexpressions = null;
+        Map<DataFlowNode, Set<Subexpression>> genSets = null;
+        Map<DataFlowNode, Set<Subexpression>> killSets = null;
+        calculateConstants(allBlocks, allSubexpressions,genSets,killSets);
+
         Map<DataFlowNode, Set<Subexpression>> outSets =
                 new HashMap<DataFlowNode, Set<Subexpression>>();
-        Map<DataFlowNode, Set<Subexpression>> genSets =
-                calculateGenSets(allBlocks, allSubexpressions);
-        Map<DataFlowNode, Set<Subexpression>> killSets =
-                calculateKillSets(allBlocks, allSubexpressions);
         Set<DataFlowNode> changed;
 
         // Run algorithm
@@ -139,106 +140,132 @@ public class AvailabilityCalculator {
     }
 
     /**
-     * Produces a mapping from DataFlowNodes to a list of subexpressions that
-     * they generate. The types of DataFlowNodes that generate subexpressions
-     * are Assignments, Compare, MethodCalls and Return Statements.
+     * Calculates allSubexpressions (E), the GEN sets, and the KILL sets, and
+     * sets them to the appropriate variable. The only one of these parameters
+     * that needs to be initialized is allNodes.
      * 
-     * Assignments generate whatever is evaluated on the right.
-     * 
-     * Compares generate their left and right arguments.
-     * 
-     * MethodCalls generate their parameters.
-     * 
-     * ReturnStatements generate their return values.
+     * @param allNodes - all the DataFlowNodes of interest in this program
      */
-    private static Map<DataFlowNode, Set<Subexpression>> calculateGenSets(
-            Set<DataFlowNode> blocks, Set<Subexpression> allSubexpressions) {
+    private static void calculateConstants(Set<DataFlowNode> allNodes,
+            Set<Subexpression> allSubexpressions,
+            Map<DataFlowNode,Set<Subexpression>> genSets,
+            Map<DataFlowNode, Set<Subexpression>> killSets) {
 
-        Map<DataFlowNode, Set<Subexpression>> genSets =
-                new HashMap<DataFlowNode, Set<Subexpression>>();
+        allSubexpressions = new HashSet<Subexpression>();
+        genSets = new HashMap<DataFlowNode, Set<Subexpression>>();
+        killSets = new HashMap<DataFlowNode, Set<Subexpression>>();
 
-        for (DataFlowNode block : blocks) {
+        for (DataFlowNode block : allNodes) {
             genSets.put(block, new HashSet<Subexpression>());
 
             if (block instanceof AssignmentDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
-            } else if (block instanceof CompareDataFlowNode) {
-                // Add leftArg
-                conditionalAdd(((CompareDataFlowNode) block).getLeftArg(),
-                        ((CompareDataFlowNode) block).getScope(), genSets.get(block),
-                        allSubexpressions);
+                addAssignmentData((AssignmentDataFlowNode) block, allSubexpressions, genSets);
 
-                // Add rightArg
-                conditionalAdd(((CompareDataFlowNode) block).getRightArg(),
-                        ((CompareDataFlowNode) block).getScope(), genSets.get(block),
-                        allSubexpressions);
+            } else if (block instanceof CompareDataFlowNode) {
+                addCompareData((CompareDataFlowNode) block,allSubexpressions,genSets);
 
             } else if (block instanceof MethodCallDataFlowNode) {
-                // Add each parameter to the method call
-                for (GeneralExpression ge : ((MethodCallDataFlowNode) block).getMethodCall().getParameterValues()) {
-                    conditionalAdd(ge, ((MethodCallDataFlowNode) block).getScope(),
-                            genSets.get(block), allSubexpressions);
-                }
+                addMethodCallData((MethodCallDataFlowNode) block,allSubexpressions,genSets);
 
             } else if (block instanceof ReturnStatementDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: ReturnStatementDataFlowNode path unimplemented.");
-            } else {
-                /*
-                 * If not any of these nodes, then it doesn't have any
-                 * expressions. The GEN set is empty for this block.
-                 */
-                genSets.put(block, ImmutableSet.<Subexpression>of());
+                addReturnStatementData((ReturnStatementDataFlowNode) block, allSubexpressions, genSets);
+
             }
+            // The other nodes don't produce any subexpressions
         }
 
-        // convert to immutable sets
-        for (DataFlowNode block : genSets.keySet()) {
-            genSets.put(block,
-                    ImmutableSet.<Subexpression>copyOf(genSets.get(block)));
-        }
-        return genSets;
+        // TODO(Manny): convert all of these to immutables
     }
 
     /**
-     * Produces a mapping from DataFlowNodes to a list of subexpressions that
-     * they kill. The types of DataFlowNodes that makes subexpressions
-     * unavailable are Assignments and MethodCalls.
-     * 
-     * Assignments kill all subexpressions that rely on the variable being
-     * assigned.
-     * 
-     * MethodCalls kill all subexpressions that rely on global variables.
-     * TODO(Manny): Make methods only kill globals that they change.
+     * Takes cares of adding information for an AssignmentDataFlowNode to
+     * allSubexpressions, and genSets.
+     *
+     * TODO(Manny): take into account kill sets.
      */
-    // TODO(Manny): Should this be calculated separately, or with the GEN sets?
-    private static Map<DataFlowNode, Set<Subexpression>> calculateKillSets(
-            Set<DataFlowNode> blocks, Set<Subexpression> allSubexpressions) {
+    private static void addAssignmentData(AssignmentDataFlowNode assignmentNode,
+            Set<Subexpression> allSubexpressions,
+            Map<DataFlowNode,Set<Subexpression>> genSets) {
 
-        Map<DataFlowNode, Set<Subexpression>> killSets =
-                new HashMap<DataFlowNode, Set<Subexpression>>();
+        Subexpression newSubexpr = new Subexpression(
+                assignmentNode.getAssignment().getExpression(),
+                assignmentNode.getScope());
 
-        for (DataFlowNode block : blocks) {
-            if (block instanceof AssignmentDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
-            } else if (block instanceof MethodCallDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
-            } else if (block instanceof ReturnStatementDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: ReturnStatementDataFlowNode path unimplemented.");
-            } else {
-                /*
-                 * If not any of these nodes, then it doesn't have any
-                 * expressions. The KILL set is empty for this block.
-                 */
-                killSets.put(block, ImmutableSet.<Subexpression>of());
+        if (worthTracking(newSubexpr.getNativeExpression())) {
+            allSubexpressions.add(newSubexpr);
+            genSets.get(assignmentNode).add(newSubexpr);
+        }
+        throw new UnsupportedOperationException("AC#addAssignmentData: killSets unimplemented.");
+        // TODO(Manny): figure out what happens with += and -=
+    }
+
+    /**
+     * Takes care of adding information for a CompareDataFlowNode to
+     * allSubexpressions, and genSets.
+     *
+     * TODO(Manny): take into account kill sets.
+     */
+    private static void addCompareData(CompareDataFlowNode compareNode,
+            Set<Subexpression> allSubexpressions,
+            Map<DataFlowNode, Set<Subexpression>> genSets) {
+
+        for (GeneralExpression ge : compareNode.getExpressions()) {
+            if (worthTracking(ge)) {
+                Subexpression newSubexpr =
+                        new Subexpression((NativeExpression) ge,
+                                compareNode.getScope());
+
+                allSubexpressions.add(newSubexpr);
+                genSets.get(compareNode).add(newSubexpr);
             }
         }
+        throw new UnsupportedOperationException("AC#addReturnData: killSets unimplemented.");
+    }
 
-        // convert to immutable sets
-        for (DataFlowNode block : killSets.keySet()) {
-            killSets.put(block,
-                    ImmutableSet.<Subexpression>copyOf(killSets.get(block)));
+    /**
+     * Takes care of adding information for a MethodCallDataFlowNode to
+     * allSubexpressions and genSets.
+     *
+     * TODO(Manny): generate kill set also.
+     */
+    private static void addMethodCallData(MethodCallDataFlowNode mcNode,
+            Set<Subexpression> allSubexpressions,
+            Map<DataFlowNode, Set<Subexpression>> genSets) {
+
+        for (GeneralExpression ge: mcNode.getExpressions()) {
+            if (worthTracking(ge)) {
+                Subexpression newSubexpr =
+                        new Subexpression((NativeExpression) ge,mcNode.getScope());
+
+                allSubexpressions.add(newSubexpr);
+                genSets.get(mcNode).add(newSubexpr);
+            }
         }
-        return killSets;
+        throw new UnsupportedOperationException("AC#addMCData: killSets unimplemented.");
+    }
+
+    /**
+     * Takes care of adding information for a ReturnStatementDataFlowNode to
+     * allSubexpressions and genSets.
+     *
+     * TODO(Manny): generate kill set also.
+     */
+    private static void addReturnStatementData(ReturnStatementDataFlowNode returnNode,
+            Set<Subexpression> allSubexpressions,
+            Map<DataFlowNode, Set<Subexpression>> genSets) {
+
+        if (returnNode.getReturnStatement().getValue().isPresent()) {
+            if (worthTracking(returnNode.getReturnStatement().getValue().get())) {
+                Subexpression newSubexpr =
+                        new Subexpression(
+                                returnNode.getReturnStatement().getValue().get(),
+                                returnNode.getScope());
+
+                allSubexpressions.add(newSubexpr);
+                genSets.get(returnNode).add(newSubexpr);
+            }
+        }
+        throw new UnsupportedOperationException("AC#addReturnData: killSets unimplemented.");
     }
 
     /**
@@ -250,82 +277,29 @@ public class AvailabilityCalculator {
     }
 
     /**
-     * Goes through all DataFlowNodes and gets their subexpressions.
-     */
-    private static ImmutableSet<Subexpression> getAllSubexpressions(Set<DataFlowNode> blocks) {
-        Set<Subexpression> subexpressions = new HashSet<Subexpression>();
-
-        for (DataFlowNode block : blocks) {
-            if (block instanceof AssignmentDataFlowNode) {
-                // Add NativeExpression on the right hand side
-                conditionalAdd(((AssignmentDataFlowNode) block).getAssignment().getExpression(),
-                        ((AssignmentDataFlowNode) block).getScope(), subexpressions);
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
-                // TODO(Manny): figure out what happens with += and -=
-
-            } else if (block instanceof CompareDataFlowNode) {
-                // Add leftArg
-                conditionalAdd(((CompareDataFlowNode) block).getLeftArg(),
-                        ((CompareDataFlowNode) block).getScope(), subexpressions);
-
-                // Add rightArg
-                conditionalAdd(((CompareDataFlowNode) block).getRightArg(),
-                        ((CompareDataFlowNode) block).getScope(), subexpressions);
-
-            } else if (block instanceof MethodCallDataFlowNode) {
-                // Add each parameter to the method call
-                for (GeneralExpression ge : ((MethodCallDataFlowNode) block).getMethodCall().getParameterValues()) {
-                    conditionalAdd(ge, ((MethodCallDataFlowNode) block).getScope(), subexpressions);
-                }
-
-            } else if (block instanceof ReturnStatementDataFlowNode) {
-                // Add the expression if the return statement has one
-                if (((ReturnStatementDataFlowNode) block).getReturnStatement().getValue().isPresent()) {
-                    conditionalAdd(
-                            ((ReturnStatementDataFlowNode) block).getReturnStatement().getValue().get(),
-                            ((ReturnStatementDataFlowNode) block).getScope(),
-                            subexpressions);
-                }
-
-            }
-            // The other nodes don't produce any subexpressions
-        }
-
-        return ImmutableSet.<Subexpression>copyOf(subexpressions);
-    }
-
-    /**
-     * Adds the potential subexpression to the list only if it is complex
-     * enough and has no method calls.
-     */
-    private static void conditionalAdd(GeneralExpression ge, Scope scope,
-            Collection<Subexpression> collection) {
-        if (isComplexEnough(ge) && !(containsMethodCall(ge))) {
-            collection.add(new Subexpression((NativeExpression)ge,scope));
-        }
-    }
-    
-    /**
-     * Adds the potential subexpression to the list only if it is complex
-     * enough and has no method calls. Asserts that the subexpression is in
-     * allExpressions.
+     * Used to determine if a GeneralExpression is worth tracking. Every
+     * GeneralExpression that passes this check is an instance of
+     * NativeExpression.
      *
-     * Used when calculating gen and kill sets to make sure that the
-     * subexpression is in the calculated set of all subexpressions (E).
+     * Examples of cases not worth tracking:
+     *
+     * "a = c;"
+     * There's no computation to save time on here.
+     *
+     * "a = 3 + foo();"
+     * foo() is a MethodCall. For now we are assuming that we cannot predict
+     * MethodCall behavior.
      */
-    private static void conditionalAdd(GeneralExpression ge, Scope scope,
-            Collection<Subexpression> collection, Set<Subexpression> allExpressions) {
-        if (isComplexEnough(ge) && !(containsMethodCall(ge))) {
-            Subexpression toBeAdded = new Subexpression((NativeExpression) ge, scope);
-            checkState(allExpressions.contains(toBeAdded),"getAllSubexpressions didn't generate all expressions.");
-            collection.add(toBeAdded);
-        }
-        
+    private static boolean worthTracking(GeneralExpression ge) {
+        return isComplexEnough(ge) && !(containsMethodCall(ge));
     }
 
+
     /**
-     * Determines if a NativeExpression is complex enough to be worth saving.
+     * Determines if a NativeExpression is complex enough to be worth tracking.
      * Does not check for MethodCalls inside of GeneralExpression.
+     * Any GeneralExpression that passes this check may be considered a
+     * NativeExpression.
      */
     private static boolean isComplexEnough(GeneralExpression ge) {
         return (ge instanceof BinaryOperation)

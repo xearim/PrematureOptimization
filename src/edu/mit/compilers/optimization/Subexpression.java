@@ -38,7 +38,7 @@ public class Subexpression {
 
         /*
          * If no variable is in immediate scope, recurse through scopes until
-         * a scope that contains at least on variable is found.
+         * a scope that contains at least one variable is found.
          */
         Scope s = scope;
         while (s.getParent().isPresent()) {
