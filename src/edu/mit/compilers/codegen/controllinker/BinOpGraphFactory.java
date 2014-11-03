@@ -49,12 +49,10 @@ public class BinOpGraphFactory implements GraphFactory {
     private final BinaryOperation binOp;
     private final Scope scope;
     private final BiTerminalGraph graph;
-    private final boolean inMethodCall;
     
-    public BinOpGraphFactory(BinaryOperation binOp, Scope scope, boolean inMethodCall) {
+    public BinOpGraphFactory(BinaryOperation binOp, Scope scope) {
         this.binOp = binOp;
         this.scope = scope;
-        this.inMethodCall = inMethodCall;
         this.graph = calculateOperation();
     }
     
@@ -87,8 +85,8 @@ public class BinOpGraphFactory implements GraphFactory {
         checkState(ARITHMETIC_OPS.contains(operator));
 
         return BiTerminalGraph.sequenceOf(
-                new NativeExprGraphFactory(binOp.getLeftArgument(), scope, inMethodCall).getGraph(),
-                new NativeExprGraphFactory(binOp.getRightArgument(), scope, inMethodCall).getGraph(),
+                new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
+                new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
                 BiTerminalGraph.ofInstructions(
                         pop(R10),
                         pop(R11),
@@ -134,7 +132,7 @@ public class BinOpGraphFactory implements GraphFactory {
     	
     	// The left hand expression to be evaluated and branched off of
     	BiTerminalGraph LeftHandExpression = BiTerminalGraph.sequenceOf(
-    						new NativeExprGraphFactory(binOp.getLeftArgument(), scope, inMethodCall).getGraph(),
+    						new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
     						BiTerminalGraph.ofInstructions(
     								pop(R10),
     								move(Literal.TRUE, R11),
@@ -142,7 +140,7 @@ public class BinOpGraphFactory implements GraphFactory {
     	
     	// The right hand expression, we will use its value as the return value if we reach it
     	BiTerminalGraph RightHandExpression = BiTerminalGraph.sequenceOf(
-				new NativeExprGraphFactory(binOp.getRightArgument(), scope, inMethodCall).getGraph());
+				new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph());
     	
     	// The short circuit branch, if we are true for the right hand, we need to 
     	// evaluate the left, if not, we can just straight return false
@@ -168,7 +166,7 @@ public class BinOpGraphFactory implements GraphFactory {
     	
     	// The left hand expression to be evaluated and branched off of
     	BiTerminalGraph LeftHandExpression = BiTerminalGraph.sequenceOf(
-    						new NativeExprGraphFactory(binOp.getLeftArgument(), scope, inMethodCall).getGraph(),
+    						new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
     						BiTerminalGraph.ofInstructions(
     								pop(R10),
     								move(Literal.TRUE, R11),
@@ -176,7 +174,7 @@ public class BinOpGraphFactory implements GraphFactory {
     	
     	// The right hand expression, we will use its value as the return value if we reach it
     	BiTerminalGraph RightHandExpression = BiTerminalGraph.sequenceOf(
-				new NativeExprGraphFactory(binOp.getRightArgument(), scope, inMethodCall).getGraph());
+				new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph());
     	
     	// The short circuit branch, if we are false for the right hand, we need to 
     	// evaluate the left, if not, we can just straight return true
@@ -202,8 +200,8 @@ public class BinOpGraphFactory implements GraphFactory {
 
 
         return BiTerminalGraph.sequenceOf(
-	        new NativeExprGraphFactory(binOp.getLeftArgument(), scope, inMethodCall).getGraph(),
-	        new NativeExprGraphFactory(binOp.getRightArgument(), scope, inMethodCall).getGraph(),
+	        new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
+	        new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
 	        BiTerminalGraph.ofInstructions(
 			pop(R11), // Right argument.
 			pop(R10), // Left argument.
