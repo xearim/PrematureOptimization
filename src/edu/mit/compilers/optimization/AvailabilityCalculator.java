@@ -9,8 +9,12 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
+import edu.mit.compilers.ast.TernaryOperation;
+import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
@@ -272,8 +276,36 @@ public class AvailabilityCalculator {
         return ImmutableSet.<Subexpression>copyOf(subexpressions);
     }
 
-    public Set<Subexpression> getAvailableSubexpressionsOfBasicBlock(DataFlowNode b) {
-        return inSets.get(b);
+    /**
+     * Determines if a NativeExpression is complex enough to be worth saving.
+     * Does not check for MethodCalls inside of GeneralExpression.
+     */
+    public boolean isComplexEnough(GeneralExpression ge) {
+        return (ge instanceof BinaryOperation)
+                || (ge instanceof MethodCall)
+                || (ge instanceof TernaryOperation)
+                || (ge instanceof UnaryOperation);
+    }
+
+    /**
+     * Returns true is there is a MethodCall in any part of the
+     * GeneralExpression.
+     */
+    public boolean containsMethodCall(GeneralExpression ge) {
+        if (ge instanceof BinaryOperation) {
+            return containsMethodCall( ((BinaryOperation) ge).getLeftArgument())
+                    || containsMethodCall( ((BinaryOperation) ge).getRightArgument());
+        }  else if (ge instanceof MethodCall) {
+            return true;
+        } else if (ge instanceof TernaryOperation) {
+            return containsMethodCall( ((TernaryOperation) ge).getCondition())
+                    || containsMethodCall( ((TernaryOperation) ge).getTrueResult())
+                    || containsMethodCall( ((TernaryOperation) ge).getFalseResult());
+        } else if (ge instanceof UnaryOperation) {
+            return containsMethodCall( ((UnaryOperation) ge).getArgument());
+        } else {
+            return false;
+        }
     }
 
     /**
