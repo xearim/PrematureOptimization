@@ -2,6 +2,7 @@ package edu.mit.compilers.optimization;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,6 +14,7 @@ import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
+import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.codegen.AssignmentDataFlowNode;
@@ -277,10 +279,20 @@ public class AvailabilityCalculator {
     }
 
     /**
+     * Adds the potential subexpression to the list only if it is complex
+     * enough and has no method calls.
+     */
+    private void conditionalAdd(GeneralExpression ge, Scope scope, Collection<Subexpression> collection) {
+        if (isComplexEnough(ge) && !(containsMethodCall(ge))) {
+            collection.add(new Subexpression((NativeExpression)ge,scope));
+        }
+    }
+
+    /**
      * Determines if a NativeExpression is complex enough to be worth saving.
      * Does not check for MethodCalls inside of GeneralExpression.
      */
-    public boolean isComplexEnough(GeneralExpression ge) {
+    private boolean isComplexEnough(GeneralExpression ge) {
         return (ge instanceof BinaryOperation)
                 || (ge instanceof MethodCall)
                 || (ge instanceof TernaryOperation)
@@ -291,7 +303,7 @@ public class AvailabilityCalculator {
      * Returns true is there is a MethodCall in any part of the
      * GeneralExpression.
      */
-    public boolean containsMethodCall(GeneralExpression ge) {
+    private boolean containsMethodCall(GeneralExpression ge) {
         if (ge instanceof BinaryOperation) {
             return containsMethodCall( ((BinaryOperation) ge).getLeftArgument())
                     || containsMethodCall( ((BinaryOperation) ge).getRightArgument());
