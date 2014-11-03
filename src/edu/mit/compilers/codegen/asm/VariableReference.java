@@ -9,10 +9,16 @@ public class VariableReference implements Value{
     private final Variable variable;
     /** The scope in which this variable is referenced. */
     private final Scope scope;
+    private final boolean inMethodCall;
 
-    public VariableReference(Variable name, Scope scope) {
+    public VariableReference(Variable name, Scope scope, boolean inMethodCall) {
         this.variable = name;
         this.scope = scope;
+        this.inMethodCall = inMethodCall;
+    }
+    
+    public VariableReference(Variable name, Scope scope) {
+        this(name, scope, false);
     }
 
     public Variable getVariable() {
@@ -41,22 +47,34 @@ public class VariableReference implements Value{
             switch((int) targetScope.offset(variable)){
             case 0:
                 // Holds the first arg
-                return Register.RDI.inAttSyntax();
+                return inMethodCall
+                		? new Location(Register.RSP, Architecture.WORD_SIZE*(5L)).inAttSyntax()
+                		: Register.RDI.inAttSyntax();
             case 1:
                 // Holds the second arg
-                return Register.RSI.inAttSyntax();
+                return inMethodCall
+                		? new Location(Register.RSP, Architecture.WORD_SIZE*(4L)).inAttSyntax()
+                		: Register.RSI.inAttSyntax();
             case 2:
                 // Holds the third arg
-                return Register.RDX.inAttSyntax();
+                return inMethodCall
+                		? new Location(Register.RSP, Architecture.WORD_SIZE*(3L)).inAttSyntax()
+                		: Register.RDX.inAttSyntax();
             case 3:
                 // Holds the fourth arg
-                return Register.RCX.inAttSyntax();
+                return inMethodCall
+                		? new Location(Register.RSP, Architecture.WORD_SIZE*(2L)).inAttSyntax()
+                		: Register.RCX.inAttSyntax();
             case 4:
                 // Holds the fifth arg
-                return Register.R8.inAttSyntax();
+                return inMethodCall
+                		? new Location(Register.RSP, Architecture.WORD_SIZE*(1L)).inAttSyntax()
+                		: Register.R8.inAttSyntax();
             case 5:
                 // Holds the sixth arg
-                return Register.R9.inAttSyntax();
+                return inMethodCall
+                		? new Location(Register.RSP, Architecture.WORD_SIZE*(0L)).inAttSyntax()
+                		: Register.R9.inAttSyntax();
             default:
                 // All other args are at some offset to the base pointer
                 // its the old %rbp and %rsp then up to the arg

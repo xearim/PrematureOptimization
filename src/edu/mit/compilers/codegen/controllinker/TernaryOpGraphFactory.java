@@ -8,18 +8,18 @@ public class TernaryOpGraphFactory implements GraphFactory {
 
     private final BiTerminalGraph graph;
     
-    public TernaryOpGraphFactory(TernaryOperation operation, Scope scope) {
-        this.graph = calculateGraph(operation, scope);
+    public TernaryOpGraphFactory(TernaryOperation operation, Scope scope, boolean inMethodCall) {
+        this.graph = calculateGraph(operation, scope, inMethodCall);
     }
 
-    private BiTerminalGraph calculateGraph(TernaryOperation operation, Scope scope) {
+    private BiTerminalGraph calculateGraph(TernaryOperation operation, Scope scope, boolean inMethodCall) {
     	
     	// Construct a label for the false branch
         SequentialControlFlowNode trueNode = SequentialControlFlowNode.namedNop("ternary true");
         SequentialControlFlowNode falseNode = SequentialControlFlowNode.namedNop("ternary false");
     	
-    	BiTerminalGraph trueBranch = new NativeExprGraphFactory(operation.getTrueResult(), scope).getGraph();
-    	BiTerminalGraph falseBranch = new NativeExprGraphFactory(operation.getFalseResult(), scope).getGraph();
+    	BiTerminalGraph trueBranch = new NativeExprGraphFactory(operation.getTrueResult(), scope, inMethodCall).getGraph();
+    	BiTerminalGraph falseBranch = new NativeExprGraphFactory(operation.getFalseResult(), scope, inMethodCall).getGraph();
     	
     	// Hook up the true target
         trueNode.setNext(trueBranch.getBeginning());
@@ -32,7 +32,7 @@ public class TernaryOpGraphFactory implements GraphFactory {
                 falseBranch.getEnd());
         
         return new BranchGraphFactory(
-                new NativeExprGraphFactory(operation.getCondition(), scope).getGraph(),
+                new NativeExprGraphFactory(operation.getCondition(), scope, inMethodCall).getGraph(),
                 trueTarget,
                 falseTarget)
                 .getGraph();

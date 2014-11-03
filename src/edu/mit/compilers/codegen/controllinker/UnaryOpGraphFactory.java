@@ -17,9 +17,11 @@ public class UnaryOpGraphFactory implements GraphFactory {
 
     private final UnaryOperation operation;
     private final BiTerminalGraph graph;
+    private final boolean inMethodCall;
 
-    public UnaryOpGraphFactory(UnaryOperation operation, Scope scope) {
+    public UnaryOpGraphFactory(UnaryOperation operation, Scope scope, boolean inMethodCall) {
         this.operation = operation;
+        this.inMethodCall = inMethodCall;
         this.graph = calculateOperation(scope);
     }
 
@@ -47,7 +49,7 @@ public class UnaryOpGraphFactory implements GraphFactory {
 
     private BiTerminalGraph calculateNegativeOperation(Scope scope) {
         return BiTerminalGraph.sequenceOf(
-                new NativeExprGraphFactory(operation.getArgument(), scope).getGraph(),
+                new NativeExprGraphFactory(operation.getArgument(), scope, inMethodCall).getGraph(),
                 BiTerminalGraph.ofInstructions(
                         pop(R10),
                         negate(R10),
@@ -56,7 +58,7 @@ public class UnaryOpGraphFactory implements GraphFactory {
 
     private BiTerminalGraph calculateNotOperation(Scope scope) {
         return BiTerminalGraph.sequenceOf(
-                new NativeExprGraphFactory(operation.getArgument(), scope).getGraph(),
+                new NativeExprGraphFactory(operation.getArgument(), scope, inMethodCall).getGraph(),
                 BiTerminalGraph.ofInstructions(
                         pop(R10),
                         not(R10),

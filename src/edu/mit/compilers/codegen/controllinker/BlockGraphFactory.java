@@ -109,7 +109,7 @@ public class BlockGraphFactory implements ControlTerminalGraphFactory {
     private SequentialControlFlowNode zeroOutScalar(FieldDescriptor field, Scope scope, SequentialControlFlowNode start){
         SequentialControlFlowNode hook = start;
         SequentialControlFlowNode next = SequentialControlFlowNode.terminal(Instructions.move(Literal.INITIAL_VALUE, 
-                                                new VariableReference(field.getVariable(), scope)));
+                                                new VariableReference(field.getVariable(), scope, false)));
         hook.setNext(next);
         hook = next;
         return hook;
