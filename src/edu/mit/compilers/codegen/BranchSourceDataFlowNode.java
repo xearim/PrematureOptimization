@@ -3,7 +3,6 @@ package edu.mit.compilers.codegen;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.base.Optional;
@@ -64,7 +63,7 @@ public class BranchSourceDataFlowNode implements DataFlowNode{
 
     public void setFalseBranch(DataFlowNode falseBranch) {
         Preconditions.checkState(!this.equals(trueBranch));
-        this.trueBranch = Optional.of(falseBranch);
+        this.falseBranch = Optional.of(falseBranch);
     }
 
     public void setPrev(DataFlowNode prev) {

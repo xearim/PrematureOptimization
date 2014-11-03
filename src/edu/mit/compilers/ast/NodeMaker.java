@@ -114,9 +114,10 @@ public class NodeMaker {
         return builder.build();
     }
 
-    /** Make some FieldDescriptors from a "field_decls" ANTLR AST. */
-    public static Scope scope(AST fieldDecls, Scope parent) {
-        return new Scope(fieldDescriptors(fieldDecls), parent);
+    /** Make some FieldDescriptors from a "field_decls" ANTLR AST. 
+     * @param ofLoop */
+    public static Scope scope(AST fieldDecls, Scope parent, boolean ofLoop) {
+        return new Scope(fieldDescriptors(fieldDecls), parent, ofLoop);
     }
 
     public static Scope rootScope(AST fieldDecls) {
@@ -191,7 +192,7 @@ public class NodeMaker {
         List<AST> children = children(method);
         ReturnType returnType = returnType(children.get(0));
         ParameterScope parameters = parameterDescriptors(children.get(1), scope);
-        Block body = block(children.get(2), parameters);
+        Block body = block(children.get(2), parameters, false);
         String name = method.getText();
 
         return new Method(name, returnType, parameters, body, sourceLoc(method));
@@ -237,12 +238,12 @@ public class NodeMaker {
         return new FieldDescriptor(Variable.forUser(name), type, sourceLoc(signatureArg));
     }
 
-    public static Block block(AST block, Scope scope) {
+    public static Block block(AST block, Scope scope, boolean ofLoop) {
         checkType(block, BLOCK);
         checkChildCount(2, block);
 
         List<AST> children = children(block);
-        Scope locals = scope(children.get(0), scope);
+        Scope locals = scope(children.get(0), scope, ofLoop);
         List<Statement> statements = statements(children.get(1), locals);
 
         // TODO(jasonpr): Remove the name parameter of Block!
@@ -351,13 +352,13 @@ public class NodeMaker {
 
         List<AST> children = children(ifStatement);
         NativeExpression condition = nativeExpression(children.get(0));
-        Block thenBlock = block(children.get(1), scope);
+        Block thenBlock = block(children.get(1), scope, false);
         if (children.size() == 2) {
             // It's just the condition and the then block.
             return IfStatement.ifThen(condition, thenBlock, location);
         } else {
             // There's an else block, too!
-            Block elseBlock = block(children.get(2), scope);
+            Block elseBlock = block(children.get(2), scope, false);
             return IfStatement.ifThenElse(condition, thenBlock, elseBlock, location);
         }
     }
@@ -369,7 +370,7 @@ public class NodeMaker {
         ScalarLocation loopVariable = scalarLocation(children.get(0));
         NativeExpression rangeStart = nativeExpression(children.get(1));
         NativeExpression rangeEnd = nativeExpression(children.get(2));
-        Block body = block(children.get(3), scope);
+        Block body = block(children.get(3), scope, true);
 
         return new ForLoop(loopVariable, rangeStart, rangeEnd, body, sourceLoc(forLoop));
     }
@@ -384,14 +385,14 @@ public class NodeMaker {
 
         if (children.size() == 2) {
             // There is no bound on the while loop.
-            return WhileLoop.simple(condition, block(children.get(1), scope), location);
+            return WhileLoop.simple(condition, block(children.get(1), scope, false), location);
         } else {
             // There is a bound on the while loop.
             AST colon = children.get(1);
             checkState(colon.getText().equals(":"));
             checkChildCount(1, colon);
             IntLiteral maxRepetitions = intLiteral(colon.getFirstChild());
-            Block body = block(children.get(2), scope);
+            Block body = block(children.get(2), scope, true);
             return WhileLoop.limited(condition, maxRepetitions, body, location);
         }
     }

@@ -9,7 +9,6 @@ import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BaseType;
 import edu.mit.compilers.ast.BooleanLiteral;
 import edu.mit.compilers.ast.FieldDescriptor;
-import edu.mit.compilers.ast.ForLoop;
 import edu.mit.compilers.ast.IntLiteral;
 import edu.mit.compilers.ast.LocationDescriptor;
 import edu.mit.compilers.ast.ScalarLocation;
@@ -21,7 +20,7 @@ import edu.mit.compilers.codegen.BranchSourceDataFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
-import edu.mit.compilers.codegen.dataflow.DataFlow.ControlNodes;
+import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 import edu.mit.compilers.common.Variable;
 
 public class WhileLoopDataFlowFactory implements DataFlowFactory{
@@ -74,15 +73,15 @@ public class WhileLoopDataFlowFactory implements DataFlowFactory{
 		CompareDataFlowNode maxRepComparator = new CompareDataFlowNode(maxRepsVar,
 				whileLoop.getMaxRepetitions().isPresent()
 				? whileLoop.getMaxRepetitions().get()
-				: new IntLiteral(Long.toString(0), LocationDescriptor.machineCode()),
-				scope);
+				: new IntLiteral(0L),
+				whileLoopScope);
 		
 		// And the incrementing step for max reps at the end of the while
 		// TODO:Name this 1 plz
 		AssignmentDataFlowNode increment = new AssignmentDataFlowNode(
 				new Assignment(maxRepsVar, AssignmentOperation.PLUS_EQUALS,
-				new IntLiteral(Long.toString(1), LocationDescriptor.machineCode()),
-				LocationDescriptor.machineCode()), scope);
+				new IntLiteral(1L),
+				LocationDescriptor.machineCode()), whileLoopScope);
 		
 		// The body of the for loop
 		DataFlow body = new BlockDataFlowFactory(whileLoop.getBody()).getDataFlow();
@@ -99,37 +98,41 @@ public class WhileLoopDataFlowFactory implements DataFlowFactory{
 			link(setMaxReps, loopStart);
 			link(loopStart, maxRepComparator);
 			link(maxRepComparator, maxRepsBranch);
+			
 			maxRepsBranch.setTrueBranch(loopComparator);
-			loopComparator.setPrev(maxRepsBranch.getTrueBranch());
+			loopComparator.setPrev(maxRepsBranch);
 			maxRepsBranch.setFalseBranch(endSink);
-			endSink.setPrev(maxRepsBranch.getFalseBranch());
+			endSink.setPrev(maxRepsBranch);
+			
 			link(loopComparator, loopCmpBranch);
+			
 			loopCmpBranch.setTrueBranch(body.getBeginning());
-			body.getBeginning().setPrev(loopCmpBranch.getTrueBranch());
+			body.getBeginning().setPrev(loopCmpBranch);
 			loopCmpBranch.setFalseBranch(endSink);
-			endSink.setPrev(loopCmpBranch.getFalseBranch());
+			endSink.setPrev(loopCmpBranch);
+			
 			link(body.getEnd(), incrementStart);
 			link(incrementStart, increment);
 			link(increment, loopStart);
 			link(endSink, end);
+			
+			body.getControlNodes().attach(endSink, incrementStart, returnNode);
 		} else {
 			link(start, loopStart);
 			link(loopStart, loopComparator);
 			link(loopComparator, loopCmpBranch);
 			loopCmpBranch.setTrueBranch(body.getBeginning());
-			body.getBeginning().setPrev(loopCmpBranch.getTrueBranch());
+			body.getBeginning().setPrev(loopCmpBranch);
 			loopCmpBranch.setFalseBranch(endSink);
-			endSink.setPrev(loopCmpBranch.getFalseBranch());
-			link(body.getEnd(), incrementStart);
-			link(incrementStart, increment);
-			link(increment, loopStart);
+			endSink.setPrev(loopCmpBranch);
+			link(body.getEnd(), loopStart);
 			link(endSink, end);
+			
+			body.getControlNodes().attach(endSink, loopStart, returnNode);
 		}
 		
-		body.getControlNodes().attach(endSink, incrementStart, returnNode);
-		
 		return new DataFlow(start, end,
-				new ControlNodes(breakNode, continueNode, returnNode));
+				new DataControlNodes(breakNode, continueNode, returnNode));
 		
 	}
 

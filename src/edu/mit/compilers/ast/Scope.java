@@ -7,21 +7,45 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.common.Variable;
 
 public class Scope {
 	
 	private Optional<Scope> parent;
 	private final ImmutableList<FieldDescriptor> entries;
+	private final boolean ofLoop;
 	
 	public Scope(List<FieldDescriptor> variables) {
         this.entries = ImmutableList.copyOf(variables);
         this.parent = Optional.<Scope>absent();
+        this.ofLoop = false;
     }
 	
 	public Scope(List<FieldDescriptor> variables, Scope parent) {
         this.entries = ImmutableList.copyOf(variables);
         this.parent = Optional.of(parent);
+        this.ofLoop = false;
+        
+        for(FieldDescriptor variable : variables){
+        	if(variable.getLength().isPresent()){
+        		Architecture.CONTAINS_ARRAYS = true;
+        		return;
+        	}
+        }
+    }
+	
+	public Scope(List<FieldDescriptor> variables, Scope parent, boolean ofLoop) {
+        this.entries = ImmutableList.copyOf(variables);
+        this.parent = Optional.of(parent);
+        this.ofLoop = ofLoop;
+        
+        for(FieldDescriptor variable : variables){
+        	if(variable.getLength().isPresent()){
+        		Architecture.CONTAINS_ARRAYS = true;
+        		return;
+        	}
+        }
     }
 	
     public Optional<Scope> getParent() {
@@ -67,6 +91,10 @@ public class Scope {
         return parent.isPresent()
                 ? ScopeType.LOCAL
                 : ScopeType.GLOBAL;
+    }
+    
+    public boolean isLoop() {
+    	return ofLoop;
     }
     
     /**
@@ -147,7 +175,9 @@ public class Scope {
         long offset = 0;
         for (FieldDescriptor field : entries) {
             if (variable.equals(field.variable)) {
-                return offset;
+                return isLoop()
+                		? offset + Architecture.LOOP_VAR_SIZE
+                		: offset;
             }
             offset += field.getSize();
         }
@@ -176,7 +206,9 @@ public class Scope {
         for (FieldDescriptor field : entries) {
             offset += field.getSize();
         }
-        return offset;
+        return isLoop()
+        		? offset + Architecture.LOOP_VAR_SIZE
+        		: offset;
     }
     /**
      * Returns if possible the FieldDescriptor specifying the desired variable

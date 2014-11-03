@@ -11,7 +11,7 @@ import edu.mit.compilers.codegen.BranchSourceDataFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
-import edu.mit.compilers.codegen.dataflow.DataFlow.ControlNodes;
+import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 
 public class IfStatementDataFlowFactory implements DataFlowFactory {
 	
@@ -68,7 +68,7 @@ public class IfStatementDataFlowFactory implements DataFlowFactory {
 		link(endSink, end);
 		
 		return new DataFlow(start, end,
-				new ControlNodes(breakNode, continueNode, returnNode));
+				new DataControlNodes(breakNode, continueNode, returnNode));
 		
 	}
 

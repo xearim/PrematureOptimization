@@ -2,8 +2,6 @@ package edu.mit.compilers.ast;
 
 import com.google.common.collect.ImmutableList;
 
-import edu.mit.compilers.codegen.asm.Architecture;
-
 public class ForLoop implements Statement {
 
     private final ScalarLocation loopVariable;
@@ -47,7 +45,7 @@ public class ForLoop implements Statement {
 	
 	@Override
 	public long getMemorySize() {
-		return body.getMemorySize() + Architecture.FOR_LOOP_VAR_SIZE;
+		return body.getMemorySize();
 	}
 
     public LocationDescriptor getLocationDescriptor() {
