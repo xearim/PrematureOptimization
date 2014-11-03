@@ -129,7 +129,7 @@ public class UsedBeforeDeclaredSemanticCheck implements SemanticCheck {
     private void checkMethod(MethodCall mc, Method method) {
     	for(Method methodCalled : prog.getMethods().getChildren()){
     		if(methodCalled.getName().equals(mc.getMethodName()) &&
-    		   prog.getMethods().getSequence().lastIndexOf(mc) <= prog.getMethods().getSequence().lastIndexOf(method)){
+    		   prog.getMethods().getSequence().lastIndexOf(methodCalled) > prog.getMethods().getSequence().lastIndexOf(method)){
     				errors.add(new UsedBeforeDeclaredSemanticError(
                         mc.getName(), mc.getLocationDescriptor()));
     		}
