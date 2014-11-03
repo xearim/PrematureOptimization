@@ -7,9 +7,6 @@ import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.LocationDescriptor;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
-import edu.mit.compilers.codegen.controllinker.ArrayBoundsCheckGraphFactory;
-import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
-import edu.mit.compilers.codegen.controllinker.ErrorExitGraphFactory;
 import edu.mit.compilers.common.Variable;
 
 public class Architecture {

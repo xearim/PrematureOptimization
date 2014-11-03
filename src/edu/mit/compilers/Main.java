@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Set;
 
 import antlr.ASTFactory;
 import antlr.CharStreamException;
@@ -14,13 +15,14 @@ import antlr.collections.AST;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.NodeMaker;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.codegen.AssemblyWriter;
-import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
+import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 import edu.mit.compilers.grammar.DecafParser;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.grammar.DecafScanner;
@@ -37,10 +39,13 @@ class Main {
 
     private static final String MAIN_METHOD_NAME = "main";
 
+    // TODO(jasonpr): Modify interface of CLI so we don't have to do this weird dance.
+    private static final String[] OPTIMIZATION_NAMES = {"cse"};
+
     public static void main(String[] args) {
         try {
             // Setup in and out files.
-            CLI.parse(args, new String[0]);
+            CLI.parse(args, OPTIMIZATION_NAMES);
             InputStream inputStream = args.length == 0 ?
                     System.in : new java.io.FileInputStream(CLI.infile);
             PrintStream outputStream = CLI.outfile == null ? System.out : new java.io.PrintStream(new java.io.FileOutputStream(CLI.outfile));
@@ -58,12 +63,22 @@ class Main {
                     CLI.target == Action.DEFAULT) {
                 parse(inputStream, outputStream);
             } else if (CLI.target == Action.ASSEMBLY) {
-                genCode(inputStream, outputStream);
+                genCode(inputStream, outputStream, getOptimizations());
             }
         } catch(Exception e) {
             // An unrecoverable error occurred.
             System.err.println(CLI.infile+" "+e);
         }
+    }
+
+    private static final Set<String> getOptimizations() {
+        ImmutableSet.Builder<String> optimizationNames = ImmutableSet.builder();
+        for (int i = 0; i < OPTIMIZATION_NAMES.length; i++) {
+            if (CLI.opts[i]) {
+                optimizationNames.add(OPTIMIZATION_NAMES[i]);
+            }
+        }
+        return optimizationNames.build();
     }
 
     // TODO(jasonpr): Javadoc.
@@ -153,12 +168,13 @@ class Main {
         new ControlFlowGraphPrinter(outputStream).print(controlFlowGraph.getBeginning());
     }
 
-    private static void genCode(InputStream inputStream, PrintStream outputStream) throws RecognitionException, TokenStreamException {
+    private static void genCode(InputStream inputStream, PrintStream outputStream,
+            Set<String> optimizationNames) throws RecognitionException, TokenStreamException {
         Optional<Program> programAST = semanticallyValidProgram(inputStream, outputStream);
         if (!programAST.isPresent()) {
             System.exit(1);
         }
-        AssemblyWriter.writeAttAssembly(programAST.get(), outputStream);
+        AssemblyWriter.writeAttAssembly(programAST.get(), outputStream, optimizationNames);
     }
 
     /**

@@ -98,11 +98,19 @@ public class WhileLoopDataFlowFactory implements DataFlowFactory{
 			link(setMaxReps, loopStart);
 			link(loopStart, maxRepComparator);
 			link(maxRepComparator, maxRepsBranch);
-			link(maxRepsBranch.getTrueBranch(), loopComparator);
-			link(maxRepsBranch.getFalseBranch(), endSink);
+			
+			maxRepsBranch.setTrueBranch(loopComparator);
+			loopComparator.setPrev(maxRepsBranch);
+			maxRepsBranch.setFalseBranch(endSink);
+			endSink.setPrev(maxRepsBranch);
+			
 			link(loopComparator, loopCmpBranch);
-			link(loopCmpBranch.getTrueBranch(), body.getBeginning());
-			link(loopCmpBranch.getFalseBranch(), endSink);
+			
+			loopCmpBranch.setTrueBranch(body.getBeginning());
+			body.getBeginning().setPrev(loopCmpBranch);
+			loopCmpBranch.setFalseBranch(endSink);
+			endSink.setPrev(loopCmpBranch);
+			
 			link(body.getEnd(), incrementStart);
 			link(incrementStart, increment);
 			link(increment, loopStart);
@@ -113,15 +121,15 @@ public class WhileLoopDataFlowFactory implements DataFlowFactory{
 			link(start, loopStart);
 			link(loopStart, loopComparator);
 			link(loopComparator, loopCmpBranch);
-			link(loopCmpBranch.getTrueBranch(), body.getBeginning());
-			link(loopCmpBranch.getFalseBranch(), endSink);
+			loopCmpBranch.setTrueBranch(body.getBeginning());
+			body.getBeginning().setPrev(loopCmpBranch);
+			loopCmpBranch.setFalseBranch(endSink);
+			endSink.setPrev(loopCmpBranch);
 			link(body.getEnd(), loopStart);
 			link(endSink, end);
 			
 			body.getControlNodes().attach(endSink, loopStart, returnNode);
 		}
-		
-		
 		
 		return new DataFlow(start, end,
 				new DataControlNodes(breakNode, continueNode, returnNode));
