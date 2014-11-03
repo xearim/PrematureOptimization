@@ -52,9 +52,9 @@ public class VariableLoadGraphFactory implements GraphFactory {
     // TODO(jasonpr): Have this code live somewhere sensible.
     public static BiTerminalGraph calculateStoreToArray(ArrayLocation location, Scope scope, boolean check) {
         return BiTerminalGraph.sequenceOf(
-                BiTerminalGraph.ofInstructions(
-                        pop(Register.RAX)), // Pop value to store.
                 setupArrayRegisters(location, scope, check),
+                BiTerminalGraph.ofInstructions(
+                        pop(Register.RAX)), // Pop value to store after, so we cant corrupt it
                 BiTerminalGraph.ofInstructions(
                         moveToMemory(Register.RAX, offset(location, scope), Register.R10,
                                 Register.R11, Architecture.WORD_SIZE)));
