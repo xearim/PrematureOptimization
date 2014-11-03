@@ -51,16 +51,14 @@ public class Subexpression {
         throw new AssertionError("Subexpression.java: Subexpression variables don't exist in Scope.");
     }
 
-    public boolean containsMethodCall() {
-
-        throw new UnsupportedOperationException("Subexpression#containsMethodCall unimplemented.");
-    }
-
     /**
      * Returns true if the Scope contains any of the variables from the
      * global NativeExpression ne.
      */
     private boolean containsAVariable(Scope s, Set<Location> variables) {
+        // If there are no variables, then this is probably an expression of only literals.
+//        if (variables.isEmpty()) {
+//        }
         throw new RuntimeException("Subexpression#containsAVariableFromNativeExpression unimplemented.");
     }
 

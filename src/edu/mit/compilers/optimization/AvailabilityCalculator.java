@@ -53,8 +53,10 @@ public class AvailabilityCalculator {
         Set<Subexpression> allSubexpressions = getAllSubexpressions(allBlocks);
         Map<DataFlowNode, Set<Subexpression>> outSets =
                 new HashMap<DataFlowNode, Set<Subexpression>>();
-        Map<DataFlowNode, Set<Subexpression>> genSets = calculateGenSets(allBlocks);
-        Map<DataFlowNode, Set<Subexpression>> killSets = calculateKillSets(allBlocks);
+        Map<DataFlowNode, Set<Subexpression>> genSets =
+                calculateGenSets(allBlocks, allSubexpressions);
+        Map<DataFlowNode, Set<Subexpression>> killSets =
+                calculateKillSets(allBlocks, allSubexpressions);
         Set<DataFlowNode> changed;
 
         // Run algorithm
@@ -71,7 +73,7 @@ public class AvailabilityCalculator {
                 genSets.get(entryBlock)));
 
         // Changed = N - {Entry};
-        changed = copyOfBasicBlocksSet();
+        changed = allBasicBlocks();
         checkState(changed.remove(entryBlock),
                 "entryBlock is not in set of all blocks.");
 
@@ -149,18 +151,35 @@ public class AvailabilityCalculator {
      * 
      * ReturnStatements generate their return values.
      */
-    private Map<DataFlowNode, Set<Subexpression>> calculateGenSets(
-            Set<DataFlowNode> blocks) {
+    private static Map<DataFlowNode, Set<Subexpression>> calculateGenSets(
+            Set<DataFlowNode> blocks, Set<Subexpression> allSubexpressions) {
+
         Map<DataFlowNode, Set<Subexpression>> genSets =
                 new HashMap<DataFlowNode, Set<Subexpression>>();
 
         for (DataFlowNode block : blocks) {
+            genSets.put(block, new HashSet<Subexpression>());
+
             if (block instanceof AssignmentDataFlowNode) {
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
             } else if (block instanceof CompareDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: CompareDataFlowNode path unimplemented.");
+                // Add leftArg
+                conditionalAdd(((CompareDataFlowNode) block).getLeftArg(),
+                        ((CompareDataFlowNode) block).getScope(), genSets.get(block),
+                        allSubexpressions);
+
+                // Add rightArg
+                conditionalAdd(((CompareDataFlowNode) block).getRightArg(),
+                        ((CompareDataFlowNode) block).getScope(), genSets.get(block),
+                        allSubexpressions);
+
             } else if (block instanceof MethodCallDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
+                // Add each parameter to the method call
+                for (GeneralExpression ge : ((MethodCallDataFlowNode) block).getMethodCall().getParameterValues()) {
+                    conditionalAdd(ge, ((MethodCallDataFlowNode) block).getScope(),
+                            genSets.get(block), allSubexpressions);
+                }
+
             } else if (block instanceof ReturnStatementDataFlowNode) {
                 throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: ReturnStatementDataFlowNode path unimplemented.");
             } else {
@@ -172,25 +191,29 @@ public class AvailabilityCalculator {
             }
         }
 
+        // convert to immutable sets
+        for (DataFlowNode block : genSets.keySet()) {
+            genSets.put(block,
+                    ImmutableSet.<Subexpression>copyOf(genSets.get(block)));
+        }
         return genSets;
     }
 
     /**
      * Produces a mapping from DataFlowNodes to a list of subexpressions that
      * they kill. The types of DataFlowNodes that makes subexpressions
-     * unavailable are Assignments, MethodCalls, and Return Statements.
+     * unavailable are Assignments and MethodCalls.
      * 
      * Assignments kill all subexpressions that rely on the variable being
      * assigned.
      * 
      * MethodCalls kill all subexpressions that rely on global variables.
      * TODO(Manny): Make methods only kill globals that they change.
-     * 
-     * ReturnStatements kill all subexpressions of that method scope level.
      */
     // TODO(Manny): Should this be calculated separately, or with the GEN sets?
-    private Map<DataFlowNode, Set<Subexpression>> calculateKillSets(
-            Set<DataFlowNode> blocks) {
+    private static Map<DataFlowNode, Set<Subexpression>> calculateKillSets(
+            Set<DataFlowNode> blocks, Set<Subexpression> allSubexpressions) {
+
         Map<DataFlowNode, Set<Subexpression>> killSets =
                 new HashMap<DataFlowNode, Set<Subexpression>>();
 
@@ -210,30 +233,28 @@ public class AvailabilityCalculator {
             }
         }
 
+        // convert to immutable sets
+        for (DataFlowNode block : killSets.keySet()) {
+            killSets.put(block,
+                    ImmutableSet.<Subexpression>copyOf(killSets.get(block)));
+        }
         return killSets;
     }
 
     /**
-     * Returns shallow copy. Want this to be modifiable but to not mess up the
-     * original keyset.
+     * Returns shallow copy. The intention is for this to be modifiable but to
+     * not mess up the original keyset.
      */
-    private Set<DataFlowNode> copyOfBasicBlocksSet() {
+    private Set<DataFlowNode> allBasicBlocks() {
         return new HashSet<DataFlowNode>(this.inSets.keySet());
     }
 
     /**
      * Goes through all DataFlowNodes and gets their subexpressions.
      */
-    private ImmutableSet<Subexpression> getAllSubexpressions(Set<DataFlowNode> blocks) {
+    private static ImmutableSet<Subexpression> getAllSubexpressions(Set<DataFlowNode> blocks) {
         Set<Subexpression> subexpressions = new HashSet<Subexpression>();
-        GeneralExpression candidate;
 
-        /*
-         * TODO(Manny): figure out when NativeExpression is "complex-enough" to
-         * be worth saving.
-         * NOTES: Save top level
-         * don't save method calls
-         */
         for (DataFlowNode block : blocks) {
             if (block instanceof AssignmentDataFlowNode) {
                 // Add NativeExpression on the right hand side
@@ -277,17 +298,36 @@ public class AvailabilityCalculator {
      * Adds the potential subexpression to the list only if it is complex
      * enough and has no method calls.
      */
-    private void conditionalAdd(GeneralExpression ge, Scope scope, Collection<Subexpression> collection) {
+    private static void conditionalAdd(GeneralExpression ge, Scope scope,
+            Collection<Subexpression> collection) {
         if (isComplexEnough(ge) && !(containsMethodCall(ge))) {
             collection.add(new Subexpression((NativeExpression)ge,scope));
         }
+    }
+    
+    /**
+     * Adds the potential subexpression to the list only if it is complex
+     * enough and has no method calls. Asserts that the subexpression is in
+     * allExpressions.
+     *
+     * Used when calculating gen and kill sets to make sure that the
+     * subexpression is in the calculated set of all subexpressions (E).
+     */
+    private static void conditionalAdd(GeneralExpression ge, Scope scope,
+            Collection<Subexpression> collection, Set<Subexpression> allExpressions) {
+        if (isComplexEnough(ge) && !(containsMethodCall(ge))) {
+            Subexpression toBeAdded = new Subexpression((NativeExpression) ge, scope);
+            checkState(allExpressions.contains(toBeAdded),"getAllSubexpressions didn't generate all expressions.");
+            collection.add(toBeAdded);
+        }
+        
     }
 
     /**
      * Determines if a NativeExpression is complex enough to be worth saving.
      * Does not check for MethodCalls inside of GeneralExpression.
      */
-    private boolean isComplexEnough(GeneralExpression ge) {
+    private static boolean isComplexEnough(GeneralExpression ge) {
         return (ge instanceof BinaryOperation)
                 || (ge instanceof MethodCall)
                 || (ge instanceof TernaryOperation)
@@ -298,7 +338,7 @@ public class AvailabilityCalculator {
      * Returns true is there is a MethodCall in any part of the
      * GeneralExpression.
      */
-    private boolean containsMethodCall(GeneralExpression ge) {
+    private static boolean containsMethodCall(GeneralExpression ge) {
         if (ge instanceof BinaryOperation) {
             return containsMethodCall( ((BinaryOperation) ge).getLeftArgument())
                     || containsMethodCall( ((BinaryOperation) ge).getRightArgument());
