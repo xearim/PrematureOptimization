@@ -5,6 +5,8 @@ import edu.mit.compilers.codegen.DataFlowIntRep;
 
 public interface DataFlowOptimizer {
 
-    /** Return an optimized copy of the IR. */
-    public DataFlowIntRep optimized(DataFlowIntRep ir);
+    // TODO(jasonpr): Figure out a good way to copy a DataFlow, so that we
+    // can make a copy of the DataFlowIntRep and not mutate the original.
+    /** Apply a data flow optimization to the IR (mutating it). */
+    public void optimize(DataFlowIntRep ir);
 }

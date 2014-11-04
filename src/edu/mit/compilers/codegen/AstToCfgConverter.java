@@ -51,7 +51,7 @@ public class AstToCfgConverter {
         DataFlow dataFlowGraph = new BlockDataFlowFactory(method.getBlock()).getDataFlow();
         DataFlowIntRep ir = new DataFlowIntRep(dataFlowGraph, method.getBlock().getScope());
         for (String optName : enabledOptimizations) {
-            ir = OPTIMIZERS.get(optName).optimized(ir);
+            OPTIMIZERS.get(optName).optimize(ir);
         }
         return new MethodGraphFactory(dataFlowGraph, method.getName(),
                 method.isVoid(), method.getBlock().getMemorySize()).getGraph();

@@ -3,11 +3,14 @@ package edu.mit.compilers.optimization;
 import java.util.Collection;
 import java.util.Map;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.GeneralExpression;
-import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
@@ -30,8 +33,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
     private static final String TEMP_VAR_PREFIX = "cse_temp";
 
     @Override
-    public DataFlowIntRep optimized(DataFlowIntRep ir) {
-        return new Eliminator(ir).optimize();
+    public void optimize(DataFlowIntRep ir) {
+        new Eliminator(ir).optimize();
     }
 
     // TODO(jasonpr): Figure out why this helper class feels so hacky, and unhack it.
@@ -47,7 +50,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         private final DataFlowIntRep ir;
         private final AvailabilityCalculator availCalc;
         private final Collection<DataFlowNode> nodes;
-        private final Map<GeneralExpression, Variable> tempVars;
+        // TODO(jasonpr): Use ScopedExpression, not NativeExpression.
+        private final Map<NativeExpression, Variable> tempVars;
 
         public Eliminator(DataFlowIntRep ir) {
             this.ir = ir;
@@ -56,24 +60,23 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             this.tempVars = tempVars(expressions(nodes));
         }
 
-        public DataFlowIntRep optimize() {
+        public void optimize() {
             for (DataFlowNode node : nodes) {
                 // The cast will always succeed: non-statement nodes have no
                 // expressions, so we'll never enter this loop if the cast would fail.
                 StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
-                for (GeneralExpression expr : nodeExprs(node)) {
+                for (NativeExpression expr : nodeExprs(statementNode)) {
                     if (availCalc.isAvailable(expr, statementNode)) {
                         replace(statementNode, useTemp(node, expr));
                     } else {
                         // For now, we alway generate if it's not available.
                         // TODO(jasonpr): Use 'reasons' or 'benefactors' to reduce
                         // amount of unnecessary temp filling.
+                        addToScope(statementNode, expr);
                         replace(statementNode, fillAndUseTemp(node, expr));
                     }
                 }
             }
-            // TODO(jasonpr): Implement.
-            throw new RuntimeException("Must return newly constructed DataFlowIntRep.");
         }
 
 
@@ -98,23 +101,64 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             // TODO(jasonpr): Implement!
             throw new RuntimeException("Not yet implemented!");
         }
+
+        /**
+         * Replace a data flow node.
+         *
+         * <p>The replacement will be hooked up to the old node's predecessor and successor.
+         */
+        private void replace(SequentialDataFlowNode old, DataFlow replacement) {
+            // Link the new one in.
+            if (old.hasPrev()) {
+                old.getPrev().replaceSuccessor(old, replacement.getBeginning());
+                replacement.getBeginning().setPrev(old.getPrev());
+            }
+            if (old.hasNext()) {
+                old.getNext().replacePredecessor(old, replacement.getEnd());
+                replacement.getEnd().setNext(old.getNext());
+            }
+
+            // If the old node was a beginning or end node, let the DataFlow know
+            // what its new terminal is.
+            // (We will never replace any control nodes, because those nodes
+            // are never StatementDataFlowNodes.)
+            if (old.equals(ir.getDataFlowGraph().getBeginning())) {
+                ir.getDataFlowGraph().setBeginning(replacement.getBeginning());
+            }
+            if (old.equals(ir.getDataFlowGraph().getEnd())) {
+                ir.getDataFlowGraph().setEnd(replacement.getEnd());
+            }
+        }
+
+        private void addToScope(StatementDataFlowNode node, NativeExpression expr) {
+            Variable var = tempVars.get(expr);
+            FieldDescriptor fieldDesc = FieldDescriptor.forCompilerVariable(var);
+            // TODO(jasonpr): Add to most specific scope possible.
+            ir.getScope().addVariable(fieldDesc);
+        }
     }
 
-    /** Generate a map from expression to temporary variable, for some expressions. */
-    private static Map<GeneralExpression, Variable> tempVars(Iterable<GeneralExpression> exprs) {
-        ImmutableMap.Builder<GeneralExpression, Variable> builder = ImmutableMap.builder();
+    /**
+     * Generate a map from expression to temporary variable, for some expressions.
+     *
+     * <p>Non-native expressions are ignored-- we can't store them in variables!
+     */
+    private static Map<NativeExpression, Variable> tempVars(Iterable<NativeExpression> exprs) {
+        ImmutableMap.Builder<NativeExpression, Variable> builder = ImmutableMap.builder();
         int tempNumber = 0;
-        for (GeneralExpression expr : exprs) {
-            builder.put(expr, Variable.forCompiler(TEMP_VAR_PREFIX + tempNumber++));
+        for (NativeExpression expr : exprs) {
+                builder.put(expr, Variable.forCompiler(TEMP_VAR_PREFIX + tempNumber++));
         }
         return builder.build();
     }
 
     /** Get all the optimizable expressions from some nodes. */
-    private static Iterable<GeneralExpression> expressions(Iterable<DataFlowNode> nodes) {
-        ImmutableSet.Builder<GeneralExpression> builder = ImmutableSet.builder();
+    private static Iterable<NativeExpression> expressions(Iterable<DataFlowNode> nodes) {
+        ImmutableSet.Builder<NativeExpression> builder = ImmutableSet.builder();
         for (DataFlowNode node : nodes) {
-            builder.addAll(nodeExprs(node));
+            if (node instanceof StatementDataFlowNode) {
+                builder.addAll(nodeExprs((StatementDataFlowNode) node));
+            }
         }
         return builder.build();
     }
@@ -124,27 +168,10 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
      *
      * For now, we ONLY optimize the top-level expressions-- no subexpressions!
      */
-    private static Collection<GeneralExpression> nodeExprs(DataFlowNode node) {
-        return node.getExpressions();
-    }
-
-    /**
-     * Replace a data flow node.
-     *
-     * <p>The replacement will be hooked up to the old node's predecessor and successor.
-     */
-    private static void replace(SequentialDataFlowNode old, DataFlow replacement) {
-        old.getPrev().replaceSuccessor(old, replacement.getBeginning());
-        replacement.getBeginning().setPrev(old.getPrev());
-
-        old.getNext().replacePredecessor(old, replacement.getEnd());
-        replacement.getEnd().setNext(old.getNext());
-
-        // This is buggy: the graph we're operating on is part of a DataFlow.
-        // If we replace a terminal node, we need that DataFlow to hear about it!
-        // So, DataFlowOptimizers must operate on DataFlows, and the terminals must
-        // be updated in the correct circumstances.
-        // TODO(jasonpr): Fix the bug!
-        throw new RuntimeException("Fix the bug!");
+    private static Collection<NativeExpression> nodeExprs(StatementDataFlowNode node) {
+        Optional<? extends NativeExpression> expr = node.getExpression();
+        return expr.isPresent()
+                ? ImmutableList.<NativeExpression>of(expr.get())
+                : ImmutableList.<NativeExpression>of();
     }
 }
