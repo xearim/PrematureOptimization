@@ -29,7 +29,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
     private static final String TEMP_VAR_PREFIX = "cse_temp";
 
     @Override
-    public void optimized(DataFlowIntRep ir) {
+    public void optimize(DataFlowIntRep ir) {
         new Eliminator(ir).optimize();
     }
 
@@ -95,6 +95,34 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             // TODO(jasonpr): Implement!
             throw new RuntimeException("Not yet implemented!");
         }
+
+        /**
+         * Replace a data flow node.
+         *
+         * <p>The replacement will be hooked up to the old node's predecessor and successor.
+         */
+        private void replace(SequentialDataFlowNode old, DataFlow replacement) {
+            // Link the new one in.
+            if (old.hasPrev()) {
+                old.getPrev().replaceSuccessor(old, replacement.getBeginning());
+                replacement.getBeginning().setPrev(old.getPrev());
+            }
+            if (old.hasNext()) {
+                old.getNext().replacePredecessor(old, replacement.getEnd());
+                replacement.getEnd().setNext(old.getNext());
+            }
+
+            // If the old node was a beginning or end node, let the DataFlow know
+            // what its new terminal is.
+            // (We will never replace any control nodes, because those nodes
+            // are never StatementDataFlowNodes.)
+            if (old.equals(ir.getDataFlowGraph().getBeginning())) {
+                ir.getDataFlowGraph().setBeginning(replacement.getBeginning());
+            }
+            if (old.equals(ir.getDataFlowGraph().getEnd())) {
+                ir.getDataFlowGraph().setEnd(replacement.getEnd());
+            }
+        }
     }
 
     /** Generate a map from expression to temporary variable, for some expressions. */
@@ -123,25 +151,5 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
      */
     private static Collection<GeneralExpression> nodeExprs(DataFlowNode node) {
         return node.getExpressions();
-    }
-
-    /**
-     * Replace a data flow node.
-     *
-     * <p>The replacement will be hooked up to the old node's predecessor and successor.
-     */
-    private static void replace(SequentialDataFlowNode old, DataFlow replacement) {
-        old.getPrev().replaceSuccessor(old, replacement.getBeginning());
-        replacement.getBeginning().setPrev(old.getPrev());
-
-        old.getNext().replacePredecessor(old, replacement.getEnd());
-        replacement.getEnd().setNext(old.getNext());
-
-        // This is buggy: the graph we're operating on is part of a DataFlow.
-        // If we replace a terminal node, we need that DataFlow to hear about it!
-        // So, DataFlowOptimizers must operate on DataFlows, and the terminals must
-        // be updated in the correct circumstances.
-        // TODO(jasonpr): Fix the bug!
-        throw new RuntimeException("Fix the bug!");
     }
 }
