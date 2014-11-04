@@ -16,7 +16,7 @@ import edu.mit.compilers.ast.Scope;
 public class Subexpression {
     private final NativeExpression ne;
     private final Scope scope;
-    private final Set<Variable> variables;
+    private final Set<ScopedVariable> variables;
 
     /**
      * The Scope is the immediate scope.
@@ -24,14 +24,14 @@ public class Subexpression {
     public Subexpression(NativeExpression ne, Scope scope) {
         this.ne = ne;
         this.scope = getGeneralScope(scope);
-        this.variables = Variable.getVariablesOf(ne, scope);
+        this.variables = ScopedVariable.getVariablesOf(ne, scope);
     }
 
     /**
      * Finds the first scope that contains a variable from the subexpression
      */
     public Scope getGeneralScope(Scope scope) {
-        Set<Variable> variables = getVariables();
+        Set<ScopedVariable> variables = getVariables();
 
         // Check immediate scope
         if (containsAVariable(scope, variables)) {
@@ -57,14 +57,14 @@ public class Subexpression {
      * Returns true if the Scope contains any of the variables from the
      * global NativeExpression ne.
      */
-    private boolean containsAVariable(Scope s, Set<Variable> variables) {
+    private boolean containsAVariable(Scope s, Set<ScopedVariable> variables) {
         // If there are no variables, then this is probably an expression of only literals.
 //        if (variables.isEmpty()) {
 //        }
-        throw new RuntimeException("Subexpression#containsAVariableFromNativeExpression unimplemented.");
+        throw new UnsupportedOperationException("Subexpression#containsAVariableFromNativeExpression unimplemented.");
     }
 
-    public Set<Variable> getVariables() {
+    public Set<ScopedVariable> getVariables() {
         return this.variables;
     }
 
