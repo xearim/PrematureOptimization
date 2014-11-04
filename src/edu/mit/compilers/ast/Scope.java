@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableCollection;
@@ -19,7 +20,7 @@ public class Scope {
 	private final boolean ofLoop;
 	
 	private Scope(Collection<FieldDescriptor> variables, Optional<Scope> parent, boolean ofLoop) {
-        this.entries = new HashSet<FieldDescriptor>();
+        this.entries = new LinkedHashSet<FieldDescriptor>();
         for (FieldDescriptor var : variables) {
             addVariable(var);
             // TODO(jasonpr): Ask xearim about this loop.  Hopefully we can elimate it.
