@@ -168,12 +168,17 @@ public class AvailabilityCalculator {
                             if (!varKillSets.containsKey(var)) {
                                 varKillSets.put(var, new HashSet<Subexpression>());
                             }
+                            varKillSets.get(var).add(newSubexpr);
                         }
                     }
 
                     if (node instanceof AssignmentDataFlowNode) {
+                        ScopedVariable assignmentTarget = ScopedVariable.getAssigned((AssignmentDataFlowNode) node);
                         // Kill subexpressions with assigned variable
-                        varSets.get(node).add(ScopedVariable.getAssigned((AssignmentDataFlowNode) node));
+                        varSets.get(node).add(assignmentTarget);
+                        if (!varKillSets.containsKey(assignmentTarget)) {
+                            varKillSets.put(assignmentTarget, new HashSet<Subexpression>());
+                        }
                     }
                 }
             }
