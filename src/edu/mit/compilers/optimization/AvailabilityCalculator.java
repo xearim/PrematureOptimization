@@ -144,6 +144,7 @@ public class AvailabilityCalculator {
 
         for (DataFlowNode node : allNodes) {
             genSets.put(node, new HashSet<Subexpression>());
+            killSets.put(node, new HashSet<Subexpression>());
             varSets.put(node, new HashSet<ScopedVariable>());
 
             if (node instanceof StatementDataFlowNode
