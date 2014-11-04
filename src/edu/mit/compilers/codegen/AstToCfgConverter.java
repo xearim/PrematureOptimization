@@ -49,12 +49,9 @@ public class AstToCfgConverter {
 
     public BiTerminalGraph convert(Method method) {
         DataFlow dataFlowGraph = new BlockDataFlowFactory(method.getBlock()).getDataFlow();
-        
+        DataFlowIntRep ir = new DataFlowIntRep(dataFlowGraph, method.getBlock().getScope());
         for (String optName : enabledOptimizations) {
-            // TODO(jasonpr): Pass the whole dataFlowGraph, once the DataFlowOptimizer
-            // interface is fixed.  (Right now, things will break if the beginnign node of
-            // the dataFlowGraph is replaced as part of an optimization.
-            OPTIMIZERS.get(optName).optimize(dataFlowGraph.getBeginning());
+            ir = OPTIMIZERS.get(optName).optimized(ir);
         }
         return new MethodGraphFactory(dataFlowGraph, method.getName(),
                 method.isVoid(), method.getBlock().getMemorySize()).getGraph();
