@@ -29,6 +29,10 @@ public class DataFlow {
             this.continueNode = continueNode;
             this.returnNode = returnNode;
         }
+        
+        public DataControlNodes(){
+        	this(new BranchSinkDataFlowNode(), new BranchSinkDataFlowNode(), new BranchSinkDataFlowNode());
+        }
 
         public BranchSinkDataFlowNode getBreakNode() {
             return breakNode;

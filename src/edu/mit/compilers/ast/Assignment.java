@@ -24,6 +24,11 @@ public class Assignment implements Statement {
         this(location, operation, expression, locationDescriptor, false);
     }
     
+    public static Assignment compilerAssignment(Location location, NativeExpression expr){
+    	return new Assignment(location, AssignmentOperation.SET_EQUALS,
+    						  expr, LocationDescriptor.machineCode(), true);
+    }
+    
     @Override
     public Iterable<? extends Node> getChildren() {
         return ImmutableList.of(location, expression);

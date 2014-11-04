@@ -1,21 +1,36 @@
 package edu.mit.compilers.optimization;
 
+import static edu.mit.compilers.codegen.SequentialDataFlowNode.link;
+
 import java.util.Collection;
 import java.util.Map;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.Location;
+import edu.mit.compilers.ast.LocationDescriptor;
 import edu.mit.compilers.ast.NativeExpression;
+import edu.mit.compilers.ast.ReturnStatement;
+import edu.mit.compilers.ast.ScalarLocation;
+import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.codegen.AssignmentDataFlowNode;
+import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.DataFlowNode;
+import edu.mit.compilers.codegen.MethodCallDataFlowNode;
+import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.StatementDataFlowNode;
 import edu.mit.compilers.codegen.dataflow.DataFlow;
+import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 import edu.mit.compilers.codegen.dataflow.DataFlowUtil;
 import edu.mit.compilers.common.Variable;
 
@@ -88,8 +103,18 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
          * <p>Requires that the expression is available at the node.
          */
         private DataFlow useTemp(DataFlowNode node, GeneralExpression expr) {
-            // TODO(jasonpr): Implement!
-            throw new RuntimeException("Not yet implemented!");
+        	Preconditions.checkState(node instanceof StatementDataFlowNode);
+        	Preconditions.checkState(tempVars.get(expr) != null);
+        	
+        	StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
+        	Scope statementScope = statementNode.getScope();
+        	Preconditions.checkState(statementNode.getExpression().isPresent());
+        	
+        	Location temp = new ScalarLocation(tempVars.get(expr), LocationDescriptor.machineCode());
+        	
+        	StatementDataFlowNode newStatement = getReplacement(statementNode, statementScope, temp);
+        	
+        	return new DataFlow(newStatement, newStatement, new DataControlNodes());
         }
 
         /**
@@ -97,10 +122,65 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
          * its temp variable, and uses that temp variable when executing the
          * node's statement.
          */
-        private DataFlow fillAndUseTemp(DataFlowNode node, GeneralExpression expr) {
+        private DataFlow fillAndUseTemp(DataFlowNode node, NativeExpression expr) {
             // TODO(jasonpr): Implement!
-            throw new RuntimeException("Not yet implemented!");
+        	// The node to replace should actually contain statements
+        	Preconditions.checkState(node instanceof StatementDataFlowNode);
+        	Preconditions.checkState(tempVars.get(expr) != null);
+        	
+        	StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
+        	Scope statementScope = statementNode.getScope();
+        	Preconditions.checkState(statementNode.getExpression().isPresent());
+        	
+        	addToScope(statementNode, expr);
+        	Location temp = new ScalarLocation(tempVars.get(expr), LocationDescriptor.machineCode());
+        	
+        	AssignmentDataFlowNode newTemp = new AssignmentDataFlowNode(
+        			Assignment.compilerAssignment(temp, expr),
+        			statementScope
+        			);
+        	
+        	StatementDataFlowNode newStatement = getReplacement(statementNode, statementScope, temp);
+        	
+        	link(newTemp, newStatement);
+        	
+        	return new DataFlow(newTemp, newStatement, new DataControlNodes());
         }
+        
+        private StatementDataFlowNode getReplacement(StatementDataFlowNode node, 
+        		Scope scope, NativeExpression replacement){
+        	if(node instanceof AssignmentDataFlowNode){
+        		return replaceAssignment((AssignmentDataFlowNode) node, replacement, scope);
+        	} else if(node instanceof CompareDataFlowNode){
+        		return replaceCompare(replacement, scope);
+        	} else if(node instanceof MethodCallDataFlowNode){
+        		throw new AssertionError("Right now we cannot replace methods, we dont know if they are idempotent");
+        	} else if(node instanceof ReturnStatementDataFlowNode){
+        		return replaceReturnStatement(replacement, scope);
+        	} else {
+        		throw new AssertionError("Somehow a StatementDataFlowNode that isn't one");
+        	}
+        }
+        
+        private AssignmentDataFlowNode replaceAssignment(AssignmentDataFlowNode node,
+        		NativeExpression replacement, Scope scope){
+        	return new AssignmentDataFlowNode(
+    				Assignment.compilerAssignment(node.getAssignment().getLocation(), replacement),
+    				scope
+    				);
+        }
+        
+        private CompareDataFlowNode replaceCompare(NativeExpression replacement, Scope scope){
+        	return new CompareDataFlowNode(replacement, scope);
+        }
+        
+        private ReturnStatementDataFlowNode replaceReturnStatement(NativeExpression replacement, Scope scope){
+        	return new ReturnStatementDataFlowNode(
+        			ReturnStatement.compilerReturn(replacement),
+        			scope
+        			);
+        }
+        
 
         /**
          * Replace a data flow node.

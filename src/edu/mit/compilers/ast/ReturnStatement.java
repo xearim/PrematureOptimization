@@ -22,6 +22,10 @@ public class ReturnStatement implements Statement {
         return new ReturnStatement(Optional.of(value), locationDescriptor);
     }
     
+    public static ReturnStatement compilerReturn(NativeExpression value) {
+    	return new ReturnStatement(Optional.of(value), LocationDescriptor.machineCode());
+    }
+    
     @Override
     public Iterable<? extends Node> getChildren() {
         if (value.isPresent()) {
