@@ -31,7 +31,7 @@ public class CharLiteral implements NativeLiteral {
     }
 
     @Override
-    public Iterable<? extends Node> getChildren() {
+    public Iterable<? extends GeneralExpression> getChildren() {
         return ImmutableList.of();
     }
 

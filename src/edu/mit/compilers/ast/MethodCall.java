@@ -18,8 +18,8 @@ public class MethodCall implements Statement, NativeExpression {
     }
     
     @Override
-    public Iterable<? extends Node> getChildren() {
-        return ImmutableList.of(parameterValues);
+    public Iterable<? extends GeneralExpression> getChildren() {
+        return parameterValues.getChildren();
     }
 
     @Override

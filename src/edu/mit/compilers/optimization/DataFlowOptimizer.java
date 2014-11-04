@@ -1,5 +1,6 @@
 package edu.mit.compilers.optimization;
 
+import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.DataFlowIntRep;
 
 public interface DataFlowOptimizer {

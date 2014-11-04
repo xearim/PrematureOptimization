@@ -78,7 +78,7 @@ public class Scope {
      *
      * <p>This method ignores any parent scopes. 
      */
-    private boolean isInScopeImmediately(Variable variable) {
+    public boolean isInScopeImmediately(Variable variable) {
         for (FieldDescriptor entry : entries) {
             if (variable.equals(entry.variable)) {
                 return true;

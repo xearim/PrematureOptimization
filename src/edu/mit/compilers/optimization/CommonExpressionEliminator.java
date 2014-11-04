@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;

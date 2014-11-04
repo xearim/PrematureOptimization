@@ -58,10 +58,12 @@ public class Subexpression {
      * global NativeExpression ne.
      */
     private boolean containsAVariable(Scope s, Set<ScopedVariable> variables) {
-        // If there are no variables, then this is probably an expression of only literals.
-//        if (variables.isEmpty()) {
-//        }
-        throw new UnsupportedOperationException("Subexpression#containsAVariableFromNativeExpression unimplemented.");
+        for(ScopedVariable var : variables){
+        	if(s.isInScopeImmediately(var.getLocation().getVariable())){
+        		return true;
+        	}
+        }
+        return false;
     }
 
     public Set<ScopedVariable> getVariables() {

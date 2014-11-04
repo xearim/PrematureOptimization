@@ -13,6 +13,8 @@ import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
+import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.ast.ScopeType;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.codegen.AssignmentDataFlowNode;
@@ -188,7 +190,18 @@ public class AvailabilityCalculator {
      * sets of DataFlowNodes containing MethodCalls.
      */
     private static Set<ScopedVariable> getGlobals(Set<DataFlowNode> allNodes) {
-        throw new UnsupportedOperationException("AC#getGlobals unimplemented.");
+    	Set<ScopedVariable> globalVars = new HashSet<ScopedVariable>();
+        for(DataFlowNode node : allNodes){
+        	if(node instanceof StatementDataFlowNode){
+	        	for(ScopedVariable var : 
+	        		ScopedVariable.getVariablesOf((StatementDataFlowNode) node)){
+	        		if(var.isGlobal()){
+	        			globalVars.add(var);
+	        		}
+	        	}
+        	}
+        }
+        return globalVars;
     }
 
     /**

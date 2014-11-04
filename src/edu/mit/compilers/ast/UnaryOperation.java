@@ -12,11 +12,11 @@ public class UnaryOperation implements NativeExpression {
             LocationDescriptor locationDescriptor) {
         this.operator = operator;
         this.argument = argument;
-	this.locationDescriptor = locationDescriptor;
+        this.locationDescriptor = locationDescriptor;
     }
     
     @Override
-    public Iterable<? extends Node> getChildren() {
+    public Iterable<? extends GeneralExpression> getChildren() {
         return ImmutableList.of(argument);
     }
 
