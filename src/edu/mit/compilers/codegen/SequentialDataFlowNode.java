@@ -124,7 +124,7 @@ public class SequentialDataFlowNode implements DataFlowNode{
 
     // TODO(jasonpr): Again, this should be an abstract method.
     // This class needs to be at the brunt of a refactoring.
-    public Optional<NativeExpression> getExpression() {
+    public Optional<? extends NativeExpression> getExpression() {
         return Optional.absent();
     }
 

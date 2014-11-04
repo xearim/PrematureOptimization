@@ -37,4 +37,9 @@ public class ReturnStatementDataFlowNode extends SequentialDataFlowNode{
 	            ? ImmutableList.<GeneralExpression>of(returnValue.get())
 	            : ImmutableList.<GeneralExpression>of();
 	}
+
+	@Override
+	public Optional<NativeExpression> getExpression() {
+	    return returnStatement.getValue();
+	}
 }
