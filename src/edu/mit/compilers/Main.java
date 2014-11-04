@@ -165,7 +165,7 @@ class Main {
         ImmutableMap<String, Method> methods = methodsBuilder.build();
         // TODO(jasonpr): Do it for everything, not just main.
         Method main = methods.get(MAIN_METHOD_NAME);
-        BiTerminalGraph controlFlowGraph = AstToCfgConverter.convert(main);
+        BiTerminalGraph controlFlowGraph = AstToCfgConverter.unoptimizing().convert(main);
         new ControlFlowGraphPrinter(outputStream).print(controlFlowGraph.getBeginning());
     }
 
