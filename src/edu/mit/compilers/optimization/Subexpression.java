@@ -23,8 +23,8 @@ public class Subexpression {
      */
     public Subexpression(NativeExpression ne, Scope scope) {
         this.ne = ne;
-        this.scope = getGeneralScope(scope);
         this.variables = ScopedVariable.getVariablesOf(ne, scope);
+        this.scope = getGeneralScope(scope);
     }
 
     /**
@@ -32,6 +32,10 @@ public class Subexpression {
      */
     public Scope getGeneralScope(Scope scope) {
         Set<ScopedVariable> variables = getVariables();
+
+        if (variables.isEmpty()) {
+            return scope.getGlobalScope();
+        }
 
         // Check immediate scope
         if (containsAVariable(scope, variables)) {

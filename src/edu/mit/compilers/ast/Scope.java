@@ -235,6 +235,14 @@ public class Scope {
 		return Optional.<FieldDescriptor>absent();
 	}
 
+	/** Get the global scope that is at the base of this scope's lineage. */
+	public Scope getGlobalScope() {
+	    if (parent.isPresent()) {
+	        return parent.get().getGlobalScope();
+	    }
+	    return this;
+	}
+
     @Override
     public int hashCode() {
         final int prime = 31;

@@ -83,13 +83,13 @@ public abstract class SequentialDataFlowNode implements DataFlowNode{
 
     public Set<DataFlowNode> getPredecessors() {
         return (hasPrev())
-                ? ImmutableSet.<DataFlowNode>of(getNext())
+                ? ImmutableSet.<DataFlowNode>of(getPrev())
                         : ImmutableSet.<DataFlowNode>of();
     }
 
     public Set<DataFlowNode> getSuccessors() {
         return (hasNext())
-                ? ImmutableSet.<DataFlowNode>of(getPrev())
+                ? ImmutableSet.<DataFlowNode>of(getNext())
                 : ImmutableSet.<DataFlowNode>of();
     }
 
