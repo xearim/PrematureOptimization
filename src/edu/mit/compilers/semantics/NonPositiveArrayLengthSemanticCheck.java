@@ -3,7 +3,13 @@ package edu.mit.compilers.semantics;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.mit.compilers.ast.*;
+import edu.mit.compilers.ast.BaseType;
+import edu.mit.compilers.ast.Block;
+import edu.mit.compilers.ast.FieldDescriptor;
+import edu.mit.compilers.ast.Method;
+import edu.mit.compilers.ast.Program;
+import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.ast.Statement;
 import edu.mit.compilers.semantics.errors.NonPositiveArrayLengthSemanticError;
 import edu.mit.compilers.semantics.errors.SemanticError;
 
@@ -35,9 +41,7 @@ public class NonPositiveArrayLengthSemanticCheck implements SemanticCheck {
     }
 
     private void checkScope(Scope scope) {
-        List<FieldDescriptor> fields = scope.getVariables();
-
-        for (FieldDescriptor field : fields) {
+        for (FieldDescriptor field : scope.getVariables()) {
             // Check if field is array
             if (field.getType() != BaseType.VOID && field.getLength().isPresent()) {
                 /*

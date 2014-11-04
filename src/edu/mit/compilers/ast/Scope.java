@@ -1,11 +1,14 @@
 package edu.mit.compilers.ast;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.common.Variable;
@@ -13,41 +16,34 @@ import edu.mit.compilers.common.Variable;
 public class Scope {
 	
 	private Optional<Scope> parent;
-	private final ImmutableList<FieldDescriptor> entries;
+	private final Collection<FieldDescriptor> entries;
 	private final boolean ofLoop;
 	
-	public Scope(List<FieldDescriptor> variables) {
-        this.entries = ImmutableList.copyOf(variables);
-        this.parent = Optional.<Scope>absent();
-        this.ofLoop = false;
-    }
-	
-	public Scope(List<FieldDescriptor> variables, Scope parent) {
-        this.entries = ImmutableList.copyOf(variables);
-        this.parent = Optional.of(parent);
-        this.ofLoop = false;
-        
-        for(FieldDescriptor variable : variables){
-        	if(variable.getLength().isPresent()){
-        		Architecture.CONTAINS_ARRAYS = true;
-        		return;
-        	}
+	private Scope(Collection<FieldDescriptor> variables, Optional<Scope> parent, boolean ofLoop) {
+        this.entries = new HashSet<FieldDescriptor>();
+        for (FieldDescriptor var : variables) {
+            addVariable(var);
+            // TODO(jasonpr): Ask xearim about this loop.  Hopefully we can elimate it.
+            if(var.getLength().isPresent()){
+                Architecture.CONTAINS_ARRAYS = true;
+            }
         }
-    }
-	
-	public Scope(List<FieldDescriptor> variables, Scope parent, boolean ofLoop) {
-        this.entries = ImmutableList.copyOf(variables);
-        this.parent = Optional.of(parent);
+        this.parent = parent;
         this.ofLoop = ofLoop;
-        
-        for(FieldDescriptor variable : variables){
-        	if(variable.getLength().isPresent()){
-        		Architecture.CONTAINS_ARRAYS = true;
-        		return;
-        	}
-        }
+	}
+
+	public Scope(Collection<FieldDescriptor> variables) {
+	    this(variables, Optional.<Scope>absent(), false);
     }
-	
+
+    public Scope(Collection<FieldDescriptor> variables, Scope parent, boolean ofLoop) {
+        this(variables, Optional.of(parent), ofLoop);
+    }
+
+    public Scope(Collection<FieldDescriptor> variables, Scope parent) {
+        this(variables, parent, false);
+    }
+
     public Optional<Scope> getParent() {
         return parent;
     }
@@ -55,10 +51,15 @@ public class Scope {
 	public void setParent(Scope parent){
 		this.parent = Optional.of(parent);
 	}
-	
-	public ImmutableList<FieldDescriptor> getVariables() {
-		return entries;
+
+	public ImmutableCollection<FieldDescriptor> getVariables() {
+		return ImmutableSet.copyOf(entries);
 	}
+
+	public void addVariable(FieldDescriptor descriptor) {
+	    checkArgument(entries.add(descriptor), "Already had FieldDescriptor" + descriptor);
+	}
+
 	/**
 	 * Checks to see if a given identifier corresponds to an actually initialized variable
 	 * visible from this scope looking upwards
@@ -267,5 +268,4 @@ public class Scope {
         }
         return true;
     }
-
 }
