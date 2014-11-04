@@ -129,9 +129,12 @@ public final class Instructions {
         return new JumpTyped(type, target);
     }
     
-    /** Does `enter $x, $0`. Calculated appropriately for a given method */
-    public static Instruction enter(Block methodBlock){
-        return new Enter(methodBlock);
+    /**
+     * Does `enter $x, $0`. Calculated appropriately for a method with the specified number of
+     * entries.
+     */
+    public static Instruction enter(long entries){
+        return new Enter(entries);
     }
     
     /** Does `leave` */

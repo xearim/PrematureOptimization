@@ -13,9 +13,10 @@ import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.instructions.Instructions;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
+import edu.mit.compilers.codegen.dataflow.BlockDataFlowFactory;
+import edu.mit.compilers.codegen.dataflow.DataFlow;
 
 public class MethodBlockPrinter {
-	private final Method method;
 	private final BiTerminalGraph methodGraph;
 	private final Set<ControlFlowNode> multiSourced;
 	private final VisitedSet e;
@@ -42,8 +43,7 @@ public class MethodBlockPrinter {
 	}
 	
 	MethodBlockPrinter(Method method) {
-		this.method = method;
-		this.methodGraph = new MethodGraphFactory(this.method).getGraph();
+		this.methodGraph = AstToCfgConverter.convert(method);
 		this.multiSourced =
 		        new SourceCounter().getMultiSourceNodes(this.methodGraph.getBeginning());
 		this.e = new VisitedSet();
@@ -122,5 +122,4 @@ public class MethodBlockPrinter {
 	private void printLabel(Label label, PrintStream outputStream) {
 	    outputStream.println(label.labelText() + ":");
 	}
-	
 }

@@ -21,6 +21,7 @@ import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.NodeMaker;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.codegen.AssemblyWriter;
+import edu.mit.compilers.codegen.AstToCfgConverter;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 import edu.mit.compilers.grammar.DecafParser;
@@ -164,7 +165,7 @@ class Main {
         ImmutableMap<String, Method> methods = methodsBuilder.build();
         // TODO(jasonpr): Do it for everything, not just main.
         Method main = methods.get(MAIN_METHOD_NAME);
-        BiTerminalGraph controlFlowGraph = new MethodGraphFactory(main).getGraph();
+        BiTerminalGraph controlFlowGraph = AstToCfgConverter.convert(main);
         new ControlFlowGraphPrinter(outputStream).print(controlFlowGraph.getBeginning());
     }
 
