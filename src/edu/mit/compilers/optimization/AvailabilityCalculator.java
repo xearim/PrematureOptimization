@@ -2,6 +2,8 @@ package edu.mit.compilers.optimization;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -96,21 +98,23 @@ public class AvailabilityCalculator {
      * sure that each block is included only once.
      */
     private void createInSets(DataFlowNode entryBlock) {
-        Set<DataFlowNode> visited = new HashSet<DataFlowNode>();
-        Set<DataFlowNode> toBeVisited = new HashSet<DataFlowNode>();
-        toBeVisited.add(entryBlock);
-        this.inSets = new HashMap<DataFlowNode, Set<Subexpression>>();
+        // Just do DFS. Use inSets as the visted set!
+        inSets = new HashMap<DataFlowNode, Set<Subexpression>>();
+        Deque<DataFlowNode> queue = new ArrayDeque<DataFlowNode>();
 
-        while (!toBeVisited.isEmpty()) {
-            DataFlowNode block = toBeVisited.iterator().next();
-            toBeVisited.remove(block);
+        queue.push(entryBlock);
 
-            for (DataFlowNode newBlock : block.getSuccessors()) {
-                // In case there are multiple paths to that block
-                if (!visited.contains(newBlock)) {
-                    visited.add(newBlock);
-                    this.inSets.put(newBlock, new HashSet<Subexpression>());
-                }
+        while (!queue.isEmpty()) {
+            DataFlowNode node = queue.pop();
+            if (inSets.containsKey(node)) {
+                continue;
+            }
+
+            // Add a new, currently empty, set of subexpressions.
+            inSets.put(node, new HashSet<Subexpression>());
+
+            for (DataFlowNode child : node.getSuccessors()) {
+                queue.push(child);
             }
         }
     }
