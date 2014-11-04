@@ -12,6 +12,8 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.add;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.call;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.subtract;
 
 import java.util.List;
 
@@ -21,7 +23,9 @@ import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
+import edu.mit.compilers.codegen.asm.Location;
 import edu.mit.compilers.codegen.asm.Register;
 
 /**
@@ -52,55 +56,84 @@ public class MethodCallGraphFactory implements GraphFactory {
 
         SequentialControlFlowNode preCallStart = SequentialControlFlowNode.namedNop(methodCall.getMethodName() + "()");
         
-        // Need to save Arg registers before method call
-        BiTerminalGraph saveArgRegisters = RegisterSaver.pushAll();
-        preCallStart.setNext(saveArgRegisters.getBeginning());
+        // We need to store the extra arguments above the stored registers
+        int numOverflowingArgs = args.size() > ARG_REGISTERS.size()
+        						? args.size() - ARG_REGISTERS.size()
+        						: 0;
+        BiTerminalGraph offsetStack = BiTerminalGraph.ofInstructions(subtract(new Literal(args.size() * Architecture.WORD_SIZE), RSP));
+        preCallStart.setNext(offsetStack.getBeginning());
         
-        SequentialControlFlowNode preCallEnd = saveArgRegisters.getEnd();
-
+        SequentialControlFlowNode preCallEnd = offsetStack.getEnd();
+        
         // Setup args for call.
-        int argNumber = args.size() - 1;
-        while (argNumber >= 0) {
+        int argNumber = 0;
+        while (argNumber < args.size()) {
             BiTerminalGraph argEvaluator =
                     new GeneralExprGraphFactory(args.get(argNumber), scope).getGraph();
 
-            BiTerminalGraph argSetup;
-            if (argNumber >= ARG_REGISTERS.size()) {
-                // Once it's on the stack, we leave it there for the function call.
-                argSetup = argEvaluator;
-            } else {
-                // Take if off the stack and put it in a register for the function call.
-                argSetup = BiTerminalGraph.sequenceOf(argEvaluator,
-                        BiTerminalGraph.ofInstructions(pop(ARG_REGISTERS.get(argNumber))));
-            }
+            // Once it's on the stack, we leave it there for the function call.
+            BiTerminalGraph argSetup = BiTerminalGraph.sequenceOf(argEvaluator,
+                				BiTerminalGraph.ofInstructions(
+                				pop(Register.R10),
+                				move(Register.R10, 
+                					new Location(RSP, (argNumber)*Architecture.BYTES_PER_ENTRY))
+                					));
 
             // Hook this arg setup into the graph.
             preCallEnd.setNext(argSetup.getBeginning());
             preCallEnd = argSetup.getEnd();
 
-            argNumber--;
+            argNumber++;
         }
+        
+        // Need to save Arg registers before method call
+        BiTerminalGraph saveArgRegisters = RegisterSaver.pushAll();
+        preCallEnd.setNext(saveArgRegisters.getBeginning());
+        preCallEnd = saveArgRegisters.getEnd();
+        
+        // Now we need to move the guys we stashed above to their final resting spots
+        argNumber = args.size() - 1;
+        int offset = 0;
+        while (argNumber >= 0){
+        	BiTerminalGraph socketArgs;
+        	if(argNumber >= ARG_REGISTERS.size()){
+            	// Take if off the stack and put it in the expected loc at the bottom
+        		socketArgs = BiTerminalGraph.ofInstructions(
+        			move(new Location(RSP, (argNumber + ARG_REGISTERS.size() + offset)*Architecture.BYTES_PER_ENTRY), Register.R10),
+        			push(Register.R10));
+        		offset++;
+        	} else {
+            	// Take if off the stack and put it in a register for the function call.
+                socketArgs = BiTerminalGraph.ofInstructions(
+            			move(new Location(RSP, (argNumber + ARG_REGISTERS.size() + offset)*Architecture.BYTES_PER_ENTRY),
+            					ARG_REGISTERS.get(argNumber)));
+        	}
+        	
+        	preCallEnd.setNext(socketArgs.getBeginning());
+        	preCallEnd = socketArgs.getEnd();
+        	
+        	argNumber--;
+        }
+        
+        
         BiTerminalGraph preCall = new BiTerminalGraph(preCallStart, preCallEnd);
 
         BiTerminalGraph call = BiTerminalGraph.ofInstructions(call(methodCall.getMethodName()));
 
-        int numOverflowingArgs = args.size() - ARG_REGISTERS.size();
-        BiTerminalGraph postCall = (numOverflowingArgs > 0)
-                ? BiTerminalGraph.sequenceOf(
+        BiTerminalGraph postCall = BiTerminalGraph.sequenceOf(
                         // Remove the pushed arguments from the stack.
-                        BiTerminalGraph.ofInstructions(add(new Literal(numOverflowingArgs * 8L), RSP)),
+                        BiTerminalGraph.ofInstructions(add(new Literal(numOverflowingArgs * Architecture.WORD_SIZE), RSP)),
                         // Restore Arg Registers
                         RegisterSaver.popAll(),
+                        // fix the scratch space
+                        BiTerminalGraph.ofInstructions(add(new Literal(args.size() * Architecture.WORD_SIZE), RSP)),
                         // Put the return value on the stack
-                        BiTerminalGraph.ofInstructions(push(RAX)))
-                : BiTerminalGraph.sequenceOf(
-                		// Restore Arg Registers
-                		RegisterSaver.popAll(),
-                		// Put the return value on the stack
-                		BiTerminalGraph.ofInstructions(push(RAX)));
-
+                        BiTerminalGraph.ofInstructions(push(RAX)));
         // TODO(jasonpr): Do 16-byte alignment.
-        return BiTerminalGraph.sequenceOf(preCall, call, postCall);
+        return BiTerminalGraph.sequenceOf(
+        		preCall, 
+        		call, 
+        		postCall);
     }
 
     @Override

@@ -2,6 +2,8 @@ package edu.mit.compilers.semantics;
 
 import java.util.List;
 
+import com.google.common.base.Preconditions;
+
 import edu.mit.compilers.semantics.errors.SemanticError;
 
 public class Utils {
@@ -50,7 +52,18 @@ public class Utils {
      * hex digits.
      */
     private static boolean isHex(String i) {
-        return i.matches(HEX_START + HEX_DIGIT + "{1,16}");
+        if(i.matches("-*" + HEX_START + HEX_DIGIT + "{1,16}")){
+        	boolean b;
+            try {
+                Long.parseLong(i.replace(HEX_START, ""), 16);
+                b = true;
+            } catch (NumberFormatException e) {
+                b = false;
+            }
+            return b;
+        } else {
+        	return false;
+        }
     }
 
     /**
@@ -61,6 +74,15 @@ public class Utils {
      */
     public static boolean isWithinBounds(String i) {
         return isDecimal(i) || isHex(i);
+    }
+    
+    public static long parseLong(String i) {
+    	Preconditions.checkState(isWithinBounds(i));
+    	if(i.contains(HEX_START)){
+    		return Long.parseLong(i.replace(HEX_START, ""), 16);
+    	} else {
+    		return Long.parseLong(i);
+    	}
     }
 
 }

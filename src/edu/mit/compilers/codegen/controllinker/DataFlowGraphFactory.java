@@ -17,6 +17,7 @@ import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes;
 import edu.mit.compilers.codegen.controllinker.statements.AssignmentGraphFactory;
 import edu.mit.compilers.codegen.controllinker.statements.CompareGraphFactory;
+import edu.mit.compilers.codegen.controllinker.statements.MethodCallStatementGraphFactory;
 import edu.mit.compilers.codegen.controllinker.statements.ReturnStatementGraphFactory;
 import edu.mit.compilers.codegen.dataflow.DataFlow;
 
@@ -106,7 +107,7 @@ public class DataFlowGraphFactory implements ControlTerminalGraphFactory {
     private void ProcessMethodCallDataFlowNode(MethodCallDataFlowNode currentNode,
     		SequentialControlFlowNode end){
     	// Build the method call graph
-    	BiTerminalGraph methodCallGraph = new MethodCallGraphFactory(currentNode.getMethodCall(),
+    	ControlTerminalGraph methodCallGraph = new MethodCallStatementGraphFactory(currentNode.getMethodCall(),
     			currentNode.getScope()).getGraph();	
     	end.setNext(methodCallGraph.getBeginning());
     	// Recurse if we can, else we have hit the end, set the final node
