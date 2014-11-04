@@ -10,7 +10,7 @@ import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.Scope;
 
-public class ReturnStatementDataFlowNode extends SequentialDataFlowNode{
+public class ReturnStatementDataFlowNode extends StatementDataFlowNode{
 	
 	private Scope scope;
 	private ReturnStatement returnStatement;
@@ -36,5 +36,10 @@ public class ReturnStatementDataFlowNode extends SequentialDataFlowNode{
 	    return returnValue.isPresent()
 	            ? ImmutableList.<GeneralExpression>of(returnValue.get())
 	            : ImmutableList.<GeneralExpression>of();
+	}
+
+	@Override
+	public Optional<NativeExpression> getExpression() {
+	    return returnStatement.getValue();
 	}
 }

@@ -22,7 +22,7 @@ import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.MethodCallDataFlowNode;
 import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
-import edu.mit.compilers.codegen.SequentialDataFlowNode;
+import edu.mit.compilers.codegen.StatementDataFlowNode;
 
 /**
  * Given a basic block, the AvailabilityCalculator computes all available
@@ -298,8 +298,6 @@ public class AvailabilityCalculator {
     /**
      * Takes care of adding information for a ReturnStatementDataFlowNode to
      * allSubexpressions and genSets.
-     *
-     * TODO(Manny): generate kill set also.
      */
     private static void addReturnStatementData(ReturnStatementDataFlowNode returnNode,
             Set<Subexpression> allSubexpressions,
@@ -406,18 +404,14 @@ public class AvailabilityCalculator {
         }
     }
 
-    /**
-     * Returns all subexpressions available at that node.
-     */
+    /** Returns all subexpressions available at that node. */
     public Set<Subexpression> availableSubexpressionsAt(DataFlowNode node) {
         return this.inSets.get(node);
     }
 
 
-    /**
-     * Return whether an expression is available at a DataFlowNode.
-     */
-    public boolean isAvailable(GeneralExpression expr, SequentialDataFlowNode node) {
+    /** Return whether an expression is available at a DataFlowNode. */
+    public boolean isAvailable(GeneralExpression expr, StatementDataFlowNode node) {
         if (!(expr instanceof NativeExpression)) {
             // Only NativeExpressions are ever available.
             return false;
