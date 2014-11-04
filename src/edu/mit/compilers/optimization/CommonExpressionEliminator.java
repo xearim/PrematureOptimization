@@ -135,5 +135,12 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
 
         old.getNext().replacePredecessor(old, replacement.getEnd());
         replacement.getEnd().setNext(old.getNext());
+
+        // This is buggy: the graph we're operating on is part of a DataFlow.
+        // If we replace a terminal node, we need that DataFlow to hear about it!
+        // So, DataFlowOptimizers must operate on DataFlows, and the terminals must
+        // be updated in the correct circumstances.
+        // TODO(jasonpr): Fix the bug!
+        throw new RuntimeException("Fix the bug!");
     }
 }

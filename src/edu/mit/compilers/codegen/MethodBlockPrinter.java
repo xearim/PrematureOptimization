@@ -42,8 +42,8 @@ public class MethodBlockPrinter {
 		}
 	}
 	
-	MethodBlockPrinter(Method method) {
-		this.methodGraph = AstToCfgConverter.convert(method);
+	MethodBlockPrinter(Method method, Set<String> optimizationNames) {
+		this.methodGraph = AstToCfgConverter.withOptimizations(optimizationNames).convert(method);
 		this.multiSourced =
 		        new SourceCounter().getMultiSourceNodes(this.methodGraph.getBeginning());
 		this.e = new VisitedSet();

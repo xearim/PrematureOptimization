@@ -56,7 +56,7 @@ public class AssemblyWriter {
             outputStream.println("\t.globl main");
         }
         outputStream.println(method.getName() + ":");
-        MethodBlockPrinter methodGraph = new MethodBlockPrinter(method);
+        MethodBlockPrinter methodGraph = new MethodBlockPrinter(method, optimizationNames);
         methodGraph.printStream(outputStream);
         outputStream.println();
     }
