@@ -1,6 +1,5 @@
 package edu.mit.compilers.ast;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
@@ -56,8 +55,13 @@ public class Scope {
 		return ImmutableSet.copyOf(entries);
 	}
 
+	/**
+	 * Add an entry to the scope.
+	 *
+	 * <p>The entry is allowed to be a duplicate.
+	 */
 	public void addVariable(FieldDescriptor descriptor) {
-	    checkArgument(entries.add(descriptor), "Already had FieldDescriptor" + descriptor);
+	    entries.add(descriptor);
 	}
 
 	/**
