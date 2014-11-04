@@ -1,20 +1,22 @@
 package edu.mit.compilers.optimization;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
+import edu.mit.compilers.ast.TernaryOperation;
+import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.codegen.AssignmentDataFlowNode;
-import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
-import edu.mit.compilers.codegen.MethodCallDataFlowNode;
-import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
 import edu.mit.compilers.codegen.StatementDataFlowNode;
 
 /**
@@ -32,74 +34,56 @@ public class AvailabilityCalculator {
      * Runs the fixed-point algorithm for available expressions when created.
      * Afterwards, can be asked what the available expressions are at each
      * basic block.
+     *
+     * TODO(Manny): refactor so it's not one mega function.
      */
     private void calculateAvailability(DataFlowNode entryBlock) {
-        /*
-         * Set up variables for algorithm:
-         * - IN and OUT
-         * - GEN and KILL
-         * - changed
-         * - all subexpressions (E)
-         */
+        // Set up IN
         createInSets(entryBlock);
         Set<DataFlowNode> allBlocks = ImmutableSet.copyOf(this.inSets.keySet());
-        Set<Subexpression> allSubexpressions = getAllSubexpressions(allBlocks);
+
+        // Initialize the parameter sets
+        Set<Subexpression> allSubexpressions = new HashSet<Subexpression>();
+        Map<DataFlowNode, Set<Subexpression>> genSets = new HashMap<DataFlowNode, Set<Subexpression>>();
+        Map<DataFlowNode, Set<Subexpression>> killSets = new HashMap<DataFlowNode, Set<Subexpression>>();
+        calculateConstants(allBlocks, allSubexpressions,genSets,killSets);
+
+        // Set up OUT
         Map<DataFlowNode, Set<Subexpression>> outSets =
                 new HashMap<DataFlowNode, Set<Subexpression>>();
-        Map<DataFlowNode, Set<Subexpression>> genSets = calculateGenSets(allBlocks);
-        Map<DataFlowNode, Set<Subexpression>> killSets = calculateKillSets(allBlocks);
         Set<DataFlowNode> changed;
 
+
         // Run algorithm
-        // for all nodes n in N
         for (DataFlowNode block : inSets.keySet()) {
-            // OUT[n] = E;
             outSets.put(block, new HashSet<Subexpression>(allSubexpressions));
         }
-        // IN[Entry] = emptySet;
-        // All IN sets are already initialized to the emptySet.
 
-        // OUT[Entry] = GEN[Entry];
         outSets.put(entryBlock, new HashSet<Subexpression>(
                 genSets.get(entryBlock)));
 
-        // Changed = N - {Entry};
-        changed = copyOfBasicBlocksSet();
-        Preconditions.checkState(changed.remove(entryBlock),
+        changed = allBasicBlocks();
+        checkState(changed.remove(entryBlock),
                 "entryBlock is not in set of all blocks.");
 
-        // While (Changed != emptyset)
         while (!changed.isEmpty()) {
             DataFlowNode block;
             Set<Subexpression> newOut;
 
-            // Choose a node n in Changed
             block = changed.iterator().next();
-            // Changed = N - {n}
             changed.remove(block);
 
-            // IN[n] = E
             this.inSets.put(block, new HashSet<Subexpression>(allSubexpressions));
-            // for all nodes p in predecessors(n)
             for (DataFlowNode predecessor : block.getPredecessors()) {
-                // IN[n] = intersection( IN[n], OUT[p] )
                 this.inSets.get(block).retainAll(outSets.get(predecessor));
             }
 
-            // OUT[n] = union( GEN[n], IN[n] - KILL[n] )
             newOut = new HashSet<Subexpression>(this.inSets.get(block));
-            newOut.removeAll(killSets.get(block));
             newOut.addAll(genSets.get(block));
+            newOut.removeAll(killSets.get(block));
 
-            // If (OUT[n] changed)
             if (!newOut.equals(outSets.get(block))) {
-                // Store new OUT[n], note: not explicitly in algorithm
                 outSets.put(block, newOut);
-
-                /*
-                 * for all nodes s in successors(n)
-                 *   Changed = union( Changed, {s} )
-                 */
                 changed.addAll(block.getSuccessors());
             }
         }
@@ -130,115 +114,130 @@ public class AvailabilityCalculator {
     }
 
     /**
-     * Produces a mapping from DataFlowNodes to a list of subexpressions that
-     * they generate. The types of DataFlowNodes that generate subexpressions
-     * are Assignments, Compare, MethodCalls and Return Statements.
-     * 
-     * Assignments generate whatever is evaluated on the right.
-     * 
-     * Compares generate their left and right arguments.
-     * 
-     * MethodCalls generate their parameters.
-     * 
-     * ReturnStatements generate their return values.
+     * Calculates allSubexpressions (E), the GEN sets, and the KILL sets, and
+     * sets them to the appropriate variable. The only one of these parameters
+     * that needs to be initialized is allNodes.
+     *
+     * GEN sets are generated by Assignments, Compares, MethodCalls, and
+     * ReturnStatements.
+     *
+     * KILL sets are generated by Assignments and MethodCalls.
+     *
+     * @param allNodes - all the DataFlowNodes of interest in this program
+     * TODO(Manny): make sure that += and -= work like how they should
      */
-    private Map<DataFlowNode, Set<Subexpression>> calculateGenSets(
-            Set<DataFlowNode> blocks) {
-        Map<DataFlowNode, Set<Subexpression>> genSets =
-                new HashMap<DataFlowNode, Set<Subexpression>>();
+    private static void calculateConstants(Set<DataFlowNode> allNodes,
+            Set<Subexpression> allSubexpressions,
+            Map<DataFlowNode,Set<Subexpression>> genSets,
+            Map<DataFlowNode, Set<Subexpression>> killSets) {
 
-        for (DataFlowNode block : blocks) {
-            if (block instanceof AssignmentDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
-            } else if (block instanceof CompareDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: CompareDataFlowNode path unimplemented.");
-            } else if (block instanceof MethodCallDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
-            } else if (block instanceof ReturnStatementDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: ReturnStatementDataFlowNode path unimplemented.");
-            } else {
-                /*
-                 * If not any of these nodes, then it doesn't have any
-                 * expressions. The GEN set is empty for this block.
-                 */
-                genSets.put(block, ImmutableSet.<Subexpression>of());
+        // Set up sets necessary to determine killSets
+        Map<DataFlowNode, Set<ScopedVariable>> varSets = new HashMap<DataFlowNode, Set<ScopedVariable>>();
+        Map<ScopedVariable, Set<Subexpression>> varKillSets = new HashMap<ScopedVariable, Set<Subexpression>>();
+        Set<ScopedVariable> globals = getGlobals(allNodes);
+
+        for (DataFlowNode node : allNodes) {
+            genSets.put(node, new HashSet<Subexpression>());
+            varSets.put(node, new HashSet<ScopedVariable>());
+
+            if (node instanceof StatementDataFlowNode
+                    && ((StatementDataFlowNode) node).getExpression().isPresent()) {
+                NativeExpression ne = ((StatementDataFlowNode) node).getExpression().get();
+
+                if (isComplexEnough(ne)) {
+                    if (containsMethodCall(ne)) {
+                        // Kill subexpressions with globals
+                        varSets.get(node).addAll(globals);
+
+                    } else {
+                        Subexpression newSubexpr = new Subexpression(ne, ((StatementDataFlowNode) node).getScope());
+
+                        // Put it in allSubexpressions and the GEN set of this node.
+                        allSubexpressions.add(newSubexpr);
+                        genSets.get(node).add(newSubexpr);
+
+                        // Note what kills that subexpression
+                        for (ScopedVariable var : newSubexpr.getVariables()) {
+                            if (!varKillSets.containsKey(var)) {
+                                varKillSets.put(var, new HashSet<Subexpression>());
+                            }
+                        }
+                    }
+
+                    if (node instanceof AssignmentDataFlowNode) {
+                        // Kill subexpressions with assigned variable
+                        varSets.get(node).add(ScopedVariable.getAssigned((AssignmentDataFlowNode) node));
+                    }
+                }
             }
         }
 
-        return genSets;
-    }
-
-    /**
-     * Produces a mapping from DataFlowNodes to a list of subexpressions that
-     * they kill. The types of DataFlowNodes that makes subexpressions
-     * unavailable are Assignments, MethodCalls, and Return Statements.
-     * 
-     * Assignments kill all subexpressions that rely on the variable being
-     * assigned.
-     * 
-     * MethodCalls kill all subexpressions that rely on global variables.
-     * TODO(Manny): Make methods only kill globals that they change.
-     * 
-     * ReturnStatements kill all subexpressions of that method scope level.
-     */
-    // TODO(Manny): Should this be calculated separately, or with the GEN sets?
-    private Map<DataFlowNode, Set<Subexpression>> calculateKillSets(
-            Set<DataFlowNode> blocks) {
-        Map<DataFlowNode, Set<Subexpression>> killSets =
-                new HashMap<DataFlowNode, Set<Subexpression>>();
-
-        for (DataFlowNode block : blocks) {
-            if (block instanceof AssignmentDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
-            } else if (block instanceof MethodCallDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
-            } else if (block instanceof ReturnStatementDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: ReturnStatementDataFlowNode path unimplemented.");
-            } else {
-                /*
-                 * If not any of these nodes, then it doesn't have any
-                 * expressions. The KILL set is empty for this block.
-                 */
-                killSets.put(block, ImmutableSet.<Subexpression>of());
+        for (DataFlowNode node : allNodes) {
+            for (ScopedVariable var : varSets.get(node)) {
+                for (Subexpression subexpr : varKillSets.get(var)) {
+                    killSets.get(node).add(subexpr);
+                }
             }
         }
 
-        return killSets;
+        // TODO(Manny): convert all of these to immutables
     }
 
     /**
-     * Returns shallow copy. Want this to be modifiable but to not mess up the
-     * original keyset.
+     * Returns the set of all global variables. Intended for generating kill
+     * sets of DataFlowNodes containing MethodCalls.
      */
-    private Set<DataFlowNode> copyOfBasicBlocksSet() {
+    private static Set<ScopedVariable> getGlobals(Set<DataFlowNode> allNodes) {
+        throw new UnsupportedOperationException("AC#getGlobals unimplemented.");
+    }
+
+    /**
+     * Returns shallow copy. The intention is for this to be modifiable but to
+     * not mess up the original keyset.
+     */
+    private Set<DataFlowNode> allBasicBlocks() {
         return new HashSet<DataFlowNode>(this.inSets.keySet());
     }
 
     /**
-     * Goes through all DataFlowNodes and gets their subexpressions.
+     * Determines if a NativeExpression is complex enough to be worth tracking.
+     * Does not check for MethodCalls inside of GeneralExpression.
+     * Any GeneralExpression that passes this check may be considered a
+     * NativeExpression.
      */
-    private ImmutableSet<Subexpression> getAllSubexpressions(Set<DataFlowNode> blocks) {
-        Set<Subexpression> subexpressions = new HashSet<Subexpression>();
+    private static boolean isComplexEnough(GeneralExpression ge) {
+        return (ge instanceof BinaryOperation)
+                || (ge instanceof MethodCall)
+                || (ge instanceof TernaryOperation)
+                || (ge instanceof UnaryOperation);
+    }
 
-        for (DataFlowNode block : blocks) {
-            if (block instanceof AssignmentDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: AssignmentDataFlowNode path unimplemented.");
-            } else if (block instanceof CompareDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: CompareDataFlowNode path unimplemented.");
-            } else if (block instanceof MethodCallDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
-            } else if (block instanceof ReturnStatementDataFlowNode) {
-                throw new UnsupportedOperationException("AvailabilityCalculator#calculateGenSets: MethodCallDataFlowNode path unimplemented.");
-            }
-            // The other nodes don't produce any subexpressions
+    /**
+     * Returns true is there is a MethodCall in any part of the
+     * GeneralExpression.
+     */
+    private static boolean containsMethodCall(GeneralExpression ge) {
+        if (ge instanceof BinaryOperation) {
+            return containsMethodCall( ((BinaryOperation) ge).getLeftArgument())
+                    || containsMethodCall( ((BinaryOperation) ge).getRightArgument());
+        }  else if (ge instanceof MethodCall) {
+            return true;
+        } else if (ge instanceof TernaryOperation) {
+            return containsMethodCall( ((TernaryOperation) ge).getCondition())
+                    || containsMethodCall( ((TernaryOperation) ge).getTrueResult())
+                    || containsMethodCall( ((TernaryOperation) ge).getFalseResult());
+        } else if (ge instanceof UnaryOperation) {
+            return containsMethodCall( ((UnaryOperation) ge).getArgument());
+        } else {
+            return false;
         }
-
-        return ImmutableSet.<Subexpression>copyOf(subexpressions);
     }
 
-    public Set<Subexpression> getAvailableSubexpressionsOfBasicBlock(DataFlowNode b) {
-        return inSets.get(b);
+    /** Returns all subexpressions available at that node. */
+    public Set<Subexpression> availableSubexpressionsAt(DataFlowNode node) {
+        return this.inSets.get(node);
     }
+
 
     /** Return whether an expression is available at a DataFlowNode. */
     public boolean isAvailable(GeneralExpression expr, StatementDataFlowNode node) {
