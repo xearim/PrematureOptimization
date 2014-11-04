@@ -4,13 +4,11 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.enter;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.leave;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
-import edu.mit.compilers.ast.Block;
-import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.codegen.ControlFlowNode;
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
-import edu.mit.compilers.codegen.dataflow.BlockDataFlowFactory;
+import edu.mit.compilers.codegen.dataflow.DataFlow;
 
 /**
  * Produce a BiTerminalGraph that represents the entire execution of a method.
@@ -23,23 +21,25 @@ public class MethodGraphFactory implements GraphFactory {
 
     private final BiTerminalGraph graph;
 
-    public MethodGraphFactory(Method method) {
-        this.graph = calculateGraph(method);
+    public MethodGraphFactory(DataFlow methodDataFlowGraph, String name, boolean isVoid) {
+        this.graph = calculateGraph(methodDataFlowGraph, name, isVoid);
     }
 
-    private BiTerminalGraph calculateGraph(Method method) {
-        Block block = method.getBlock();
+    private BiTerminalGraph calculateGraph(DataFlow methodDataFlowGraph, String name, boolean isVoid) {
+
+        int methodEntries = numMethodEntries(methodDataFlowGraph);
 
         // If we are the main method, we need to write down the base pointer for error handling
-        BiTerminalGraph enterInstruction = method.isMain()
-        		? BiTerminalGraph.ofInstructions(
-        				enter(block),
-        				move(Register.RBP, Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE))
-        		: BiTerminalGraph.ofInstructions(enter(block));
-        	
+        boolean isMain = name.equals(Architecture.MAIN_METHOD_NAME);
+        BiTerminalGraph enterInstruction = isMain
+                ? BiTerminalGraph.ofInstructions(
+                        enter(methodEntries),
+                        move(Register.RBP, Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE))
+                : BiTerminalGraph.ofInstructions(enter(methodEntries));
+
         //DataFlow test = new BlockDataFlowFactory(block).getDataFlow();				
         ControlTerminalGraph blockGraph = new DataFlowGraphFactory(
-        		new BlockDataFlowFactory(block).getDataFlow()).getGraph();			
+                methodDataFlowGraph).getGraph();
         //ControlTerminalGraph blockGraph = new BlockGraphFactory(block).getGraph();
         // Link the Entry instruction to the start of the block
         enterInstruction.getEnd().setNext(blockGraph.getBeginning());
@@ -49,7 +49,7 @@ public class MethodGraphFactory implements GraphFactory {
         										ret());
         ControlFlowNode sink = returnInstruction.getBeginning();
 
-        BiTerminalGraph fallThroughChecker = method.isVoid()
+        BiTerminalGraph fallThroughChecker = isVoid
                 ? BiTerminalGraph.ofInstructions()
                 : new ErrorExitGraphFactory(Literal.CONTROL_DROP_OFF_EXIT).getGraph();
 
@@ -66,5 +66,10 @@ public class MethodGraphFactory implements GraphFactory {
     @Override
     public BiTerminalGraph getGraph() {
         return graph;
+    }
+
+    private static final int numMethodEntries(DataFlow methodDataFlowGraph) {
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented.");
     }
 }
