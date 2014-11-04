@@ -9,6 +9,7 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.codegen.DataFlowNode;
+import edu.mit.compilers.codegen.DataFlowIntRep;
 
 public class DataFlowUtil {
 
@@ -38,5 +39,10 @@ public class DataFlowUtil {
             }
         }
         return ImmutableSet.copyOf(visited);
+    }
+
+    /** Gets all nodes reachable from the beginning node of an IR's data flow graph. */
+    public static Collection<DataFlowNode> nodesIn(DataFlowIntRep ir) {
+        return reachableFrom(ir.getDataFlowGraph().getBeginning());
     }
 }

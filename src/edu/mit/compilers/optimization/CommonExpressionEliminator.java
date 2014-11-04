@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.StatementDataFlowNode;
@@ -28,8 +29,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
     private static final String TEMP_VAR_PREFIX = "cse_temp";
 
     @Override
-    public void optimize(DataFlowNode head) {
-        new Eliminator(head).optimize();
+    public DataFlowIntRep optimized(DataFlowIntRep ir) {
+        return new Eliminator(ir).optimize();
     }
 
     // TODO(jasonpr): Figure out why this helper class feels so hacky, and unhack it.
@@ -42,20 +43,20 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
      *
      */
     private static final class Eliminator {
-        private final DataFlowNode head;
+        private final DataFlowIntRep ir;
         private final AvailabilityCalculator availCalc;
         private final Collection<DataFlowNode> nodes;
         private final Map<GeneralExpression, Variable> tempVars;
 
-        public Eliminator(DataFlowNode head) {
-            this.head = head;
-            this.availCalc = new AvailabilityCalculator(head);
-            this.nodes = DataFlowUtil.reachableFrom(head);
+        public Eliminator(DataFlowIntRep ir) {
+            this.ir = ir;
+            this.availCalc = new AvailabilityCalculator(ir.getDataFlowGraph().getBeginning());
+            this.nodes = DataFlowUtil.nodesIn(ir);
             this.tempVars = tempVars(expressions(nodes));
         }
 
-        public void optimize() {
-            for (DataFlowNode node : DataFlowUtil.reachableFrom(head)) {
+        public DataFlowIntRep optimize() {
+            for (DataFlowNode node : nodes) {
                 // The cast will always succeed: non-statement nodes have no
                 // expressions, so we'll never enter this loop if the cast would fail.
                 StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
@@ -70,6 +71,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                     }
                 }
             }
+            // TODO(jasonpr): Implement.
+            throw new RuntimeException("Must return newly constructed DataFlowIntRep.");
         }
 
 
