@@ -3,10 +3,15 @@ package edu.mit.compilers.optimization;
 import java.util.Collection;
 import java.util.Map;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.GeneralExpression;
+import edu.mit.compilers.ast.LocationDescriptor;
+import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
@@ -46,7 +51,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         private final DataFlowIntRep ir;
         private final AvailabilityCalculator availCalc;
         private final Collection<DataFlowNode> nodes;
-        private final Map<GeneralExpression, Variable> tempVars;
+        // TODO(jasonpr): Use ScopedExpression, not NativeExpression.
+        private final Map<NativeExpression, Variable> tempVars;
 
         public Eliminator(DataFlowIntRep ir) {
             this.ir = ir;
@@ -60,13 +66,14 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                 // The cast will always succeed: non-statement nodes have no
                 // expressions, so we'll never enter this loop if the cast would fail.
                 StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
-                for (GeneralExpression expr : nodeExprs(node)) {
+                for (NativeExpression expr : nodeExprs(statementNode)) {
                     if (availCalc.isAvailable(expr, statementNode)) {
                         replace(statementNode, useTemp(node, expr));
                     } else {
                         // For now, we alway generate if it's not available.
                         // TODO(jasonpr): Use 'reasons' or 'benefactors' to reduce
                         // amount of unnecessary temp filling.
+                        addToScope(statementNode, expr);
                         replace(statementNode, fillAndUseTemp(node, expr));
                     }
                 }
@@ -123,23 +130,36 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                 ir.getDataFlowGraph().setEnd(replacement.getEnd());
             }
         }
+
+        private void addToScope(StatementDataFlowNode node, NativeExpression expr) {
+            Variable var = tempVars.get(expr);
+            FieldDescriptor fieldDesc = FieldDescriptor.forCompilerVariable(var);
+            // TODO(jasonpr): Add to most specific scope possible.
+            ir.getScope().addVariable(fieldDesc);
+        }
     }
 
-    /** Generate a map from expression to temporary variable, for some expressions. */
-    private static Map<GeneralExpression, Variable> tempVars(Iterable<GeneralExpression> exprs) {
-        ImmutableMap.Builder<GeneralExpression, Variable> builder = ImmutableMap.builder();
+    /**
+     * Generate a map from expression to temporary variable, for some expressions.
+     *
+     * <p>Non-native expressions are ignored-- we can't store them in variables!
+     */
+    private static Map<NativeExpression, Variable> tempVars(Iterable<NativeExpression> exprs) {
+        ImmutableMap.Builder<NativeExpression, Variable> builder = ImmutableMap.builder();
         int tempNumber = 0;
-        for (GeneralExpression expr : exprs) {
-            builder.put(expr, Variable.forCompiler(TEMP_VAR_PREFIX + tempNumber++));
+        for (NativeExpression expr : exprs) {
+                builder.put(expr, Variable.forCompiler(TEMP_VAR_PREFIX + tempNumber++));
         }
         return builder.build();
     }
 
     /** Get all the optimizable expressions from some nodes. */
-    private static Iterable<GeneralExpression> expressions(Iterable<DataFlowNode> nodes) {
-        ImmutableSet.Builder<GeneralExpression> builder = ImmutableSet.builder();
+    private static Iterable<NativeExpression> expressions(Iterable<DataFlowNode> nodes) {
+        ImmutableSet.Builder<NativeExpression> builder = ImmutableSet.builder();
         for (DataFlowNode node : nodes) {
-            builder.addAll(nodeExprs(node));
+            if (node instanceof StatementDataFlowNode) {
+                builder.addAll(nodeExprs((StatementDataFlowNode) node));
+            }
         }
         return builder.build();
     }
@@ -149,7 +169,10 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
      *
      * For now, we ONLY optimize the top-level expressions-- no subexpressions!
      */
-    private static Collection<GeneralExpression> nodeExprs(DataFlowNode node) {
-        return node.getExpressions();
+    private static Collection<NativeExpression> nodeExprs(StatementDataFlowNode node) {
+        Optional<? extends NativeExpression> expr = node.getExpression();
+        return expr.isPresent()
+                ? ImmutableList.<NativeExpression>of(expr.get())
+                : ImmutableList.<NativeExpression>of();
     }
 }

@@ -1,5 +1,7 @@
 package edu.mit.compilers.ast;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.base.Optional;
 
 import edu.mit.compilers.common.Variable;
@@ -60,6 +62,13 @@ public class FieldDescriptor {
             // It's a scalar.
             return 1;
         }
+    }
+
+    public static FieldDescriptor forCompilerVariable(Variable variable) {
+        // TODO(jasonpr): Decide whether it's alright to use WILDCARD here.  It's
+        // it's pretty hacky.  If we don't need to know the type anymore, maybe
+        // we should have a non-AST scope class?
+        return new FieldDescriptor(variable, BaseType.WILDCARD, LocationDescriptor.machineCode());
     }
 
     @Override
