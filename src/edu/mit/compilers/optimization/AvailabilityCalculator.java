@@ -1,7 +1,5 @@
 package edu.mit.compilers.optimization;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,8 +15,7 @@ import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.MethodCallDataFlowNode;
 import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
-import edu.mit.compilers.codegen.SequentialControlFlowNode;
-import edu.mit.compilers.codegen.SequentialDataFlowNode;
+import edu.mit.compilers.codegen.StatementDataFlowNode;
 
 /**
  * Given a basic block, the AvailabilityCalculator computes all available
@@ -244,7 +241,7 @@ public class AvailabilityCalculator {
     }
 
     /** Return whether an expression is available at a DataFlowNode. */
-    public boolean isAvailable(GeneralExpression expr, SequentialDataFlowNode node) {
+    public boolean isAvailable(GeneralExpression expr, StatementDataFlowNode node) {
         if (!(expr instanceof NativeExpression)) {
             // Only NativeExpressions are ever available.
             return false;

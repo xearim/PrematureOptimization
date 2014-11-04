@@ -10,7 +10,7 @@ import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.Scope;
 
-public class AssignmentDataFlowNode extends SequentialDataFlowNode{
+public class AssignmentDataFlowNode extends StatementDataFlowNode{
 	
 	private Scope scope;
 	private Assignment assignment;

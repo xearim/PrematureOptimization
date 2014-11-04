@@ -3,6 +3,7 @@ package edu.mit.compilers.codegen.dataflow;
 import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
+import edu.mit.compilers.codegen.NopDataFlowNode;
 import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
@@ -18,8 +19,8 @@ public class ReturnStatementDataFlowFactory implements DataFlowFactory{
 	}
 	
 	private DataFlow calculateDataFlow() {
-		SequentialDataFlowNode start = SequentialDataFlowNode.nopNamed("Return Start");
-		SequentialDataFlowNode end = SequentialDataFlowNode.nopNamed("Return End");
+		SequentialDataFlowNode start = NopDataFlowNode.nopNamed("Return Start");
+		SequentialDataFlowNode end = NopDataFlowNode.nopNamed("Return End");
 		BranchSinkDataFlowNode continueNode = new BranchSinkDataFlowNode();
 		BranchSinkDataFlowNode breakNode = new BranchSinkDataFlowNode();
 		BranchSinkDataFlowNode returnNode = new BranchSinkDataFlowNode();

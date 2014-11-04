@@ -9,7 +9,6 @@ import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BaseType;
 import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.BinaryOperator;
-import edu.mit.compilers.ast.BooleanLiteral;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.IntLiteral;
 import edu.mit.compilers.ast.LocationDescriptor;
@@ -20,6 +19,7 @@ import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
 import edu.mit.compilers.codegen.BranchSourceDataFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
+import edu.mit.compilers.codegen.NopDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
@@ -36,8 +36,8 @@ public class WhileLoopDataFlowFactory implements DataFlowFactory{
 	}
 	
 	private DataFlow calculateDataFlow(WhileLoop whileLoop, Scope scope) {
-		SequentialDataFlowNode start = SequentialDataFlowNode.nopNamed("WhileLoop Begin");
-		SequentialDataFlowNode end = SequentialDataFlowNode.nopNamed("WhileLoop End");
+		SequentialDataFlowNode start = NopDataFlowNode.nopNamed("WhileLoop Begin");
+		SequentialDataFlowNode end = NopDataFlowNode.nopNamed("WhileLoop End");
 		BranchSinkDataFlowNode endSink = new BranchSinkDataFlowNode();
 		// We are going to sink control flow elements into one big node
 		BranchSinkDataFlowNode continueNode = new BranchSinkDataFlowNode();

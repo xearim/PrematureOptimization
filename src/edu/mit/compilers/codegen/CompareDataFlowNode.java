@@ -9,7 +9,7 @@ import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.Scope;
 
-public class CompareDataFlowNode extends SequentialDataFlowNode{
+public class CompareDataFlowNode extends StatementDataFlowNode{
 	
 	private Scope scope;
 	private NativeExpression comparison;

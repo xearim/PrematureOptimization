@@ -10,7 +10,7 @@ import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.Scope;
 
-public class MethodCallDataFlowNode extends SequentialDataFlowNode{
+public class MethodCallDataFlowNode extends StatementDataFlowNode{
 	
 	private Scope scope;
 	private MethodCall methodCall;

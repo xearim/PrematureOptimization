@@ -20,6 +20,7 @@ import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
 import edu.mit.compilers.codegen.BranchSourceDataFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
+import edu.mit.compilers.codegen.NopDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
@@ -36,8 +37,8 @@ public class ForLoopDataFlowFactory implements DataFlowFactory{
 	}
 	
 	private DataFlow calculateDataFlow(ForLoop forLoop, Scope scope) {
-		SequentialDataFlowNode start = SequentialDataFlowNode.nopNamed("ForLoop Begin");
-		SequentialDataFlowNode end = SequentialDataFlowNode.nopNamed("ForLoop End");
+		SequentialDataFlowNode start = NopDataFlowNode.nopNamed("ForLoop Begin");
+		SequentialDataFlowNode end = NopDataFlowNode.nopNamed("ForLoop End");
 		BranchSinkDataFlowNode endSink = new BranchSinkDataFlowNode();
 		// We are going to sink control flow elements into one big node
 		BranchSinkDataFlowNode continueNode = new BranchSinkDataFlowNode();
