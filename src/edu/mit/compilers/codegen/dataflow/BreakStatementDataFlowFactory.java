@@ -1,6 +1,7 @@
 package edu.mit.compilers.codegen.dataflow;
 
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
+import edu.mit.compilers.codegen.NopDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 
@@ -9,8 +10,8 @@ public class BreakStatementDataFlowFactory implements DataFlowFactory{
 	public BreakStatementDataFlowFactory() {}
 	
 	private DataFlow calculateDataFlow() {
-		SequentialDataFlowNode start = SequentialDataFlowNode.nopNamed("Break Start");
-		SequentialDataFlowNode end = SequentialDataFlowNode.nopNamed("Break End");
+		SequentialDataFlowNode start = NopDataFlowNode.nopNamed("Break Start");
+		SequentialDataFlowNode end = NopDataFlowNode.nopNamed("Break End");
 		BranchSinkDataFlowNode continueNode = new BranchSinkDataFlowNode();
 		BranchSinkDataFlowNode breakNode = new BranchSinkDataFlowNode();
 		BranchSinkDataFlowNode returnNode = new BranchSinkDataFlowNode();

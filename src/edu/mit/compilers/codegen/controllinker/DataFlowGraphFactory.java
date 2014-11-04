@@ -14,6 +14,7 @@ import edu.mit.compilers.codegen.MethodCallDataFlowNode;
 import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
 import edu.mit.compilers.codegen.SequentialControlFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
+import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes;
 import edu.mit.compilers.codegen.controllinker.statements.AssignmentGraphFactory;
 import edu.mit.compilers.codegen.controllinker.statements.CompareGraphFactory;
@@ -93,8 +94,7 @@ public class DataFlowGraphFactory implements ControlTerminalGraphFactory {
     private void ProcessCompareDataFlowNode(CompareDataFlowNode currentNode,
     		SequentialControlFlowNode end){
     	// Build the compare graph
-    	BiTerminalGraph compareGraph = new CompareGraphFactory(currentNode.getLeftArg(),
-    			currentNode.getRightArg(), currentNode.getScope()).getGraph();	
+        BiTerminalGraph compareGraph = new CompareGraphFactory(currentNode.getExpression().get(), currentNode.getScope()).getGraph();
     	end.setNext(compareGraph.getBeginning());
     	// Recurse if we can, else we have hit the end, set the final node
     	if(currentNode.hasNext()){
@@ -165,7 +165,7 @@ public class DataFlowGraphFactory implements ControlTerminalGraphFactory {
     		SequentialControlFlowNode end){
     	SequentialControlFlowNode trueBranch = SequentialControlFlowNode.namedNop("True Branch");
     	SequentialControlFlowNode falseBranch = SequentialControlFlowNode.namedNop("False Branch");
-    	BranchingControlFlowNode branch = new BranchingControlFlowNode(currentNode.getType(), trueBranch, falseBranch);
+        BranchingControlFlowNode branch = new BranchingControlFlowNode(JumpType.JNE, trueBranch, falseBranch);
     	end.setNext(branch);
     	// Only one of these will set terminal, because eventually all control flow
     	// is re-unified at the bottom

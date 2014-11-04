@@ -1,25 +1,30 @@
 package edu.mit.compilers.codegen.dataflow;
 
+import static edu.mit.compilers.codegen.SequentialDataFlowNode.link;
+
 import com.google.common.collect.ImmutableList;
 
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BaseType;
+import edu.mit.compilers.ast.BinaryOperation;
+import edu.mit.compilers.ast.BinaryOperator;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.ForLoop;
 import edu.mit.compilers.ast.IntLiteral;
 import edu.mit.compilers.ast.LocationDescriptor;
+import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
 import edu.mit.compilers.codegen.BranchSourceDataFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
+import edu.mit.compilers.codegen.NopDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 import edu.mit.compilers.common.Variable;
-import static edu.mit.compilers.codegen.SequentialDataFlowNode.link;
 
 public class ForLoopDataFlowFactory implements DataFlowFactory{
 	
@@ -32,8 +37,8 @@ public class ForLoopDataFlowFactory implements DataFlowFactory{
 	}
 	
 	private DataFlow calculateDataFlow(ForLoop forLoop, Scope scope) {
-		SequentialDataFlowNode start = SequentialDataFlowNode.nopNamed("ForLoop Begin");
-		SequentialDataFlowNode end = SequentialDataFlowNode.nopNamed("ForLoop End");
+		SequentialDataFlowNode start = NopDataFlowNode.nopNamed("ForLoop Begin");
+		SequentialDataFlowNode end = NopDataFlowNode.nopNamed("ForLoop End");
 		BranchSinkDataFlowNode endSink = new BranchSinkDataFlowNode();
 		// We are going to sink control flow elements into one big node
 		BranchSinkDataFlowNode continueNode = new BranchSinkDataFlowNode();
@@ -58,6 +63,9 @@ public class ForLoopDataFlowFactory implements DataFlowFactory{
 		ScalarLocation rangeEndVar = new ScalarLocation(rangeEnd.getVariable(), 
 				LocationDescriptor.machineCode());
 		
+		NativeExpression comparison = new BinaryOperation(BinaryOperator.LESS_THAN,
+		        loopingVar, rangeEndVar,LocationDescriptor.machineCode());
+
 		// Lets give it its proper value
 		AssignmentDataFlowNode setRangeEnd = new AssignmentDataFlowNode(
 				new Assignment(rangeEndVar, AssignmentOperation.SET_EQUALS,
@@ -69,8 +77,7 @@ public class ForLoopDataFlowFactory implements DataFlowFactory{
 				forLoop.getRangeStart(), LocationDescriptor.machineCode()), scope);
 		
 		// We need the comparison we would usually do for being at the end of the loop
-		CompareDataFlowNode loopComparator = new CompareDataFlowNode(loopingVar,
-				rangeEndVar, forLoopScope);
+		CompareDataFlowNode loopComparator = new CompareDataFlowNode(comparison, forLoopScope);
 		
 		// And the incrementing step at the end of the loop
 		// TODO:Name this 1 plz
@@ -83,7 +90,7 @@ public class ForLoopDataFlowFactory implements DataFlowFactory{
 		DataFlow body = new BlockDataFlowFactory(forLoop.getBody()).getDataFlow();
 		
 		// Finally the branch at the beginning of the loop
-		BranchSourceDataFlowNode loopCmpBranch = new BranchSourceDataFlowNode(JumpType.JGE);
+		BranchSourceDataFlowNode loopCmpBranch = new BranchSourceDataFlowNode(JumpType.JE);
 		
 		// Time to hook everything up
 		link(start,setLooping);

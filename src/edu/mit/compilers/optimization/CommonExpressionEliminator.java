@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
+import edu.mit.compilers.codegen.StatementDataFlowNode;
 import edu.mit.compilers.codegen.dataflow.DataFlow;
 import edu.mit.compilers.codegen.dataflow.DataFlowUtil;
 import edu.mit.compilers.common.Variable;
@@ -55,17 +56,17 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
 
         public void optimize() {
             for (DataFlowNode node : DataFlowUtil.reachableFrom(head)) {
-                SequentialDataFlowNode seqNode = (SequentialDataFlowNode) node;
+                // The cast will always succeed: non-statement nodes have no
+                // expressions, so we'll never enter this loop if the cast would fail.
+                StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
                 for (GeneralExpression expr : nodeExprs(node)) {
-                    // The cast will always succeed: non-sequential nodes have no
-                    // expressions, so we'll never enter this loop if the cast would fail.
-                    if (availCalc.isAvailable(expr, seqNode)) {
-                        replace(seqNode, useTemp(node, expr));
+                    if (availCalc.isAvailable(expr, statementNode)) {
+                        replace(statementNode, useTemp(node, expr));
                     } else {
                         // For now, we alway generate if it's not available.
                         // TODO(jasonpr): Use 'reasons' or 'benefactors' to reduce
                         // amount of unnecessary temp filling.
-                        replace(seqNode, fillAndUseTemp(node, expr));
+                        replace(statementNode, fillAndUseTemp(node, expr));
                     }
                 }
             }

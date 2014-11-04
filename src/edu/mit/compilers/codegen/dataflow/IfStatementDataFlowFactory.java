@@ -1,14 +1,12 @@
 package edu.mit.compilers.codegen.dataflow;
 
 import static edu.mit.compilers.codegen.SequentialDataFlowNode.link;
-
-import edu.mit.compilers.ast.BooleanLiteral;
 import edu.mit.compilers.ast.IfStatement;
-import edu.mit.compilers.ast.LocationDescriptor;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
 import edu.mit.compilers.codegen.BranchSourceDataFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
+import edu.mit.compilers.codegen.NopDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
@@ -24,8 +22,8 @@ public class IfStatementDataFlowFactory implements DataFlowFactory {
 	}
 	
 	private DataFlow calculateDataFlow(IfStatement ifStatement, Scope scope) {
-		SequentialDataFlowNode start = SequentialDataFlowNode.nopNamed("ForLoop Begin");
-		SequentialDataFlowNode end = SequentialDataFlowNode.nopNamed("ForLoop End");
+		SequentialDataFlowNode start = NopDataFlowNode.nopNamed("ForLoop Begin");
+		SequentialDataFlowNode end = NopDataFlowNode.nopNamed("ForLoop End");
 		BranchSinkDataFlowNode endSink = new BranchSinkDataFlowNode();
 		// We are going to sink control flow elements into one big node
 		BranchSinkDataFlowNode continueNode = new BranchSinkDataFlowNode();
@@ -33,11 +31,8 @@ public class IfStatementDataFlowFactory implements DataFlowFactory {
 		BranchSinkDataFlowNode returnNode = new BranchSinkDataFlowNode();
 		
 		
-		// We need the comparison 
-		// TODO: Name this true
-		CompareDataFlowNode ifComparator = new CompareDataFlowNode(ifStatement.getCondition(),
-				new BooleanLiteral("true", LocationDescriptor.machineCode()), scope);
-		
+		// We need the comparison
+		CompareDataFlowNode ifComparator = new CompareDataFlowNode(ifStatement.getCondition(), scope);
 		
 		// The first part of the if statement
 		DataFlow thenBlock = new BlockDataFlowFactory(ifStatement.getThenBlock()).getDataFlow();
@@ -46,7 +41,7 @@ public class IfStatementDataFlowFactory implements DataFlowFactory {
 		// if we have an else, get the second part of the if statement
 		DataFlow elseBlock = ifStatement.getElseBlock().isPresent()
 				? new BlockDataFlowFactory(ifStatement.getElseBlock().get()).getDataFlow()
-				: DataFlow.ofNodes(SequentialDataFlowNode.nop());
+				: DataFlow.ofNodes(NopDataFlowNode.nop());
 		elseBlock.getControlNodes().attach(breakNode, continueNode, returnNode);
 		
 		// Finally, make the branch between nodes

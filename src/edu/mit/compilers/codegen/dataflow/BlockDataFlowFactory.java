@@ -19,6 +19,7 @@ import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.Statement;
 import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
+import edu.mit.compilers.codegen.NopDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 import edu.mit.compilers.common.Variable;
@@ -31,8 +32,8 @@ public class BlockDataFlowFactory implements DataFlowFactory{
 	}
 	
 	private DataFlow calculateDataFlow(Block block){
-		SequentialDataFlowNode start = SequentialDataFlowNode.nopNamed("Block Begin");
-		SequentialDataFlowNode end = SequentialDataFlowNode.nopNamed("Block End");
+		SequentialDataFlowNode start = NopDataFlowNode.nopNamed("Block Begin");
+		SequentialDataFlowNode end = NopDataFlowNode.nopNamed("Block End");
 		// We are going to sink control flow elements into one big node
 		BranchSinkDataFlowNode continueNode = new BranchSinkDataFlowNode();
 		BranchSinkDataFlowNode breakNode = new BranchSinkDataFlowNode();
@@ -110,7 +111,7 @@ public class BlockDataFlowFactory implements DataFlowFactory{
 	}
 	
 	private DataFlow zeroOutScalar(FieldDescriptor variable, Scope scope){
-		SequentialDataFlowNode start = SequentialDataFlowNode.nopNamed("Zero Out Variable " + variable.getVariable().toString());
+		SequentialDataFlowNode start = NopDataFlowNode.nopNamed("Zero Out Variable " + variable.getVariable().toString());
 		
 		// Take the variable
 		ScalarLocation scalarVariable = new ScalarLocation(variable.getVariable(),
