@@ -16,6 +16,7 @@ import edu.mit.compilers.ast.Scope;
 public class Subexpression {
     private final NativeExpression ne;
     private final Scope scope;
+    private final Set<ScopedVariable> variables;
 
     /**
      * The Scope is the immediate scope.
@@ -23,13 +24,14 @@ public class Subexpression {
     public Subexpression(NativeExpression ne, Scope scope) {
         this.ne = ne;
         this.scope = getGeneralScope(scope);
+        this.variables = ScopedVariable.getVariablesOf(ne, scope);
     }
 
     /**
      * Finds the first scope that contains a variable from the subexpression
      */
     public Scope getGeneralScope(Scope scope) {
-        Set<Location> variables = getVariables();
+        Set<ScopedVariable> variables = getVariables();
 
         // Check immediate scope
         if (containsAVariable(scope, variables)) {
@@ -38,7 +40,7 @@ public class Subexpression {
 
         /*
          * If no variable is in immediate scope, recurse through scopes until
-         * a scope that contains at least on variable is found.
+         * a scope that contains at least one variable is found.
          */
         Scope s = scope;
         while (s.getParent().isPresent()) {
@@ -51,21 +53,21 @@ public class Subexpression {
         throw new AssertionError("Subexpression.java: Subexpression variables don't exist in Scope.");
     }
 
-    public boolean containsMethodCall() {
-
-        throw new UnsupportedOperationException("Subexpression#containsMethodCall unimplemented.");
-    }
-
     /**
      * Returns true if the Scope contains any of the variables from the
      * global NativeExpression ne.
      */
-    private boolean containsAVariable(Scope s, Set<Location> variables) {
-        throw new RuntimeException("Subexpression#containsAVariableFromNativeExpression unimplemented.");
+    private boolean containsAVariable(Scope s, Set<ScopedVariable> variables) {
+        for(ScopedVariable var : variables){
+        	if(s.isInScopeImmediately(var.getLocation().getVariable())){
+        		return true;
+        	}
+        }
+        return false;
     }
 
-    private Set<Location> getVariables() {
-        throw new RuntimeException("Subexpression#getVariables unimplemented.");
+    public Set<ScopedVariable> getVariables() {
+        return this.variables;
     }
 
     public NativeExpression getNativeExpression() {
@@ -76,9 +78,34 @@ public class Subexpression {
         return scope;
     }
 
-    public boolean equals(Subexpression se) {
-        //        return this.ne.equals(se.getNativeExpresion());
-        //                && this.scope() == se.getScope()
-        throw new UnsupportedOperationException("Subexpression#equals unimplemented.");
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((ne == null) ? 0 : ne.hashCode());
+        result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Subexpression other = (Subexpression) obj;
+        if (ne == null) {
+            if (other.ne != null)
+                return false;
+        } else if (!ne.equals(other.ne))
+            return false;
+        if (scope == null) {
+            if (other.scope != null)
+                return false;
+        } else if (!scope.equals(other.scope))
+            return false;
+        return true;
     }
 }

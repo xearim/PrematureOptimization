@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.GeneralExpression;
-import edu.mit.compilers.ast.LocationDescriptor;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.DataFlowNode;
