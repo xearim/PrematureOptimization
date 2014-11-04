@@ -7,6 +7,8 @@ import com.google.common.collect.ImmutableList;
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BaseType;
+import edu.mit.compilers.ast.BinaryOperation;
+import edu.mit.compilers.ast.BinaryOperator;
 import edu.mit.compilers.ast.BooleanLiteral;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.IntLiteral;
@@ -66,14 +68,17 @@ public class WhileLoopDataFlowFactory implements DataFlowFactory{
 		
 		// We need the comparison we would usually do for being at the end of the loop
 		// TODO: Name this true as well
-		CompareDataFlowNode loopComparator = new CompareDataFlowNode(whileLoop.getCondition(),
-				new BooleanLiteral("true", LocationDescriptor.machineCode()), scope);
+		CompareDataFlowNode loopComparator = new CompareDataFlowNode(whileLoop.getCondition(), scope);
 		
 		// And Max Reps comparisons too
-		CompareDataFlowNode maxRepComparator = new CompareDataFlowNode(maxRepsVar,
-				whileLoop.getMaxRepetitions().isPresent()
-				? whileLoop.getMaxRepetitions().get()
-				: new IntLiteral(0L),
+		CompareDataFlowNode maxRepComparator = new CompareDataFlowNode(
+		        new BinaryOperation(
+		                BinaryOperator.LESS_THAN,
+		                maxRepsVar,
+		                whileLoop.getMaxRepetitions().isPresent()
+		                        ? whileLoop.getMaxRepetitions().get()
+		                        : new IntLiteral(0L),
+		                LocationDescriptor.machineCode()),
 				whileLoopScope);
 		
 		// And the incrementing step for max reps at the end of the while
@@ -87,10 +92,10 @@ public class WhileLoopDataFlowFactory implements DataFlowFactory{
 		DataFlow body = new BlockDataFlowFactory(whileLoop.getBody()).getDataFlow();
 		
 		// Finally the branch at the beginning of the loop
-		BranchSourceDataFlowNode loopCmpBranch = new BranchSourceDataFlowNode(JumpType.JNE);
+		BranchSourceDataFlowNode loopCmpBranch = new BranchSourceDataFlowNode(JumpType.JE);
 		
 		// And the branch for the max Reps variable
-		BranchSourceDataFlowNode maxRepsBranch = new BranchSourceDataFlowNode(JumpType.JGE);
+		BranchSourceDataFlowNode maxRepsBranch = new BranchSourceDataFlowNode(JumpType.JE);
 		
 		// Time to hook everything up
 		if(whileLoop.getMaxRepetitions().isPresent()){

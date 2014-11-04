@@ -2,6 +2,8 @@ package edu.mit.compilers.codegen.dataflow;
 
 import static edu.mit.compilers.codegen.SequentialDataFlowNode.link;
 
+import edu.mit.compilers.ast.BinaryOperation;
+import edu.mit.compilers.ast.BinaryOperator;
 import edu.mit.compilers.ast.BooleanLiteral;
 import edu.mit.compilers.ast.IfStatement;
 import edu.mit.compilers.ast.LocationDescriptor;
@@ -33,11 +35,8 @@ public class IfStatementDataFlowFactory implements DataFlowFactory {
 		BranchSinkDataFlowNode returnNode = new BranchSinkDataFlowNode();
 		
 		
-		// We need the comparison 
-		// TODO: Name this true
-		CompareDataFlowNode ifComparator = new CompareDataFlowNode(ifStatement.getCondition(),
-				new BooleanLiteral("true", LocationDescriptor.machineCode()), scope);
-		
+		// We need the comparison
+		CompareDataFlowNode ifComparator = new CompareDataFlowNode(ifStatement.getCondition(), scope);
 		
 		// The first part of the if statement
 		DataFlow thenBlock = new BlockDataFlowFactory(ifStatement.getThenBlock()).getDataFlow();

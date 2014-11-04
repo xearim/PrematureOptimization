@@ -2,6 +2,7 @@ package edu.mit.compilers.codegen;
 
 import java.util.Collection;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 import edu.mit.compilers.ast.GeneralExpression;
@@ -11,15 +12,12 @@ import edu.mit.compilers.ast.Scope;
 public class CompareDataFlowNode extends SequentialDataFlowNode{
 	
 	private Scope scope;
-	private NativeExpression leftArg;
-	private NativeExpression rightArg;
+	private NativeExpression comparison;
 	
-	public CompareDataFlowNode(NativeExpression leftArg,
-			NativeExpression rightArg, Scope scope){
+	public CompareDataFlowNode(NativeExpression comparison, Scope scope){
 		super("Expression");
 		this.scope = scope;
-		this.leftArg = leftArg;
-		this.rightArg = rightArg;
+		this.comparison = comparison;
 	}
 
 	@Override
@@ -27,17 +25,14 @@ public class CompareDataFlowNode extends SequentialDataFlowNode{
 		return scope;
 	}
 	
-	public NativeExpression getLeftArg() {
-		return leftArg;
-	}
-	
-	public NativeExpression getRightArg() {
-		return rightArg;
+	@Override
+	public Optional<NativeExpression> getExpression() {
+		return Optional.of(comparison);
 	}
 
 	@Override
 	public Collection<GeneralExpression> getExpressions() {
-	    return ImmutableList.<GeneralExpression>of(leftArg, rightArg);
+	    return ImmutableList.<GeneralExpression>of(comparison);
 	}
 
 }
