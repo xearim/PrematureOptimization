@@ -133,7 +133,7 @@ public final class Instructions {
      * Does `enter $x, $0`. Calculated appropriately for a method with the specified number of
      * entries.
      */
-    public static Instruction enter(int entries){
+    public static Instruction enter(long entries){
         return new Enter(entries);
     }
     

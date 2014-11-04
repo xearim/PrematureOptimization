@@ -21,21 +21,30 @@ public class MethodGraphFactory implements GraphFactory {
 
     private final BiTerminalGraph graph;
 
-    public MethodGraphFactory(DataFlow methodDataFlowGraph, String name, boolean isVoid) {
-        this.graph = calculateGraph(methodDataFlowGraph, name, isVoid);
+    /**
+     * Constructor.
+     *
+     * @param methodDataFlowGraph The data flow graph representing the method.
+     * @param name The name of the method. (Currently only used to identify the special
+     *      method 'main'.)
+     * @param isVoid Whether the method has void return type.
+     * @param entriesToAllocate How many quadwords of memory need to be allocated on the stack to
+     *      hold the variables at and below the method's scope.
+     */
+    public MethodGraphFactory(
+            DataFlow methodDataFlowGraph, String name, boolean isVoid, long entriesToAllocate) {
+        this.graph = calculateGraph(methodDataFlowGraph, name, isVoid, entriesToAllocate);
     }
 
-    private BiTerminalGraph calculateGraph(DataFlow methodDataFlowGraph, String name, boolean isVoid) {
-
-        int methodEntries = numMethodEntries(methodDataFlowGraph);
-
+    private BiTerminalGraph calculateGraph(
+            DataFlow methodDataFlowGraph, String name, boolean isVoid, long entriesToAllocate) {
         // If we are the main method, we need to write down the base pointer for error handling
         boolean isMain = name.equals(Architecture.MAIN_METHOD_NAME);
         BiTerminalGraph enterInstruction = isMain
                 ? BiTerminalGraph.ofInstructions(
-                        enter(methodEntries),
+                        enter(entriesToAllocate),
                         move(Register.RBP, Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE))
-                : BiTerminalGraph.ofInstructions(enter(methodEntries));
+                : BiTerminalGraph.ofInstructions(enter(entriesToAllocate));
 
         //DataFlow test = new BlockDataFlowFactory(block).getDataFlow();				
         ControlTerminalGraph blockGraph = new DataFlowGraphFactory(
@@ -66,10 +75,5 @@ public class MethodGraphFactory implements GraphFactory {
     @Override
     public BiTerminalGraph getGraph() {
         return graph;
-    }
-
-    private static final int numMethodEntries(DataFlow methodDataFlowGraph) {
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented.");
     }
 }
