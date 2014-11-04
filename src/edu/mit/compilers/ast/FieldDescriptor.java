@@ -1,7 +1,5 @@
 package edu.mit.compilers.ast;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.base.Optional;
 
 import edu.mit.compilers.common.Variable;
