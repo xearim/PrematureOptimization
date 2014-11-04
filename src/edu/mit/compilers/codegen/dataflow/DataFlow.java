@@ -5,10 +5,17 @@ import com.google.common.base.Preconditions;
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 
+/**
+ * Mutable representation of a data flow graph.
+ *
+ * <p>We expect to do many graph manipulations on DataFlows.  Leaving them mutable
+ * is a) convenient and b) consistent with the fact that the underlying DataFlowNodes
+ * are mutable.
+ */
 public class DataFlow {
 
-	private final SequentialDataFlowNode beginning;
-	private final SequentialDataFlowNode end;
+	private SequentialDataFlowNode beginning;
+	private SequentialDataFlowNode end;
 	private final DataControlNodes controlNodes;
 
     public static class DataControlNodes {
@@ -66,9 +73,17 @@ public class DataFlow {
 	public SequentialDataFlowNode getBeginning() {
 		return beginning;
 	}
+
+	public void setBeginning(SequentialDataFlowNode beginning) {
+	    this.beginning = beginning;
+	}
 	
 	public SequentialDataFlowNode getEnd() {
 		return end;
+	}
+
+	public void setEnd(SequentialDataFlowNode end) {
+	    this.end = end;
 	}
 	
 	public DataControlNodes getControlNodes() {

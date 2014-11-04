@@ -29,8 +29,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
     private static final String TEMP_VAR_PREFIX = "cse_temp";
 
     @Override
-    public DataFlowIntRep optimized(DataFlowIntRep ir) {
-        return new Eliminator(ir).optimize();
+    public void optimized(DataFlowIntRep ir) {
+        new Eliminator(ir).optimize();
     }
 
     // TODO(jasonpr): Figure out why this helper class feels so hacky, and unhack it.
@@ -55,7 +55,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             this.tempVars = tempVars(expressions(nodes));
         }
 
-        public DataFlowIntRep optimize() {
+        public void optimize() {
             for (DataFlowNode node : nodes) {
                 // The cast will always succeed: non-statement nodes have no
                 // expressions, so we'll never enter this loop if the cast would fail.
@@ -71,8 +71,6 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                     }
                 }
             }
-            // TODO(jasonpr): Implement.
-            throw new RuntimeException("Must return newly constructed DataFlowIntRep.");
         }
 
 
