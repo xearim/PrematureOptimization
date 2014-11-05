@@ -8,8 +8,11 @@ import edu.mit.compilers.codegen.DataFlowNode;
 
 /** Prints an DFG in DOT format. */
 public class DataFlowGraphPrinter {
-	
-	    private final PrintStream printStream;
+
+        // TODO(jasonpr): Allow this to be passed from the command line.
+        private static final boolean PRINT_UNREACHABLE_NODES = false;
+
+        private final PrintStream printStream;
 	    private final Map<DataFlowNode, Integer> nodeIds;
 	    private int nextId;
 
@@ -52,10 +55,12 @@ public class DataFlowGraphPrinter {
                     // Draw an edge to the child, now that we have its id.
                     printStream.println(Dot.edge(nodeId, childId));
                 }
-                for (DataFlowNode sink : node.getPredecessors()) {
-                    int childId = printGraphFrom(sink);
-                    // Draw an edge to the child, now that we have its id.
-                    printStream.println(Dot.edge(childId, nodeId));
+                if (PRINT_UNREACHABLE_NODES) {
+                    for (DataFlowNode sink : node.getPredecessors()) {
+                        int childId = printGraphFrom(sink);
+                        // Draw an edge to the child, now that we have its id.
+                        printStream.println(Dot.edge(childId, nodeId));
+                    }
                 }
 	            return nodeId;
 	        }
