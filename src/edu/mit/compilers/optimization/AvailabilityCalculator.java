@@ -164,6 +164,10 @@ public class AvailabilityCalculator {
                     // Kill subexpressions with assigned variable
                     ScopedVariable assignmentTarget = ScopedVariable.getAssigned((AssignmentDataFlowNode) node);
                     varSets.get(node).add(assignmentTarget);
+                    // Note that the variable exists
+                    if (!varKillSets.containsKey(assignmentTarget)) {
+                        varKillSets.put(assignmentTarget, new HashSet<Subexpression>());
+                    }
                 }
                 
                 // Deal with subexpressions 
@@ -185,13 +189,6 @@ public class AvailabilityCalculator {
                                 varKillSets.put(var, new HashSet<Subexpression>());
                             }
                             varKillSets.get(var).add(newSubexpr);
-                        }
-                    }
-
-                    if (node instanceof AssignmentDataFlowNode) {
-                        ScopedVariable assignmentTarget = ScopedVariable.getAssigned((AssignmentDataFlowNode) node);
-                        if (!varKillSets.containsKey(assignmentTarget)) {
-                            varKillSets.put(assignmentTarget, new HashSet<Subexpression>());
                         }
                     }
                 }
