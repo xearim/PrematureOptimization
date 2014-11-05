@@ -118,14 +118,10 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         	Preconditions.checkState(statementNode.getExpression().isPresent());
         	
         	Location temp = new ScalarLocation(tempVars.get(expr), LocationDescriptor.machineCode());
-        	
-        	NopDataFlowNode doNothing = NopDataFlowNode.nop();
-        	
+        	        	
         	StatementDataFlowNode newStatement = getReplacement(statementNode, statementScope, temp);
         	
-        	link(doNothing, newStatement);
-        	
-        	return new DataFlow(doNothing, newStatement, new DataControlNodes());
+        	return new DataFlow(newStatement, newStatement, new DataControlNodes());
         }
 
         /**

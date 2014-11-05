@@ -278,18 +278,18 @@ public class AvailabilityCalculator {
 
     /** Return whether an expression is available at a DataFlowNode. */
     public boolean isAvailable(GeneralExpression expr, StatementDataFlowNode node) {
-    	for(Subexpression e : availableSubexpressionsAt(node)){
-    		if(e.getNativeExpression().equals(expr)){
-    			return true;
-    		}
-    	}
-    	return false;
-        /*if (!(expr instanceof NativeExpression)) {
+        if (!(expr instanceof NativeExpression)) {
             // Only NativeExpressions are ever available.
             return false;
         }
         Subexpression scopedExpr = new Subexpression((NativeExpression) expr, node.getScope());
 
-        return inSets.get(node).contains(scopedExpr);*/
+        // TODO Figure out why a direct contains doesnt work
+        for(Subexpression ex : inSets.get(node)){
+        	if(ex.equals(scopedExpr)){
+        		return true;
+        	}
+        }
+        return false;
     }
 }
