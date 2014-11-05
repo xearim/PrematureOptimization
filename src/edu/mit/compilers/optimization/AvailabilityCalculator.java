@@ -28,7 +28,7 @@ import edu.mit.compilers.codegen.StatementDataFlowNode;
  * subexpressions at each block accessible from the input basic block.
  */
 public class AvailabilityCalculator {
-    private Map<DataFlowNode, Set<Subexpression>> inSets;
+    private Map<DataFlowNode, Set<ScopedExpression>> inSets;
 
     public AvailabilityCalculator (DataFlowNode entryBlock) {
         calculateAvailability(entryBlock);
@@ -47,23 +47,23 @@ public class AvailabilityCalculator {
         Set<DataFlowNode> allBlocks = ImmutableSet.copyOf(this.inSets.keySet());
 
         // Initialize the parameter sets
-        Set<Subexpression> allSubexpressions = new HashSet<Subexpression>();
-        Map<DataFlowNode, Set<Subexpression>> genSets = new HashMap<DataFlowNode, Set<Subexpression>>();
-        Map<DataFlowNode, Set<Subexpression>> killSets = new HashMap<DataFlowNode, Set<Subexpression>>();
+        Set<ScopedExpression> allSubexpressions = new HashSet<ScopedExpression>();
+        Map<DataFlowNode, Set<ScopedExpression>> genSets = new HashMap<DataFlowNode, Set<ScopedExpression>>();
+        Map<DataFlowNode, Set<ScopedExpression>> killSets = new HashMap<DataFlowNode, Set<ScopedExpression>>();
         calculateConstants(allBlocks, allSubexpressions,genSets,killSets);
 
         // Set up OUT
-        Map<DataFlowNode, Set<Subexpression>> outSets =
-                new HashMap<DataFlowNode, Set<Subexpression>>();
+        Map<DataFlowNode, Set<ScopedExpression>> outSets =
+                new HashMap<DataFlowNode, Set<ScopedExpression>>();
         Set<DataFlowNode> changed;
 
 
         // Run algorithm
         for (DataFlowNode block : inSets.keySet()) {
-            outSets.put(block, new HashSet<Subexpression>(allSubexpressions));
+            outSets.put(block, new HashSet<ScopedExpression>(allSubexpressions));
         }
 
-        outSets.put(entryBlock, new HashSet<Subexpression>(
+        outSets.put(entryBlock, new HashSet<ScopedExpression>(
                 genSets.get(entryBlock)));
 
         changed = allBasicBlocks();
@@ -72,17 +72,17 @@ public class AvailabilityCalculator {
 
         while (!changed.isEmpty()) {
             DataFlowNode block;
-            Set<Subexpression> newOut;
+            Set<ScopedExpression> newOut;
 
             block = changed.iterator().next();
             changed.remove(block);
 
-            this.inSets.put(block, new HashSet<Subexpression>(allSubexpressions));
+            this.inSets.put(block, new HashSet<ScopedExpression>(allSubexpressions));
             for (DataFlowNode predecessor : block.getPredecessors()) {
                 this.inSets.get(block).retainAll(outSets.get(predecessor));
             }
 
-            newOut = new HashSet<Subexpression>(this.inSets.get(block));
+            newOut = new HashSet<ScopedExpression>(this.inSets.get(block));
             newOut.addAll(genSets.get(block));
             newOut.removeAll(killSets.get(block));
 
@@ -99,7 +99,7 @@ public class AvailabilityCalculator {
      */
     private void createInSets(DataFlowNode entryBlock) {
         // Just do DFS. Use inSets as the visted set!
-        inSets = new HashMap<DataFlowNode, Set<Subexpression>>();
+        inSets = new HashMap<DataFlowNode, Set<ScopedExpression>>();
         Deque<DataFlowNode> queue = new ArrayDeque<DataFlowNode>();
 
         queue.push(entryBlock);
@@ -111,7 +111,7 @@ public class AvailabilityCalculator {
             }
 
             // Add a new, currently empty, set of subexpressions.
-            inSets.put(node, new HashSet<Subexpression>());
+            inSets.put(node, new HashSet<ScopedExpression>());
 
             for (DataFlowNode child : node.getSuccessors()) {
                 queue.push(child);
@@ -136,24 +136,24 @@ public class AvailabilityCalculator {
      * TODO(Manny): make sure that += and -= work like how they should
      */
     private static void calculateConstants(Set<DataFlowNode> allNodes,
-            Set<Subexpression> allSubexpressions,
-            Map<DataFlowNode,Set<Subexpression>> genSets,
-            Map<DataFlowNode, Set<Subexpression>> killSets) {
+            Set<ScopedExpression> allSubexpressions,
+            Map<DataFlowNode,Set<ScopedExpression>> genSets,
+            Map<DataFlowNode, Set<ScopedExpression>> killSets) {
 
         // Set up sets necessary to determine killSets
         Map<DataFlowNode, Set<ScopedVariable>> varSets = new HashMap<DataFlowNode, Set<ScopedVariable>>();
-        Map<ScopedVariable, Set<Subexpression>> varKillSets = new HashMap<ScopedVariable, Set<Subexpression>>();
+        Map<ScopedVariable, Set<ScopedExpression>> varKillSets = new HashMap<ScopedVariable, Set<ScopedExpression>>();
         Set<ScopedVariable> globals = getGlobals(allNodes);
         
         // All globals need a kill set since they could be edited solely
         // by a function call that we never encounter (lack of idempotence)
         for (ScopedVariable global : globals){
-        	varKillSets.put(global, new HashSet<Subexpression>());
+        	varKillSets.put(global, new HashSet<ScopedExpression>());
         }
 
         for (DataFlowNode node : allNodes) {
-            genSets.put(node, new HashSet<Subexpression>());
-            killSets.put(node, new HashSet<Subexpression>());
+            genSets.put(node, new HashSet<ScopedExpression>());
+            killSets.put(node, new HashSet<ScopedExpression>());
             varSets.put(node, new HashSet<ScopedVariable>());
 
             if (node instanceof StatementDataFlowNode
@@ -166,7 +166,7 @@ public class AvailabilityCalculator {
                     varSets.get(node).add(assignmentTarget);
                     // Note that the variable exists
                     if (!varKillSets.containsKey(assignmentTarget)) {
-                        varKillSets.put(assignmentTarget, new HashSet<Subexpression>());
+                        varKillSets.put(assignmentTarget, new HashSet<ScopedExpression>());
                     }
                 }
                 
@@ -177,7 +177,7 @@ public class AvailabilityCalculator {
                         // Kill subexpressions with globals
                         varSets.get(node).addAll(globals);
                     } else {
-                        Subexpression newSubexpr = new Subexpression(ne, ((StatementDataFlowNode) node).getScope());
+                        ScopedExpression newSubexpr = new ScopedExpression(ne, ((StatementDataFlowNode) node).getScope());
 
                         // Put it in allSubexpressions and the GEN set of this node.
                         allSubexpressions.add(newSubexpr);
@@ -186,7 +186,7 @@ public class AvailabilityCalculator {
                         // Note what kills that subexpression
                         for (ScopedVariable var : newSubexpr.getVariables()) {
                             if (!varKillSets.containsKey(var)) {
-                                varKillSets.put(var, new HashSet<Subexpression>());
+                                varKillSets.put(var, new HashSet<ScopedExpression>());
                             }
                             varKillSets.get(var).add(newSubexpr);
                         }
@@ -197,7 +197,7 @@ public class AvailabilityCalculator {
 
         for (DataFlowNode node : allNodes) {
             for (ScopedVariable var : varSets.get(node)) {
-                for (Subexpression subexpr : varKillSets.get(var)) {
+                for (ScopedExpression subexpr : varKillSets.get(var)) {
                     killSets.get(node).add(subexpr);
                 }
             }
@@ -268,7 +268,7 @@ public class AvailabilityCalculator {
     }
 
     /** Returns all subexpressions available at that node. */
-    public Set<Subexpression> availableSubexpressionsAt(DataFlowNode node) {
+    public Set<ScopedExpression> availableSubexpressionsAt(DataFlowNode node) {
         return this.inSets.get(node);
     }
 
@@ -279,10 +279,10 @@ public class AvailabilityCalculator {
             // Only NativeExpressions are ever available.
             return false;
         }
-        Subexpression scopedExpr = new Subexpression((NativeExpression) expr, node.getScope());
+        ScopedExpression scopedExpr = new ScopedExpression((NativeExpression) expr, node.getScope());
 
         // TODO Figure out why a direct contains doesnt work
-        for(Subexpression ex : inSets.get(node)){
+        for(ScopedExpression ex : inSets.get(node)){
         	if(ex.equals(scopedExpr)){
         		return true;
         	}
