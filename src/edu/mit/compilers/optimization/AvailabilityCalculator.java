@@ -242,7 +242,7 @@ public class AvailabilityCalculator {
      * Any GeneralExpression that passes this check may be considered a
      * NativeExpression.
      */
-    private static boolean isComplexEnough(GeneralExpression ge) {
+    public static boolean isComplexEnough(GeneralExpression ge) {
         return (ge instanceof BinaryOperation)
                 || (ge instanceof MethodCall)
                 || (ge instanceof TernaryOperation)
@@ -284,6 +284,12 @@ public class AvailabilityCalculator {
         }
         Subexpression scopedExpr = new Subexpression((NativeExpression) expr, node.getScope());
 
-        return inSets.get(node).contains(scopedExpr);
+        // TODO Figure out why a direct contains doesnt work
+        for(Subexpression ex : inSets.get(node)){
+        	if(ex.equals(scopedExpr)){
+        		return true;
+        	}
+        }
+        return false;
     }
 }
