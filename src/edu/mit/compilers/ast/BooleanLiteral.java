@@ -2,7 +2,10 @@ package edu.mit.compilers.ast;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
+import edu.mit.compilers.ast.NativeExpression.ExpressionType;
 
 public class BooleanLiteral implements NativeLiteral {
     // Yes, a string.  We want the value that the user typed in.  We don't even care how Java
@@ -10,6 +13,7 @@ public class BooleanLiteral implements NativeLiteral {
     private final String value;
     private final long longValue;
     private final LocationDescriptor locationDescriptor;
+    private final ExpressionType type = ExpressionType.BOOLEAN_LITERAL;
 
     public BooleanLiteral(String value, LocationDescriptor locationDescriptor) {
         boolean isTrue = value.equals("true");
@@ -44,6 +48,20 @@ public class BooleanLiteral implements NativeLiteral {
         return this.getName().equals(bl.getName())
                 && this.get64BitValue() == bl.get64BitValue()
                 && this.getLocationDescriptor().equals(bl.getLocationDescriptor());
+    }
+    
+    public ExpressionType getType(){
+    	return type;
+    }
+    
+    public int compareTo(NativeExpression other){
+    	Preconditions.checkState(other != null);
+    	if(this.getType() != other.getType()){
+    		return this.getType().getPrecedence() - other.getType().getPrecedence();
+    	} else {
+    		BooleanLiteral otherBoolean = (BooleanLiteral) other;
+    		return (int) (this.get64BitValue() - otherBoolean.get64BitValue());
+    	}
     }
 
     public int hashCode() {

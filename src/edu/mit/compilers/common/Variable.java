@@ -1,5 +1,11 @@
 package edu.mit.compilers.common;
 
+import java.util.Collection;
+import java.util.HashSet;
+
+import edu.mit.compilers.codegen.asm.Architecture;
+import edu.mit.compilers.optimization.cse.VariableOrdering;
+
 /**
  * A variable.
  * 
@@ -9,6 +15,7 @@ package edu.mit.compilers.common;
 public class Variable {
     /** Where a variable came from. */
     private static enum VariableCreator { USER, COMPILER }
+    private static VariableOrdering ORDER = VariableOrdering.BasicOrdering();
     
     private final VariableCreator creator;
     private final String name;
@@ -24,7 +31,9 @@ public class Variable {
      * <p>For example, when the user writes 'int i', we invoke forUser("i").
      */
     public static Variable forUser(String name) {
-        return new Variable(VariableCreator.USER, name);
+    	Variable userVar = new Variable(VariableCreator.USER, name);
+    	ORDER.addToOrdering(userVar);
+        return userVar;
     }
 
     /**
@@ -34,13 +43,19 @@ public class Variable {
      * when doing Common Subexpression Elimination.
      */
     public static Variable forCompiler(String name) {
-        return new Variable(VariableCreator.COMPILER, name);
+    	Variable compilerVar = new Variable(VariableCreator.COMPILER, name);
+    	ORDER.addToOrdering(compilerVar);
+        return compilerVar;
     }
     
     public String asText() {
     	return creator == VariableCreator.USER 
     		   ? name
     		   : "C$" + name;
+    }
+    
+    public int compareTo(Variable other){
+    	return ORDER.compare(this, other);
     }
 
     @Override

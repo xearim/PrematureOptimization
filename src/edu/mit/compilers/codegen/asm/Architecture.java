@@ -8,6 +8,8 @@ import edu.mit.compilers.ast.LocationDescriptor;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.common.Variable;
+import edu.mit.compilers.optimization.cse.ExpressionOrdering;
+import edu.mit.compilers.optimization.cse.LeftAssociative;
 
 public class Architecture {
     public final static String MAIN_METHOD_NAME = "main";
@@ -15,10 +17,13 @@ public class Architecture {
     public static final int WORD_SIZE = 8;
     public static final long BYTES_PER_ENTRY = 8;
     
-    public static final Label MAIN_BASE_POINTER_ERROR_VARIABLE =
-            new Label(LabelType.ERROR, Variable.forCompiler("mainbaseptr"));    		
+    public static final Variable MAIN_BASE_POINTER_ERROR_VARIABLE = Variable.forCompiler("mainbaseptr");
+    public static final Label MAIN_BASE_POINTER_ERROR_LABEL =
+            new Label(LabelType.ERROR, MAIN_BASE_POINTER_ERROR_VARIABLE);    		
     
     public static final Scope ERROR_VARIABLES = constructErrors();
+    
+    public static final ExpressionOrdering EXPRESSION_ORDERING = new LeftAssociative();
     
     public static boolean CONTAINS_ARRAYS = false;
     

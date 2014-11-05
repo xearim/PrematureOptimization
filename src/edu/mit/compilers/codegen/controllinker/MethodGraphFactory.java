@@ -43,7 +43,7 @@ public class MethodGraphFactory implements GraphFactory {
         BiTerminalGraph enterInstruction = isMain
                 ? BiTerminalGraph.ofInstructions(
                         enter(entriesToAllocate),
-                        move(Register.RBP, Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE))
+                        move(Register.RBP, Architecture.MAIN_BASE_POINTER_ERROR_LABEL))
                 : BiTerminalGraph.ofInstructions(enter(entriesToAllocate));
 
         //DataFlow test = new BlockDataFlowFactory(block).getDataFlow();				

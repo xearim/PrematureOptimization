@@ -22,7 +22,7 @@ public class ErrorExitGraphFactory implements GraphFactory {
     	
     	// Set R10 to the global for the intial RBP
     	BiTerminalGraph initialize = BiTerminalGraph.ofInstructions(
-    			move(Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE, Register.R10)
+    			move(Architecture.MAIN_BASE_POINTER_ERROR_LABEL, Register.R10)
     			);
     	
     	// Check if the current RBP is the initial RBP

@@ -1,7 +1,9 @@
 package edu.mit.compilers.ast;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.ast.NativeExpression.ExpressionType;
 import edu.mit.compilers.common.Variable;
 
 public class ArrayLocation implements Location {
@@ -9,6 +11,7 @@ public class ArrayLocation implements Location {
     private final Variable variable;
     private final NativeExpression index;
     private final LocationDescriptor locationDescriptor;
+    private final ExpressionType type = ExpressionType.ARRAY_LOCATION;
     
     public ArrayLocation(Variable variable, NativeExpression index,
             LocationDescriptor locationDescriptor) {
@@ -42,6 +45,24 @@ public class ArrayLocation implements Location {
     
     public String asText() {
     	return variable.asText() + "[" + index.asText() + "]";
+    }
+    
+    public ExpressionType getType(){
+    	return type;
+    }
+    
+    public int compareTo(NativeExpression other){
+    	Preconditions.checkState(other != null);
+    	if(this.getType() != other.getType()){
+    		return this.getType().getPrecedence() - other.getType().getPrecedence();
+    	} else {
+    		ArrayLocation otherArray = (ArrayLocation) other;
+    		if(this.variable.compareTo(otherArray.getVariable()) == 0){
+    			return this.index.compareTo(otherArray.getIndex());
+    		} else {
+    			return this.variable.compareTo(otherArray.getVariable());
+    		}
+    	}
     }
 
     @Override
