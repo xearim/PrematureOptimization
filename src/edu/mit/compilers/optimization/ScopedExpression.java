@@ -13,7 +13,7 @@ import edu.mit.compilers.ast.Scope;
  * - two if statements at the same level use the same variable name.
  * - an expressions is derived only from variables from higher scopes.
  */
-public class Subexpression {
+public class ScopedExpression {
     private final NativeExpression ne;
     private final Scope scope;
     private final Set<ScopedVariable> variables;
@@ -21,7 +21,7 @@ public class Subexpression {
     /**
      * The Scope is the immediate scope.
      */
-    public Subexpression(NativeExpression ne, Scope scope) {
+    public ScopedExpression(NativeExpression ne, Scope scope) {
         this.ne = ne;
         this.variables = ScopedVariable.getVariablesOf(ne, scope);
         this.scope = getGeneralScope(scope);
@@ -99,7 +99,7 @@ public class Subexpression {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Subexpression other = (Subexpression) obj;
+        ScopedExpression other = (ScopedExpression) obj;
         if (ne == null) {
             if (other.ne != null)
                 return false;
