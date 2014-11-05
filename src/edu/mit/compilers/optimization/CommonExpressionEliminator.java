@@ -26,6 +26,7 @@ import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.MethodCallDataFlowNode;
+import edu.mit.compilers.codegen.NopDataFlowNode;
 import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.StatementDataFlowNode;
@@ -85,7 +86,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                 for (NativeExpression expr : nodeExprs(statementNode)) {
                     if (availCalc.isAvailable(expr, statementNode)) {
                         replace(statementNode, useTemp(node, expr));
-                    } else {
+                    } else if(AvailabilityCalculator.isComplexEnough(expr)) {
                         // For now, we alway generate if it's not available.
                         // TODO(jasonpr): Use 'reasons' or 'benefactors' to reduce
                         // amount of unnecessary temp filling.
@@ -117,7 +118,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         	Preconditions.checkState(statementNode.getExpression().isPresent());
         	
         	Location temp = new ScalarLocation(tempVars.get(expr), LocationDescriptor.machineCode());
-        	
+        	        	
         	StatementDataFlowNode newStatement = getReplacement(statementNode, statementScope, temp);
         	
         	return new DataFlow(newStatement, newStatement, new DataControlNodes());
