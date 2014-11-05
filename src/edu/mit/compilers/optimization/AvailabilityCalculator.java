@@ -242,7 +242,7 @@ public class AvailabilityCalculator {
      * Any GeneralExpression that passes this check may be considered a
      * NativeExpression.
      */
-    private static boolean isComplexEnough(GeneralExpression ge) {
+    public static boolean isComplexEnough(GeneralExpression ge) {
         return (ge instanceof BinaryOperation)
                 || (ge instanceof MethodCall)
                 || (ge instanceof TernaryOperation)
@@ -278,12 +278,18 @@ public class AvailabilityCalculator {
 
     /** Return whether an expression is available at a DataFlowNode. */
     public boolean isAvailable(GeneralExpression expr, StatementDataFlowNode node) {
-        if (!(expr instanceof NativeExpression)) {
+    	for(Subexpression e : availableSubexpressionsAt(node)){
+    		if(e.getNativeExpression().equals(expr)){
+    			return true;
+    		}
+    	}
+    	return false;
+        /*if (!(expr instanceof NativeExpression)) {
             // Only NativeExpressions are ever available.
             return false;
         }
         Subexpression scopedExpr = new Subexpression((NativeExpression) expr, node.getScope());
 
-        return inSets.get(node).contains(scopedExpr);
+        return inSets.get(node).contains(scopedExpr);*/
     }
 }
