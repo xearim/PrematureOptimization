@@ -1,0 +1,16 @@
+void main() {
+  // "Seed" variables.
+  int x, y, z;
+  // Get expressions.
+  int a, b, c, d, e;
+
+  x = 1;
+  y = 2;
+  z = 3;
+
+  a = x + y + z;
+  b = x + y + z;
+  c = x + y + z;
+  d = x + y + z;
+  e = x + y + z;
+}

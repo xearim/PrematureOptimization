@@ -1,0 +1,14 @@
+bool getBool() {
+  return true;
+}
+
+int main() {
+  int a, b, c;
+  if (getBool()) {
+    a = 1 + 2 + 3;
+  } else {
+    b = 1 + 2 + 3;
+  }
+  c = 1 + 2 + 3;
+  return c;
+}
