@@ -31,7 +31,7 @@ public class Assignment implements Statement {
 
     public static Assignment assignmentWithReplacementExpr(Assignment old, NativeExpression expr) {
         return new Assignment(old.getLocation(), old.getOperation(),
-                expr, LocationDescriptor.machineCode());
+                expr, LocationDescriptor.machineCode(), old.getFromCompiler());
     }
     
     @Override
