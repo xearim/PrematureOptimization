@@ -34,6 +34,7 @@ public class DataFlowUtil {
             if (visited.contains(node)) {
                 continue;
             }
+            visited.add(node);
             for (DataFlowNode child : node.getSuccessors()) {
                 queue.push(child);
             }
