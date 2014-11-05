@@ -28,6 +28,11 @@ public class Assignment implements Statement {
     	return new Assignment(location, AssignmentOperation.SET_EQUALS,
     						  expr, LocationDescriptor.machineCode(), true);
     }
+
+    public static Assignment assignmentWithReplacementExpr(Assignment old, NativeExpression expr) {
+        return new Assignment(old.getLocation(), old.getOperation(),
+                expr, LocationDescriptor.machineCode());
+    }
     
     @Override
     public Iterable<? extends Node> getChildren() {

@@ -47,11 +47,16 @@ public class DataFlowGraphPrinter {
 	            int nodeId = nextId++;
 	            nodeIds.put(node, nodeId);
 	            printStream.println(Dot.node(nodeId, node.nodeText()));
-	            for (DataFlowNode sink : node.getSuccessors()) {
-	                int childId = printGraphFrom(sink);
-	                // Draw an edge to the child, now that we have its id.
-	                printStream.println(Dot.edge(nodeId, childId));
-	            }
+                for (DataFlowNode sink : node.getSuccessors()) {
+                    int childId = printGraphFrom(sink);
+                    // Draw an edge to the child, now that we have its id.
+                    printStream.println(Dot.edge(nodeId, childId));
+                }
+                for (DataFlowNode sink : node.getPredecessors()) {
+                    int childId = printGraphFrom(sink);
+                    // Draw an edge to the child, now that we have its id.
+                    printStream.println(Dot.edge(childId, nodeId));
+                }
 	            return nodeId;
 	        }
 	    }
