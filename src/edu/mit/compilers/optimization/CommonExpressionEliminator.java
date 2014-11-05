@@ -171,9 +171,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         private AssignmentDataFlowNode replaceAssignment(AssignmentDataFlowNode node,
         		NativeExpression replacement, Scope scope){
         	return new AssignmentDataFlowNode(
-    				Assignment.compilerAssignment(node.getAssignment().getLocation(), replacement),
-    				scope
-    				);
+                    Assignment.assignmentWithReplacementExpr(node.getAssignment(), replacement),
+                    scope);
         }
         
         private CompareDataFlowNode replaceCompare(NativeExpression replacement, Scope scope){
