@@ -127,4 +127,10 @@ public class Assignment implements Statement {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "Assignment[" + location + " " + operation
+                + " " + expression + "]";
+    }
 }

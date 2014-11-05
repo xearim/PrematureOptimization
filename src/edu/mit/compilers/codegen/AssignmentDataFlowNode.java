@@ -44,4 +44,9 @@ public class AssignmentDataFlowNode extends StatementDataFlowNode{
 		return assignment.asText();
 	}
 
+	@Override
+	public String toString() {
+	    return "AssignmentDFN[" + assignment.toString() + "]";
+	}
+
 }

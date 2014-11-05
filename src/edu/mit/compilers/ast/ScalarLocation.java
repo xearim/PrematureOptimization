@@ -67,4 +67,9 @@ public class ScalarLocation implements Location {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return variable.generateName();
+    }
 }
