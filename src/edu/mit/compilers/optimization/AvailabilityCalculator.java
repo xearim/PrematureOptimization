@@ -158,8 +158,16 @@ public class AvailabilityCalculator {
 
             if (node instanceof StatementDataFlowNode
                     && ((StatementDataFlowNode) node).getExpression().isPresent()) {
+                
+                // Kill subexpressions with an assigned variable
+                if (node instanceof AssignmentDataFlowNode) {
+                    // Kill subexpressions with assigned variable
+                    ScopedVariable assignmentTarget = ScopedVariable.getAssigned((AssignmentDataFlowNode) node);
+                    varSets.get(node).add(assignmentTarget);
+                }
+                
+                // Deal with subexpressions 
                 NativeExpression ne = ((StatementDataFlowNode) node).getExpression().get();
-
                 if (isComplexEnough(ne)) {
                     if (containsMethodCall(ne)) {
                         // Kill subexpressions with globals
@@ -182,8 +190,6 @@ public class AvailabilityCalculator {
 
                     if (node instanceof AssignmentDataFlowNode) {
                         ScopedVariable assignmentTarget = ScopedVariable.getAssigned((AssignmentDataFlowNode) node);
-                        // Kill subexpressions with assigned variable
-                        varSets.get(node).add(assignmentTarget);
                         if (!varKillSets.containsKey(assignmentTarget)) {
                             varKillSets.put(assignmentTarget, new HashSet<Subexpression>());
                         }
