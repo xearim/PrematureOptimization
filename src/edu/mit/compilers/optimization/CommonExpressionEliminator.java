@@ -89,6 +89,10 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                         // For now, we alway generate if it's not available.
                         // TODO(jasonpr): Use 'reasons' or 'benefactors' to reduce
                         // amount of unnecessary temp filling.
+                        if (statementNode instanceof MethodCallDataFlowNode) {
+                            // Just skip it!  We only call it for its side effects.
+                            continue;
+                        }
                         addToScope(statementNode, expr);
                         replace(statementNode, fillAndUseTemp(node, expr));
                     }
