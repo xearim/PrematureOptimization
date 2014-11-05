@@ -82,4 +82,9 @@ public class IntLiteral implements NativeLiteral {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "(" + value + ")";
+    }
 }
