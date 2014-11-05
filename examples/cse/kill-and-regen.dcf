@@ -1,0 +1,18 @@
+void main() {
+  int x, y, z;
+  int a, b, c, d, e;
+
+  x = 1;
+  y = 2;
+  z = 3;
+
+  a = x + y + z;
+  b = x + y + z;
+
+  // Kill x + y + z!
+  x = 5;
+
+  c = x + y + z;
+  d = x + y + z;
+  e = x + y + z;
+}

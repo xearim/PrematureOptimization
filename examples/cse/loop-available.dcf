@@ -1,0 +1,19 @@
+void main() {
+  int a, b, c;
+  int x, y, z;
+
+  x = 1;
+  y = 2;
+  z = 3;
+
+  a = x + y + z;
+
+  while (x < 10) {
+    // The expression IS available, since it's available before the
+    // beginning of the loop, and it's available in the branch that
+    // loops back to the top of the loop.
+    b = x + y + z;
+    x += 1;
+    c = x + y + z;
+  }
+}
