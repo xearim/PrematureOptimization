@@ -1,0 +1,17 @@
+void main() {
+  int x, y, z;
+  int a, b;
+
+  x = 1;
+  y = 2;
+  z = 3;
+
+  a = x + y + z;
+
+  while (x < 10) {
+    // The expression is NOT available, because it's not available in the
+    // branch that loops back to the top of the loop.
+    b = x + y + z;
+    x += 1;
+  }
+}
