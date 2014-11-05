@@ -36,6 +36,12 @@ public class Variable {
     public static Variable forCompiler(String name) {
         return new Variable(VariableCreator.COMPILER, name);
     }
+    
+    public String asText() {
+    	return creator == VariableCreator.USER 
+    		   ? name
+    		   : "C$" + name;
+    }
 
     @Override
     public int hashCode() {

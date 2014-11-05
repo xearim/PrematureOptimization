@@ -54,4 +54,8 @@ public class BooleanLiteral implements NativeLiteral {
     public String toString() {
         return value;
     }
+    
+    public String asText() {
+    	return toString();
+    }
 }

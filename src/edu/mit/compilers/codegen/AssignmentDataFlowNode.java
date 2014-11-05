@@ -39,5 +39,9 @@ public class AssignmentDataFlowNode extends StatementDataFlowNode{
 	public Collection<GeneralExpression> getExpressions() {
 	    return ImmutableList.<GeneralExpression>of(assignment.getExpression());
 	}
+	
+	public String nodeText(){
+		return assignment.asText();
+	}
 
 }

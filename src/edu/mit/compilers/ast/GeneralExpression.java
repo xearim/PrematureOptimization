@@ -9,4 +9,6 @@ public interface GeneralExpression extends Node {
     
     @Override
     public Iterable<? extends GeneralExpression >getChildren();
+    
+    public String asText();
 }
