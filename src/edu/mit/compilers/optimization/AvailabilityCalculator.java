@@ -116,6 +116,9 @@ public class AvailabilityCalculator {
             for (DataFlowNode child : node.getSuccessors()) {
                 queue.push(child);
             }
+            for (DataFlowNode child : node.getPredecessors()) {
+                queue.push(child);
+            }
         }
     }
 
