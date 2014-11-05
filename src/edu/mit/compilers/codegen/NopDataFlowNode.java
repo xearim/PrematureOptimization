@@ -23,4 +23,8 @@ public class NopDataFlowNode extends SequentialDataFlowNode {
     public Collection<GeneralExpression> getExpressions() {
         return ImmutableList.of();
     }
+    
+    public String nodeText(){
+		return "NOP";
+	}
 }

@@ -54,7 +54,7 @@ public class CLI {
    * AST: produce the AST that ANTLR generated.
    * CFG: Produce the unoptimized control-flow graph.
    */
-    public enum Action {DEFAULT, ABOUT, SCAN, PARSE, INTER, ASSEMBLY, AST, CFG};
+    public enum Action {DEFAULT, ABOUT, SCAN, PARSE, INTER, ASSEMBLY, AST, CFG, DFG};
 
   /**
    * Array indicating which optimizations should be performed.  If
@@ -195,6 +195,7 @@ public class CLI {
       else if (targetStr.equals("assembly")) target = Action.ASSEMBLY;
       else if (targetStr.equals("ast")) target = Action.AST;
       else if (targetStr.equals("cfg")) target = Action.CFG;
+      else if (targetStr.equals("dfg")) target = Action.DFG;
       else if (targetStr.equals("about")) {
 	  printUsage("Test run successful. Command line parameters: ");
 	  System.exit(0);

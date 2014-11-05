@@ -41,6 +41,10 @@ public class TernaryOperation implements NativeExpression {
     public NativeExpression getFalseResult() {
         return falseResult;
     }
+    
+    public String asText() {
+    	return condition.asText() + " " + "?" + " " + trueResult.asText() + " " + ":" + " " + falseResult.asText();
+    }
 
     @Override
     public int hashCode() {

@@ -35,4 +35,7 @@ public class CompareDataFlowNode extends StatementDataFlowNode{
 	    return ImmutableList.<GeneralExpression>of(comparison);
 	}
 
+	public String nodeText(){
+		return comparison.asText();
+	}
 }

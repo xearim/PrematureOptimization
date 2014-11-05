@@ -117,4 +117,8 @@ public class BranchSourceDataFlowNode implements DataFlowNode{
             throw new AssertionError("Could not find successor " + replaced);
         }
     }
+    
+    public String nodeText(){
+    	return type.toString();
+    }
 }

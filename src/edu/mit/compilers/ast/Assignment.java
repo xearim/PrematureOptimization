@@ -73,6 +73,10 @@ public class Assignment implements Statement {
     public boolean getFromCompiler() {
     	return fromCompiler;
     }
+    
+    public String asText() {
+    	return location.asText() + " " + operation.getSymbol() + " " + expression.asText();
+    }
 
     @Override
     public int hashCode() {

@@ -42,4 +42,10 @@ public class ReturnStatementDataFlowNode extends StatementDataFlowNode{
 	public Optional<NativeExpression> getExpression() {
 	    return returnStatement.getValue();
 	}
+	
+	public String nodeText(){
+		return "Return " + (returnStatement.getValue().isPresent() 
+						 ? returnStatement.getValue().get().asText()
+						 : "");
+	}
 }

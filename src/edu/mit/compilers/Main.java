@@ -22,6 +22,7 @@ import edu.mit.compilers.ast.NodeMaker;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.codegen.AssemblyWriter;
 import edu.mit.compilers.codegen.AstToCfgConverter;
+import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 import edu.mit.compilers.grammar.DecafParser;
@@ -35,6 +36,7 @@ import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
 import edu.mit.compilers.tools.ControlFlowGraphPrinter;
+import edu.mit.compilers.tools.DataFlowGraphPrinter;
 
 class Main {
 
@@ -65,6 +67,8 @@ class Main {
                 parse(inputStream, outputStream);
             } else if (CLI.target == Action.ASSEMBLY) {
                 genCode(inputStream, outputStream, getOptimizations());
+            } else if (CLI.target == Action.DFG) {
+            	dataFlowGraph(inputStream, outputStream, getOptimizations());
             }
         } catch(Exception e) {
             // An unrecoverable error occurred.
@@ -167,6 +171,20 @@ class Main {
         Method main = methods.get(MAIN_METHOD_NAME);
         BiTerminalGraph controlFlowGraph = AstToCfgConverter.unoptimizing().convert(main);
         new ControlFlowGraphPrinter(outputStream).print(controlFlowGraph.getBeginning());
+    }
+    
+    private static void dataFlowGraph(InputStream inputStream, PrintStream outputStream,
+            Set<String> optimizationNames) throws RecognitionException, TokenStreamException {
+        Program validProgram = semanticallyValidProgram(inputStream, outputStream).get();
+        ImmutableMap.Builder<String, Method> methodsBuilder = ImmutableMap.builder();
+        for (Method method : validProgram.getMethods()) {
+            methodsBuilder.put(method.getName(), method);
+        }
+        ImmutableMap<String, Method> methods = methodsBuilder.build();
+        // TODO(jasonpr): Do it for everything, not just main.
+        Method main = methods.get(MAIN_METHOD_NAME);
+        DataFlowIntRep dataFlowGraph = AstToCfgConverter.withOptimizations(optimizationNames).optimize(main);
+        new DataFlowGraphPrinter(outputStream).print(dataFlowGraph.getDataFlowGraph().getBeginning());
     }
 
     private static void genCode(InputStream inputStream, PrintStream outputStream,

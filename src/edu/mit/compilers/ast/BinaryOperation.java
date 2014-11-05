@@ -42,6 +42,10 @@ public class BinaryOperation implements NativeExpression {
     public NativeExpression getRightArgument() {
         return rightArgument;
     }
+    
+    public String asText() {
+    	return leftArgument.asText() + " " + operator.getSymbol() + " " + rightArgument.asText();
+    }
 
     @Override
     public int hashCode() {
