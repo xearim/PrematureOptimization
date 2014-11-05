@@ -77,8 +77,10 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
 
         public void optimize() {
             for (DataFlowNode node : nodes) {
-                // The cast will always succeed: non-statement nodes have no
-                // expressions, so we'll never enter this loop if the cast would fail.
+                if (!(node instanceof StatementDataFlowNode)) {
+                    // Only optimize Statement nodes.
+                    continue;
+                }
                 StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
                 for (NativeExpression expr : nodeExprs(statementNode)) {
                     if (availCalc.isAvailable(expr, statementNode)) {
