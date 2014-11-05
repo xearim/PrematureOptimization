@@ -53,6 +53,14 @@ public class MethodCall implements Statement, NativeExpression {
     public NodeSequence<GeneralExpression> getParameterValues() {
         return parameterValues;
     }
+    
+    public String asText() {
+    	String out = getMethodName();
+    	for(GeneralExpression param: getParameterValues()){
+    		out += " " + param.asText();
+    	}
+    	return out;
+    }
 
     @Override
     public int hashCode() {

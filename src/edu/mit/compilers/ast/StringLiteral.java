@@ -44,6 +44,10 @@ public class StringLiteral implements GeneralExpression {
     public static void addString(StringLiteral sl) {
     	stringLiteralSet.add(sl);
     }
+    
+    public String asText() {
+    	return value;
+    }
 
     // TODO(jasonpr): Consider excluding value, since stringID is already unique.
     // Alternatively, consider doing some interning scheme, so that duplicate strings

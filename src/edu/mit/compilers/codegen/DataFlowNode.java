@@ -19,4 +19,11 @@ public interface DataFlowNode {
      * 'replacement' in its place.
      */
     public void replaceSuccessor(DataFlowNode replaced, DataFlowNode replacement);
+    
+    /**
+     * Some text that represents the contents of this node.
+     *
+     * <p>When a node is rendered in a graph, this text is printed inside the rendered node.
+     */
+    public String nodeText();
 }

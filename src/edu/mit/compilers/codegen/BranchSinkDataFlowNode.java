@@ -102,4 +102,8 @@ public class BranchSinkDataFlowNode implements DataFlowNode{
         checkArgument(replaced.equals(next.get()));
         next = Optional.of(replacement);
     }
+    
+    public String nodeText(){
+    	return name;
+    }
 }

@@ -39,6 +39,10 @@ public class ArrayLocation implements Location {
     public NativeExpression getIndex() {
         return index;
     }
+    
+    public String asText() {
+    	return variable.asText() + "[" + index.asText() + "]";
+    }
 
     @Override
     public int hashCode() {

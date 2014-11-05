@@ -39,4 +39,8 @@ public class MethodCallDataFlowNode extends StatementDataFlowNode{
     public Optional<MethodCall> getExpression() {
         return Optional.of(methodCall);
     }
+    
+    public String nodeText(){
+		return methodCall.asText();
+	}
 }

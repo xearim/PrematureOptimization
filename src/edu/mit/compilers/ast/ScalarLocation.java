@@ -32,6 +32,10 @@ public class ScalarLocation implements Location {
     public LocationDescriptor getLocationDescriptor() {
         return locationDescriptor;
     }
+    
+    public String asText() {
+    	return variable.asText();
+    }
 
     @Override
     public int hashCode() {

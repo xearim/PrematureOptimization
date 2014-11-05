@@ -44,6 +44,10 @@ public class IntLiteral implements NativeLiteral {
     public long get64BitValue() {
         return longValue;
     }
+    
+    public String asText() {
+    	return value;
+    }
 
     public boolean equals(IntLiteral il) {
         return this.value.equals(il.getName())

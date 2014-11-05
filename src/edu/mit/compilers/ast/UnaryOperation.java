@@ -36,6 +36,10 @@ public class UnaryOperation implements NativeExpression {
     public NativeExpression getArgument() {
         return argument;
     }
+    
+    public String asText() {
+    	return operator.getSymbol() + " " + argument.asText();
+    }
 
     @Override
     public int hashCode() {

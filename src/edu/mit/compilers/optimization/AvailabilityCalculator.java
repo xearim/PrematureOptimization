@@ -116,6 +116,9 @@ public class AvailabilityCalculator {
             for (DataFlowNode child : node.getSuccessors()) {
                 queue.push(child);
             }
+            for (DataFlowNode child : node.getPredecessors()) {
+                queue.push(child);
+            }
         }
     }
 
@@ -141,6 +144,12 @@ public class AvailabilityCalculator {
         Map<DataFlowNode, Set<ScopedVariable>> varSets = new HashMap<DataFlowNode, Set<ScopedVariable>>();
         Map<ScopedVariable, Set<Subexpression>> varKillSets = new HashMap<ScopedVariable, Set<Subexpression>>();
         Set<ScopedVariable> globals = getGlobals(allNodes);
+        
+        // All globals need a kill set since they could be edited solely
+        // by a function call that we never encounter (lack of idempotence)
+        for (ScopedVariable global : globals){
+        	varKillSets.put(global, new HashSet<Subexpression>());
+        }
 
         for (DataFlowNode node : allNodes) {
             genSets.put(node, new HashSet<Subexpression>());
@@ -155,7 +164,6 @@ public class AvailabilityCalculator {
                     if (containsMethodCall(ne)) {
                         // Kill subexpressions with globals
                         varSets.get(node).addAll(globals);
-
                     } else {
                         Subexpression newSubexpr = new Subexpression(ne, ((StatementDataFlowNode) node).getScope());
 

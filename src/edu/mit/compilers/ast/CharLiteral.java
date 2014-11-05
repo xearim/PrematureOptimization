@@ -48,6 +48,10 @@ public class CharLiteral implements NativeLiteral {
     public long get64BitValue() {
         return this.longValue;
     }
+    
+    public String asText() {
+    	return "'" + value + "'";
+    }
 
     public boolean equals(CharLiteral cl) {
         return this.getName().equals(cl.getName())

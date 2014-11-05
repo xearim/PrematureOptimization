@@ -77,8 +77,10 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
 
         public void optimize() {
             for (DataFlowNode node : nodes) {
-                // The cast will always succeed: non-statement nodes have no
-                // expressions, so we'll never enter this loop if the cast would fail.
+                if (!(node instanceof StatementDataFlowNode)) {
+                    // Only optimize Statement nodes.
+                    continue;
+                }
                 StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
                 for (NativeExpression expr : nodeExprs(statementNode)) {
                     if (availCalc.isAvailable(expr, statementNode)) {
@@ -87,6 +89,10 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                         // For now, we alway generate if it's not available.
                         // TODO(jasonpr): Use 'reasons' or 'benefactors' to reduce
                         // amount of unnecessary temp filling.
+                        if (statementNode instanceof MethodCallDataFlowNode) {
+                            // Just skip it!  We only call it for its side effects.
+                            continue;
+                        }
                         addToScope(statementNode, expr);
                         replace(statementNode, fillAndUseTemp(node, expr));
                     }
@@ -165,9 +171,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         private AssignmentDataFlowNode replaceAssignment(AssignmentDataFlowNode node,
         		NativeExpression replacement, Scope scope){
         	return new AssignmentDataFlowNode(
-    				Assignment.compilerAssignment(node.getAssignment().getLocation(), replacement),
-    				scope
-    				);
+                    Assignment.assignmentWithReplacementExpr(node.getAssignment(), replacement),
+                    scope);
         }
         
         private CompareDataFlowNode replaceCompare(NativeExpression replacement, Scope scope){
