@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.codegen.asm.Architecture;
 
 public class CompareDataFlowNode extends StatementDataFlowNode{
 	
@@ -17,7 +18,8 @@ public class CompareDataFlowNode extends StatementDataFlowNode{
 	public CompareDataFlowNode(NativeExpression comparison, Scope scope){
 		super("Expression");
 		this.scope = scope;
-		this.comparison = comparison;
+		//this.comparison = comparison;
+		this.comparison = Architecture.EXPRESSION_ORDERING.order(comparison);
 	}
 
 	@Override

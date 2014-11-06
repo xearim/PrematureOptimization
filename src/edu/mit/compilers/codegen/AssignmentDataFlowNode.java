@@ -19,6 +19,7 @@ public class AssignmentDataFlowNode extends StatementDataFlowNode{
 	public AssignmentDataFlowNode(Assignment assignment, Scope scope){
 		super("Assignment");
 		this.scope = scope;
+		// TODO (xearim) make the ordering injection not so janky
 		//this.assignment = assignment;
 		this.assignment = new Assignment(assignment.getLocation(), assignment.getOperation(),
 				Architecture.EXPRESSION_ORDERING.order(assignment.getExpression()), assignment.getLocationDescriptor());

@@ -12,8 +12,7 @@ public class LeftAssociative extends ExpressionOrdering{
 		super();
 	}
 	
-	@SuppressWarnings("unused")
-	private NativeExpression orderExpressions(Set<NativeExpression> expressions, BinaryOperator op){
+	protected NativeExpression orderExpressions(Set<NativeExpression> expressions, BinaryOperator op){
 		NativeExpression head = null;
 		for(NativeExpression expr : expressions){
 			if(head == null){
@@ -28,8 +27,7 @@ public class LeftAssociative extends ExpressionOrdering{
 			 : new BinaryOperation(op, orderExpressions(expressions, op), head);
 	}
 	
-	@SuppressWarnings("unused")
-	private NativeExpression orderExpressions(
+	protected NativeExpression orderExpressions(
 			NativeExpression leftExpr, NativeExpression rightExpr, BinaryOperator op){
 		return leftExpr.compareTo(rightExpr) >= 0
 			 ? new BinaryOperation(op, leftExpr, rightExpr)

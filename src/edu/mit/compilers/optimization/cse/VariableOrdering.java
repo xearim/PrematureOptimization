@@ -95,7 +95,11 @@ public class VariableOrdering {
 										? new OrderedVariable(variable)
 										: new OrderedVariable(variable, tail);
 		variables.add(orderedVariable);
-		order.put(variable, order.get(tail.getVariable()) + 1);
+		if(tail == null){
+			order.put(variable, 0);
+		} else {
+			order.put(variable, order.get(tail.getVariable()) + 1);
+		}
 		tail = orderedVariable;
 	}
 	

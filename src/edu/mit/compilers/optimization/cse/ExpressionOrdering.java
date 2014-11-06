@@ -137,11 +137,11 @@ public abstract class ExpressionOrdering {
 	}
 	
 	// Dangerous, but all expression orderings are going to have to implement this or they will break
-	private NativeExpression orderExpressions(Set<NativeExpression> expressions, BinaryOperator op){
+	protected NativeExpression orderExpressions(Set<NativeExpression> expressions, BinaryOperator op){
 		throw new AssertionError("Custom expression ordering does not define an expression ordering");
 	}
 	
-	private NativeExpression orderExpressions(
+	protected NativeExpression orderExpressions(
 			NativeExpression leftExpr, NativeExpression rightExpr, BinaryOperator op){
 		throw new AssertionError("Custom expression ordering does not define an expression ordering");
 	}

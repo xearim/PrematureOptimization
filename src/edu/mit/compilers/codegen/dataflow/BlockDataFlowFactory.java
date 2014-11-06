@@ -39,7 +39,6 @@ public class BlockDataFlowFactory implements DataFlowFactory{
 		BranchSinkDataFlowNode breakNode = new BranchSinkDataFlowNode();
 		BranchSinkDataFlowNode returnNode = new BranchSinkDataFlowNode();
 
-
 		// We are going to explicitly set variables to 0, optimizations should
 		// Get rid of the unnecessary assignments		
 		SequentialDataFlowNode currentNode = start;
