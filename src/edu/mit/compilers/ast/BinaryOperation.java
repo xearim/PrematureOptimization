@@ -58,6 +58,8 @@ public class BinaryOperation implements NativeExpression {
     	return type;
     }
     
+    /** Binary Operations will be re-ordered internally by the expressionOrder class if possible, thus we
+     * Do not want to impose an ordering on them here except with respect to other NativeExpressions*/
     public int compareTo(NativeExpression other){
     	Preconditions.checkState(other != null);
     	return this.getType().getPrecedence() - other.getType().getPrecedence();

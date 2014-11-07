@@ -27,6 +27,16 @@ public interface NativeExpression extends GeneralExpression {
 	
 	public ExpressionType getType();
 	
+	/**
+	 * CompareTo operates similarly to the CompareTo of most java classes
+	 * namely, it return -1 if this < other, 0 if they are equivalent
+	 * and 1 if this > other
+	 * 
+	 * This is intended to allow native expressions to define a total ordering
+	 * where in all elements can be situated with respect to one another
+	 * thus allowing us to re-order all expressions to match each other when 
+	 * possible
+	 */
 	public int compareTo(NativeExpression other);
 	
 }
