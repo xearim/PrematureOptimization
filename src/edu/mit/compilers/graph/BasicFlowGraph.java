@@ -16,7 +16,7 @@ import com.google.common.collect.Multimap;
 
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 
-public class Graph<T> {
+public class BasicFlowGraph<T> implements FlowGraph<T> {
     private final ImmutableMultimap<Node<T>, Node<T>> forwardEdges;
     /** Just the inverse of forwardEdges, for convenience/speed. */
     private final ImmutableMultimap<Node<T>, Node<T>> backwardEdges;
@@ -25,14 +25,17 @@ public class Graph<T> {
     private final Node<T> start;
     private final Node<T> end;
 
+    @Override
     public Node<T> getStart() {
         return start;
     }
 
+    @Override    
     public Node<T> getEnd() {
         return end;
     }
 
+    @Override
     public Collection<Node<T>> getSuccessors(Node<T> node) {
         return forwardEdges.get(node);
     }
@@ -41,10 +44,12 @@ public class Graph<T> {
         return backwardEdges.get(node);
     }
 
+    @Override
     public boolean isBranch(Node<T> node) {
         return jumpDestinations.containsKey(node);
     }
 
+    @Override
     public Node<T> getNonJumpSuccessor(Node<T> node) {
         checkArgument(isBranch(node), "Node %s is not a branch node.", node);
         // Return the only successor that is not a jumpDestination.
@@ -56,11 +61,13 @@ public class Graph<T> {
         throw new AssertionError("No non-jump successor found for node " + node);
     }
 
+    @Override
     public Node<T> getJumpSuccessor(Node<T> node) {
         checkArgument(isBranch(node), "Node %s is not a branch node.", node);
         return jumpDestinations.get(node).destination;
     }
 
+    @Override
     public JumpType getJumpType(Node<T> node) {
         checkArgument(isBranch(node), "Node %s is not a branch node.", node);
         return jumpDestinations.get(node).jumpType;
@@ -76,7 +83,7 @@ public class Graph<T> {
         }
     }
 
-    private Graph(Multimap<Node<T>, Node<T>> forwardEdges, Map<Node<T>,
+    private BasicFlowGraph(Multimap<Node<T>, Node<T>> forwardEdges, Map<Node<T>,
             JumpDestination<T>> jumpDestinations, Node<T> start, Node<T> end) {
         this.forwardEdges = ImmutableMultimap.copyOf(forwardEdges);
         // Use `this.` because only the ImmutableMultimap has the inverse() method.
@@ -111,11 +118,11 @@ public class Graph<T> {
             end = seedNode;
         }
 
-        public Graph<T> build() {
+        public BasicFlowGraph<T> build() {
             // We couldn't enforce this as the graph was being build up, so we
             // check it right now.
             checkState(jumpDestinations.keySet().equals(haveNonJumpBranch));
-            return new Graph<T>(edges, jumpDestinations, start, end);
+            return new BasicFlowGraph<T>(edges, jumpDestinations, start, end);
         }
 
         /**
@@ -189,6 +196,24 @@ public class Graph<T> {
             end = Node.nop();
             link(node, end);
             link(otherNode, end);
+            return this;
+        }
+
+        public Node<T> getStart() {
+            return start;
+        }
+
+        public Node<T> getEnd() {
+            return end;
+        }
+
+        public Builder<T> setStart(Node<T> start) {
+            this.start = start;
+            return this;
+        }
+
+        public Builder<T> setEnd(Node<T> end) {
+            this.end = end;
             return this;
         }
 
