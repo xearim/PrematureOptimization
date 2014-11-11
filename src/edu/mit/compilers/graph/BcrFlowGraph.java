@@ -1,6 +1,9 @@
 package edu.mit.compilers.graph;
 
-import java.util.Collection;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 
@@ -30,8 +33,20 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
     }
 
     @Override
-    public Collection<Node<T>> getSuccessors(Node<T> node) {
+    public Set<Node<T>> getNodes() {
+        return Sets.union(
+                ImmutableSet.of(breakTerminal, continueTerminal, returnTerminal),
+                flowGraph.getNodes());
+    }
+
+    @Override
+    public Set<Node<T>> getSuccessors(Node<T> node) {
         return flowGraph.getSuccessors(node);
+    }
+
+    @Override
+    public Set<Node<T>> getPredecessors(Node<T> node) {
+        return flowGraph.getPredecessors(node);
     }
 
     @Override
@@ -65,6 +80,4 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
     public Node<T> getReturnTerminal() {
         return returnTerminal;
     }
-
-    
 }

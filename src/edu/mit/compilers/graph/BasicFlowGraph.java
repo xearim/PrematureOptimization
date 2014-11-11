@@ -12,7 +12,9 @@ import java.util.Set;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 
@@ -36,12 +38,22 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
     }
 
     @Override
-    public Collection<Node<T>> getSuccessors(Node<T> node) {
-        return forwardEdges.get(node);
+    public Set<Node<T>> getNodes() {
+        return Sets.union(
+                ImmutableSet.of(start, end),
+                    Sets.union(
+                            forwardEdges.keySet(),
+                            backwardEdges.keySet()));
     }
 
-    public Collection<Node<T>> getPredecessors(Node<T> node) {
-        return backwardEdges.get(node);
+    @Override
+    public Set<Node<T>> getSuccessors(Node<T> node) {
+        return ImmutableSet.copyOf(forwardEdges.get(node));
+    }
+
+    @Override
+    public Set<Node<T>> getPredecessors(Node<T> node) {
+        return ImmutableSet.copyOf(backwardEdges.get(node));
     }
 
     @Override
