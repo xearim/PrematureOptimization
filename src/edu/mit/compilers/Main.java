@@ -23,19 +23,18 @@ import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.codegen.AssemblyWriter;
 import edu.mit.compilers.codegen.AstToCfgConverter;
 import edu.mit.compilers.codegen.DataFlowIntRep;
-import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
-import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
+import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.grammar.DecafParser;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.grammar.DecafScanner;
 import edu.mit.compilers.grammar.DecafScannerTokenTypes;
+import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.semantics.ErrorPrinter;
 import edu.mit.compilers.semantics.SemanticChecker;
 import edu.mit.compilers.semantics.errors.SemanticError;
 import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
-import edu.mit.compilers.tools.ControlFlowGraphPrinter;
 import edu.mit.compilers.tools.DataFlowGraphPrinter;
 
 class Main {
@@ -169,8 +168,10 @@ class Main {
         ImmutableMap<String, Method> methods = methodsBuilder.build();
         // TODO(jasonpr): Do it for everything, not just main.
         Method main = methods.get(MAIN_METHOD_NAME);
-        BiTerminalGraph controlFlowGraph = AstToCfgConverter.unoptimizing().convert(main);
-        new ControlFlowGraphPrinter(outputStream).print(controlFlowGraph.getBeginning());
+        FlowGraph<Instruction> controlFlowGraph = AstToCfgConverter.unoptimizing().convert(main);
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented!");
+        // new FlowGraphPrinter(outputStream).print(controlFlowGraph);
     }
     
     private static void dataFlowGraph(InputStream inputStream, PrintStream outputStream,
