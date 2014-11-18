@@ -76,12 +76,12 @@ public class BiTerminalGraph {
     }
 
     /**
-     * Get the FlowGraph representation of this BiTerminalGraph.
+     * Get the BasicFlowGraph.Builder representation of this BiTerminalGraph.
      *
      * <p>BiTerminalGraphs are now deprecated in favor of FlowGraphs.  This
      * method exists to help us transition.
      */
-    public FlowGraph<Instruction> asFlowGraph() {
+    public BasicFlowGraph.Builder<Instruction> asFlowGraphBuilder() {
         BasicFlowGraph.Builder<Instruction> flowGraphBuilder = BasicFlowGraph.builder();
         // The newNode corresponding to the parent of a node.
         Map<ControlFlowNode, Node<Instruction>> newNodes =
@@ -137,7 +137,17 @@ public class BiTerminalGraph {
         flowGraphBuilder.setStart(newNodes.get(beginning));
         flowGraphBuilder.setEnd(newNodes.get(end));
 
-        return flowGraphBuilder.build();
+        return flowGraphBuilder;
+    }
+
+    /**
+     * Get the FlowGraph representation of this BiTerminalGraph.
+     *
+     * <p>BiTerminalGraphs are now deprecated in favor of FlowGraphs.  This
+     * method exists to help us transition.
+     */
+    public FlowGraph<Instruction> asFlowGraph() {
+        return asFlowGraphBuilder().build();
     }
 
     private Node<Instruction> newNode(ControlFlowNode node) {
