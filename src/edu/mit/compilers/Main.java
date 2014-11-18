@@ -68,7 +68,7 @@ class Main {
             } else if (CLI.target == Action.ASSEMBLY) {
                 genCode(inputStream, outputStream, getOptimizations());
             } else if (CLI.target == Action.DFG) {
-            	dataFlowGraph(inputStream, outputStream, getOptimizations());
+                dataFlowGraph(inputStream, outputStream, getOptimizations());
             }
         } catch(Exception e) {
             // An unrecoverable error occurred.
@@ -184,7 +184,9 @@ class Main {
         // TODO(jasonpr): Do it for everything, not just main.
         Method main = methods.get(MAIN_METHOD_NAME);
         DataFlowIntRep dataFlowGraph = AstToCfgConverter.withOptimizations(optimizationNames).optimize(main);
-        new DataFlowGraphPrinter(outputStream).print(dataFlowGraph.getDataFlowGraph().getBeginning());
+        // TODO(jasonpr): Implement.
+        throw new RuntimeException("Not yet implemented!");
+        //new DataFlowGraphPrinter(outputStream).print(dataFlowGraph.getDataFlowGraph().getBeginning());
     }
 
     private static void genCode(InputStream inputStream, PrintStream outputStream,
