@@ -118,6 +118,24 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
             this.returnTerminal = returnTerminal;
             return this;
         }
+        
+        public Node<T> getStartTerminal() {
+            return basicBuilder.getStart();
+        }
+        
+        public Builder<T> setStartTerminal(Node<T> start) {
+            basicBuilder.setStart(start);
+            return this;
+        }
+        
+        public Node<T> getEndTerminal() {
+            return basicBuilder.getEnd();
+        }
+
+        public Builder<T> setEndTerminal(Node<T> end) {
+            basicBuilder.setEnd(end);
+            return this;
+        }
 
         public Builder<T> link(Node<T> source, Node<T> sink) {
             basicBuilder.link(source, sink);
