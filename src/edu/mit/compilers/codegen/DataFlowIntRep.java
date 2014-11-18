@@ -1,18 +1,19 @@
 package edu.mit.compilers.codegen;
 
 import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.codegen.dataflow.DataFlow;
+import edu.mit.compilers.codegen.dataflow.ScopedStatement;
+import edu.mit.compilers.graph.FlowGraph;
 
 public class DataFlowIntRep {
-    private final DataFlow dataFlowGraph;
+    private final FlowGraph<ScopedStatement> dataFlowGraph;
     private final Scope scope;
     
-    public DataFlowIntRep(DataFlow dataFlowGraph, Scope scope) {
+    public DataFlowIntRep(FlowGraph<ScopedStatement> dataFlowGraph, Scope scope) {
         this.dataFlowGraph = dataFlowGraph;
         this.scope = scope;
     }
 
-    public DataFlow getDataFlowGraph() {
+    public FlowGraph<ScopedStatement> getDataFlowGraph() {
         return dataFlowGraph;
     }
 

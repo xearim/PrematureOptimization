@@ -20,7 +20,8 @@ import edu.mit.compilers.codegen.controllinker.statements.AssignmentGraphFactory
 import edu.mit.compilers.codegen.controllinker.statements.CompareGraphFactory;
 import edu.mit.compilers.codegen.controllinker.statements.MethodCallStatementGraphFactory;
 import edu.mit.compilers.codegen.controllinker.statements.ReturnStatementGraphFactory;
-import edu.mit.compilers.codegen.dataflow.DataFlow;
+import edu.mit.compilers.codegen.dataflow.ScopedStatement;
+import edu.mit.compilers.graph.FlowGraph;
 
 public class DataFlowGraphFactory implements ControlTerminalGraphFactory {
 
@@ -30,11 +31,11 @@ public class DataFlowGraphFactory implements ControlTerminalGraphFactory {
     private SequentialControlFlowNode terminal;
     private SequentialControlFlowNode returnNode, continueNode, breakNode;
 
-    public DataFlowGraphFactory(DataFlow dataFlow) {
-        this.graph = calculateGraph(dataFlow);
+    public DataFlowGraphFactory(FlowGraph<ScopedStatement> dataFlowGraph) {
+        this.graph = calculateGraph(dataFlowGraph);
     }
 
-    private ControlTerminalGraph calculateGraph(DataFlow dataFlow) {
+    private ControlTerminalGraph calculateGraph(FlowGraph<ScopedStatement> dataFlowGraph) {
     	SequentialControlFlowNode start = SequentialControlFlowNode.nopTerminal(); 
     	terminal = SequentialControlFlowNode.nopTerminal();
         returnNode = SequentialControlFlowNode.namedNop("DF return");
@@ -44,7 +45,7 @@ public class DataFlowGraphFactory implements ControlTerminalGraphFactory {
         visited = new HashSet<DataFlowNode>();
         conversion = new HashMap<DataFlowNode,ControlFlowNode>();
     	
-        ProcessDataFlowNode(dataFlow.getBeginning(), start);
+        ProcessDataFlowNode(dataFlowGraph.getBeginning(), start);
         
         return new ControlTerminalGraph(start, terminal,
         		new ControlNodes(breakNode, continueNode, returnNode));

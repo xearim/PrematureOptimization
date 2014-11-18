@@ -9,7 +9,7 @@ import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
-import edu.mit.compilers.codegen.dataflow.DataFlow;
+import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.FlowGraph;
 
 /**
@@ -33,13 +33,13 @@ public class MethodGraphFactory {
      * @param entriesToAllocate How many quadwords of memory need to be allocated on the stack to
      *      hold the variables at and below the method's scope.
      */
-    public MethodGraphFactory(
-            DataFlow methodDataFlowGraph, String name, boolean isVoid, long entriesToAllocate) {
+    public MethodGraphFactory(FlowGraph<ScopedStatement> methodDataFlowGraph,
+            String name, boolean isVoid, long entriesToAllocate) {
         this.graph = calculateGraph(methodDataFlowGraph, name, isVoid, entriesToAllocate);
     }
 
-    private FlowGraph<Instruction> calculateGraph(
-            DataFlow methodDataFlowGraph, String name, boolean isVoid, long entriesToAllocate) {
+    private FlowGraph<Instruction> calculateGraph(FlowGraph<ScopedStatement> methodDataFlowGraph,
+            String name, boolean isVoid, long entriesToAllocate) {
         // If we are the main method, we need to write down the base pointer for error handling
         boolean isMain = name.equals(Architecture.MAIN_METHOD_NAME);
         BiTerminalGraph enterInstruction = isMain
