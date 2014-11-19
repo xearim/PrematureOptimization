@@ -3,16 +3,17 @@ package edu.mit.compilers.graph;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
@@ -195,6 +196,13 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             end = builder.end;
             return this;
         }
+        
+        public Builder<T> append(FlowGraph<T> graph) {
+            copyIn(graph);
+            link(end, graph.getStart());
+            end = graph.getEnd();
+            return this;
+        }
 
         /**
          * Make a NOP node, make two nodes point to it, and set it as the graph's end node.
@@ -238,7 +246,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
          * destination for the same node, it will throw an AssertionError.
          */
         private void copyIn(Builder<T> builder) {
-            for (java.util.Map.Entry<Node<T>, Node<T>> entry : builder.edges.entries()) {
+            for (Entry<Node<T>, Node<T>> entry : builder.edges.entries()) {
                 Node<T> source = entry.getKey();
                 Node<T> sink = entry.getValue();
 
@@ -251,6 +259,25 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
                 } else {
                     // Just perform a normal link.
                     link(source, sink);
+                }
+            }
+        }
+        
+        /**
+         * Copy all links from a graph into this builder.
+         *
+         * <p>this method checks that all links are "compatible" with the links that
+         * are already present in this graph.  For example, if this graph already contains
+         * a jump destination for a node, and the other graph has a different jump
+         * destination for the same node, it will throw an AssertionError.
+         */
+        private void copyIn(FlowGraph<T> graph) {
+            for (Node<T> source : graph.getNodes()) {
+                if (graph.isBranch(source)) {
+                    linkNonJumpBranch(source, graph.getNonJumpSuccessor(source));
+                    linkJumpBranch(source, graph.getJumpType(source), graph.getJumpSuccessor(source));
+                } else if (graph.getSuccessors(source).size() > 0){
+                    link(source, Iterables.getOnlyElement(graph.getSuccessors(source)));
                 }
             }
         }
