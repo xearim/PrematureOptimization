@@ -8,9 +8,6 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.movePointe
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.moveToMemory;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
-
-import com.sun.corba.se.impl.logging.ActivationSystemException;
-
 import edu.mit.compilers.ast.ArrayLocation;
 import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.ScalarLocation;
@@ -19,11 +16,9 @@ import edu.mit.compilers.ast.ScopeType;
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
-import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.VariableReference;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
-import edu.mit.compilers.common.Variable;
 import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 
