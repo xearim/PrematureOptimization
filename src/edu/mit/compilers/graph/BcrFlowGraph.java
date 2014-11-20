@@ -57,17 +57,17 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
 
     @Override
     public Node<T> getNonJumpSuccessor(Node<T> node) {
-        return getNonJumpSuccessor(node);
+        return flowGraph.getNonJumpSuccessor(node);
     }
 
     @Override
     public Node<T> getJumpSuccessor(Node<T> node) {
-        return getJumpSuccessor(node);
+        return flowGraph.getJumpSuccessor(node);
     }
 
     @Override
     public JumpType getJumpType(Node<T> node) {
-        return getJumpType(node);
+        return flowGraph.getJumpType(node);
     }
     
     public Node<T> getBreakTerminal() {
