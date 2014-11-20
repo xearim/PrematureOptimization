@@ -3,6 +3,7 @@ package edu.mit.compilers.codegen.controllinker.statements;
 import static edu.mit.compilers.codegen.asm.Register.R10;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.compareFlagged;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
+import edu.mit.compilers.ast.Condition;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.codegen.asm.Literal;
@@ -20,6 +21,10 @@ public class CompareGraphFactory implements GraphFactory {
     public CompareGraphFactory(NativeExpression comparison, Scope scope){
         this.comparison = comparison;
         this.scope = scope;
+    }
+    
+    public CompareGraphFactory(Condition condition, Scope scope) {
+        this(condition.getExpression(), scope);
     }
 
     @Override

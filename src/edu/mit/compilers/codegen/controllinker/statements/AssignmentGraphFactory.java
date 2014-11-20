@@ -8,6 +8,7 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.subtract;
 import edu.mit.compilers.ast.ArrayLocation;
+import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.NativeExpression;
@@ -35,6 +36,11 @@ public class AssignmentGraphFactory implements GraphFactory {
         this.expr = expr;
         this.scope = scope;
         this.check = check;
+    }
+
+    public AssignmentGraphFactory(Assignment assignment, Scope scope) {
+        this(assignment.getLocation(), assignment.getOperation(), assignment.getExpression(),
+                scope, true /* Do check array bounds. */);
     }
 
     private FlowGraph<Instruction> calculateStore(Location target, Scope scope){
