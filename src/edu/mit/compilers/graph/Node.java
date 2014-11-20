@@ -30,4 +30,11 @@ public class Node<T> {
     public T value() {
         return value.get();
     }
+
+    @Override
+    public String toString() {
+        return hasValue()
+                ? "Node [value=" + value() + "]"
+                : "Node [NOP]";
+    }
 }
