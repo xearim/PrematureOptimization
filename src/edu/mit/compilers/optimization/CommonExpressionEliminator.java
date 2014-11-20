@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.Assignment;
-import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.GeneralExpression;
@@ -31,7 +30,6 @@ import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.MethodCallDataFlowNode;
-import edu.mit.compilers.codegen.NopDataFlowNode;
 import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
 import edu.mit.compilers.codegen.StatementDataFlowNode;
@@ -110,7 +108,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                 }
             }
         }
-        
+
         /** Return whether an expression is available at a DataFlowNode. */
         public boolean isAvailable(GeneralExpression expr, StatementDataFlowNode node) {
             if (!(expr instanceof NativeExpression)) {

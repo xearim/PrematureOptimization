@@ -11,20 +11,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
-import edu.mit.compilers.ast.BinaryOperation;
-import edu.mit.compilers.ast.GeneralExpression;
-import edu.mit.compilers.ast.MethodCall;
-import edu.mit.compilers.ast.NativeExpression;
-import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.ast.ScopeType;
-import edu.mit.compilers.ast.TernaryOperation;
-import edu.mit.compilers.ast.UnaryOperation;
-import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.StatementDataFlowNode;
 
@@ -37,7 +26,7 @@ public class AvailabilityCalculator<T> {
 
     public AvailabilityCalculator(AnalysisSpec<T> spec) {
         this.spec = spec;
-//        calculateAvailability(entryBlock);
+        //        calculateAvailability(entryBlock);
     }
 
     /**
@@ -94,7 +83,7 @@ public class AvailabilityCalculator<T> {
                 changed.addAll(node.getSuccessors());
             }
         }
-        
+
         return inSets;
     }
 
@@ -125,7 +114,7 @@ public class AvailabilityCalculator<T> {
                 queue.push(child);
             }
         }
-        
+
         return inSets;
     }
 
