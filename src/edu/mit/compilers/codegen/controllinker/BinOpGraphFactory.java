@@ -134,10 +134,11 @@ public class BinOpGraphFactory implements GraphFactory {
         FlowGraph<Instruction> rightHandExpression =
                 new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph();
 
+        Node<Instruction> shortCircuitPushFalse = Node.of(push(Literal.FALSE));
         builder.append(shortCircuitBranch)
                 .linkNonJumpBranch(shortCircuitBranch, rightHandExpression)
-                .linkJumpBranch(shortCircuitBranch, JumpType.JNE, Node.of(push(Literal.FALSE)))
-                .setEnd(rightHandExpression.getEnd());
+                .linkJumpBranch(shortCircuitBranch, JumpType.JNE, shortCircuitPushFalse)
+                .setEndToSinkFor(rightHandExpression.getEnd(), shortCircuitPushFalse);
         return builder.build();
     }
 
@@ -153,10 +154,11 @@ public class BinOpGraphFactory implements GraphFactory {
         FlowGraph<Instruction> rightHandExpression =
                 new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph();
 
+        Node<Instruction> shortCircuitPushTrue = Node.of(push(Literal.TRUE));
         builder.append(shortCircuitBranch)
                 .linkNonJumpBranch(shortCircuitBranch, rightHandExpression)
-                .linkJumpBranch(shortCircuitBranch, JumpType.JNE, Node.of(push(Literal.TRUE)))
-                .setEnd(rightHandExpression.getEnd());
+                .linkJumpBranch(shortCircuitBranch, JumpType.JNE, shortCircuitPushTrue)
+                .setEndToSinkFor(rightHandExpression.getEnd(), shortCircuitPushTrue);
 
         return builder.build();
     }
