@@ -36,6 +36,7 @@ import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
 import edu.mit.compilers.tools.DataFlowGraphPrinter;
+import edu.mit.compilers.tools.FlowGraphPrinter;
 
 class Main {
 
@@ -169,11 +170,9 @@ class Main {
         // TODO(jasonpr): Do it for everything, not just main.
         Method main = methods.get(MAIN_METHOD_NAME);
         FlowGraph<Instruction> controlFlowGraph = AstToCfgConverter.unoptimizing().convert(main);
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented!");
-        // new FlowGraphPrinter(outputStream).print(controlFlowGraph);
+        FlowGraphPrinter.print(outputStream, controlFlowGraph);
     }
-    
+
     private static void dataFlowGraph(InputStream inputStream, PrintStream outputStream,
             Set<String> optimizationNames) throws RecognitionException, TokenStreamException {
         Program validProgram = semanticallyValidProgram(inputStream, outputStream).get();
