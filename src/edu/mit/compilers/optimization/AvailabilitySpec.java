@@ -25,7 +25,6 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
      *
      * <p>This function assignments that the StatementDataFlowNodes all have an expression.
      */
-    @Override
     public Multimap<DataFlowNode, Subexpression> getGenSets(
             Set<StatementDataFlowNode> statementNodes) {
         ImmutableMultimap.Builder<DataFlowNode,Subexpression> builder = ImmutableMultimap.builder();
@@ -47,7 +46,6 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
         return builder.build();
     }
 
-    @Override
     public Multimap<DataFlowNode, Subexpression> getKillSets(
             Set<StatementDataFlowNode> statementNodes) {
         ImmutableMultimap.Builder<DataFlowNode, Subexpression> builder = ImmutableMultimap.builder();
@@ -66,8 +64,8 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
         return builder.build();
     }
 
-    @Override
-    public Set<Subexpression> getOriginalOutSet(Set<StatementDataFlowNode> nodes) {
+    /** Returns the set of all expressions */
+    public Set<Subexpression> getInfinum(Set<StatementDataFlowNode> nodes) {
         ImmutableSet.Builder<Subexpression> builder = ImmutableSet.builder();
 
         for (StatementDataFlowNode node : nodes) {
@@ -80,12 +78,11 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
     /**
      * Returns the union of all the sets.
      */
-    @Override
-    public Set<Subexpression> getInSet(Iterable<Set<Subexpression>> outSets,
-            Set<Subexpression> seed) {
+    public Set<Subexpression> getInSetFromPredecessors(Iterable<Collection<Subexpression>> outSets,
+            Collection<Subexpression> seed) {
         Set<Subexpression> newInSet = new HashSet<Subexpression>(seed);
 
-        for (Set<Subexpression> predecessorOutSet : outSets) {
+        for (Collection<Subexpression> predecessorOutSet : outSets) {
             newInSet.retainAll(predecessorOutSet);
         }
 
@@ -95,7 +92,6 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
     /**
      * Returns (gen U in) - kill.
      */
-    @Override
     public Set<Subexpression> getOutSetFromInSet(Collection<Subexpression> gen,
             Collection<Subexpression> in, Collection<Subexpression> kill) {
         Set<Subexpression> newOutSet = new HashSet<Subexpression>(gen);
@@ -104,6 +100,26 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
         newOutSet.removeAll(kill);
 
         return newOutSet;
+    }
+
+    /** Filters all the nodes that do not have an expression. */
+    public Set<StatementDataFlowNode> filterNodes(Iterable<DataFlowNode> nodes) {
+        ImmutableSet.Builder<StatementDataFlowNode> builder = ImmutableSet.builder();
+
+        for (DataFlowNode node : nodes) {
+            if (!(node instanceof StatementDataFlowNode)) {
+                continue;
+            }
+
+            StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
+            if (!(statementNode.getExpression().isPresent())) {
+                continue;
+            }
+
+            builder.add(statementNode);
+        }
+
+        return builder.build();
     }
 
     /**
@@ -127,6 +143,10 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
         }
     }
 
+    /**
+     * Maps StatementDataFlowNodes to variables they may change during
+     * execution.
+     */
     private static Multimap<StatementDataFlowNode,ScopedVariable> getPotentiallyChangedVariables(
             Set<StatementDataFlowNode> statementNodes) {
         ImmutableMultimap.Builder<StatementDataFlowNode,ScopedVariable> builder = ImmutableMultimap.builder();
@@ -145,6 +165,9 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
         return builder.build();
     }
 
+    /**
+     * Maps variables to expressions that contain them.
+     */
     private static Multimap<ScopedVariable, Subexpression> getExpressionsContaining(
             Set<StatementDataFlowNode> statementNodes) {
         ImmutableMultimap.Builder<Subexpression, ScopedVariable> variablesIn = ImmutableMultimap.builder();
@@ -172,7 +195,6 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
             }
         }
 
-        // TODO(Manny): Make immutable
-        return globalVars;
+        return ImmutableSet.copyOf(globalVars);
     }
 }

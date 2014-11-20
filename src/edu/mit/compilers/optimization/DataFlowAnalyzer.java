@@ -6,11 +6,10 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
@@ -35,51 +34,39 @@ public class DataFlowAnalyzer<T> {
      * Runs the fixed-point algorithm for available expressions when created.
      * Afterwards, can be asked what the available expressions are at each
      * basic block.
-     *
-     * TODO(Manny): refactor so it's not one mega function.
      */
-    public Map<DataFlowNode, Set<T>> calculateAvailability(DataFlowNode entryNode) {
-        // Set up IN
-        Map<DataFlowNode, Set<T>> inSets = createInSets(entryNode);
-        Set<DataFlowNode> allBlocks = ImmutableSet.copyOf(inSets.keySet());
-
-        Set<StatementDataFlowNode> savableNodes = getNodesWithSavableExpressions(allBlocks);
-        Set<T> infinum = spec.getOriginalOutSet(savableNodes);
+    public Multimap<DataFlowNode, T> calculateAvailability(DataFlowNode entryNode) {
+        Set<DataFlowNode> allNodes = getAllNodes(entryNode);
+        Set<StatementDataFlowNode> savableNodes = spec.filterNodes(allNodes);
+        Set<T> infinum = spec.getInfinum(savableNodes);
+        Multimap<DataFlowNode, T> inSets = HashMultimap.<DataFlowNode,T>create();
+        Multimap<DataFlowNode, T> outSets = HashMultimap.<DataFlowNode,T>create();
         Multimap<DataFlowNode, T> genSets = spec.getGenSets(savableNodes);
         Multimap<DataFlowNode, T> killSets = spec.getKillSets(savableNodes);
-
-        // Set up OUT
-        Map<DataFlowNode, Set<T>> outSets =
-                new HashMap<DataFlowNode, Set<T>>();
         Set<DataFlowNode> changed;
 
         // Run algorithm
-        for (DataFlowNode node : inSets.keySet()) {
-            outSets.put(node, new HashSet<T>(infinum));
-        }
+        outSets.replaceValues(entryNode, genSets.get(entryNode));
 
-        outSets.put(entryNode, new HashSet<T>(
-                genSets.get(entryNode)));
-
-        changed = new HashSet<DataFlowNode>(inSets.keySet());
+        changed = new HashSet<DataFlowNode>(allNodes);
         checkState(changed.remove(entryNode),
                 "entryNode is not in set of all nodes.");
 
         while (!changed.isEmpty()) {
-            Collection<Set<T>> predecessorOutSets = new ArrayList<Set<T>>();
             DataFlowNode node = changed.iterator().next();
             Set<T> newOut;
             changed.remove(node);
-            
+
+            Collection<Collection<T>> predecessorOutSets = new ArrayList<Collection<T>>();
             for (DataFlowNode predecessor: node.getPredecessors()) {
                 predecessorOutSets.add(outSets.get(predecessor));
             }
-            inSets.put(node, spec.getInSet(predecessorOutSets, infinum));
+            inSets.replaceValues(node, spec.getInSetFromPredecessors(predecessorOutSets, infinum));
 
             newOut = spec.getOutSetFromInSet(genSets.get(node), inSets.get(node), killSets.get(node));
 
             if (!newOut.equals(outSets.get(node))) {
-                outSets.put(node, newOut);
+                outSets.replaceValues(node, newOut);
                 changed.addAll(node.getSuccessors());
             }
         }
@@ -87,25 +74,22 @@ public class DataFlowAnalyzer<T> {
         return inSets;
     }
 
-    /**
-     * Creates IN sets for all nodes. Does not initialize any values. Makes
-     * sure that each node is included only once.
-     */
-    private Map<DataFlowNode, Set<T>> createInSets(DataFlowNode entryNode) {
-        // Just do DFS. Use inSets as the visted set!
-        Map<DataFlowNode, Set<T>> inSets =  new HashMap<DataFlowNode, Set<T>>();
+    /** Uses DFS to retrieve all nodes from the entryNode. */
+    private Set<DataFlowNode> getAllNodes(DataFlowNode entryNode) {
+        // Just do DFS.
+        Set<DataFlowNode> visited = new HashSet<DataFlowNode>();
         Deque<DataFlowNode> queue = new ArrayDeque<DataFlowNode>();
 
         queue.push(entryNode);
 
         while (!queue.isEmpty()) {
             DataFlowNode node = queue.pop();
-            if (inSets.containsKey(node)) {
+            if (visited.contains(node)) {
                 continue;
             }
 
             // Add a new, currently empty, set of subexpressions.
-            inSets.put(node, new HashSet<T>());
+            visited.add(node);
 
             for (DataFlowNode child : node.getSuccessors()) {
                 queue.push(child);
@@ -115,28 +99,6 @@ public class DataFlowAnalyzer<T> {
             }
         }
 
-        return inSets;
-    }
-
-    /*
-     * This could've been beautiful - Jason - Manny
-     */
-    private static Set<StatementDataFlowNode> getNodesWithSavableExpressions(Iterable<DataFlowNode> allNodes) {
-        ImmutableSet.Builder<StatementDataFlowNode> builder = ImmutableSet.builder();
-
-        for (DataFlowNode node : allNodes) {
-            if (!(node instanceof StatementDataFlowNode)) {
-                continue;
-            }
-
-            StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
-            if (!(statementNode.getExpression().isPresent())) {
-                continue;
-            }
-
-            builder.add(statementNode);
-        }
-
-        return builder.build();
+        return ImmutableSet.copyOf(visited);
     }
 }

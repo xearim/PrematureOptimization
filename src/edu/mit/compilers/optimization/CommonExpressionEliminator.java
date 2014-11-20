@@ -4,13 +4,12 @@ import static edu.mit.compilers.codegen.SequentialDataFlowNode.link;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
-
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.BinaryOperation;
@@ -70,7 +69,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         private final Collection<DataFlowNode> nodes;
         // TODO(jasonpr): Use ScopedExpression, not NativeExpression.
         private final Map<NativeExpression, Variable> tempVars;
-        private final Map<DataFlowNode, Set<Subexpression>> inSets;
+        private final Multimap<DataFlowNode, Subexpression> inSets;
 
         public Eliminator(DataFlowIntRep ir) {
             this.ir = ir;
@@ -115,7 +114,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             Subexpression scopedExpr = new Subexpression((NativeExpression) expr, node.getScope());
 
             // TODO Figure out why a direct contains doesnt work
-            for(Subexpression ex : this.inSets.get(node)){
+            for(Subexpression ex : inSets.get(node)){
                 if(ex.equals(scopedExpr)){
                     return true;
                 }
