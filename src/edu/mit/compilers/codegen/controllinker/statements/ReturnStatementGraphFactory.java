@@ -1,5 +1,6 @@
 package edu.mit.compilers.codegen.controllinker.statements;
 
+import static edu.mit.compilers.codegen.asm.Register.RAX;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 
 import com.google.common.base.Optional;
@@ -7,52 +8,37 @@ import com.google.common.base.Optional;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.codegen.SequentialControlFlowNode;
-import edu.mit.compilers.codegen.asm.Register;
-import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
-import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph;
-import edu.mit.compilers.codegen.controllinker.ControlTerminalGraph.ControlNodes;
-import edu.mit.compilers.codegen.controllinker.ControlTerminalGraphFactory;
+import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.codegen.controllinker.GraphFactory;
 import edu.mit.compilers.codegen.controllinker.NativeExprGraphFactory;
+import edu.mit.compilers.graph.BasicFlowGraph;
+import edu.mit.compilers.graph.FlowGraph;
 
-public class ReturnStatementGraphFactory implements ControlTerminalGraphFactory {
+/**
+ * Makes some instructions that setup a return statement.
+ *
+ * <p>Note that these instructions do not direct control flow.  That is, they do
+ * not include a RET instruction.  They only *setup* the return, by putting the
+ * return value in the return register.
+ */
+public class ReturnStatementGraphFactory implements GraphFactory {
     private ReturnStatement rs;
     private Scope scope;
-    
+
     public ReturnStatementGraphFactory(ReturnStatement rs, Scope scope) {
         this.rs = rs;
         this.scope = scope;
     }
-    
-    private ControlTerminalGraph calculateGraph(ReturnStatement rs, Scope scope) {
-        SequentialControlFlowNode start = SequentialControlFlowNode.namedNop("RS start");
-        SequentialControlFlowNode end = SequentialControlFlowNode.namedNop("RS end");
-        SequentialControlFlowNode continueNode = SequentialControlFlowNode.namedNop("RS cont");
-        SequentialControlFlowNode breakNode = SequentialControlFlowNode.namedNop("RS break");
-        SequentialControlFlowNode returnNode = SequentialControlFlowNode.namedNop("RS return");
-        Optional<NativeExpression> value = rs.getValue(); 
-
-        if (value.isPresent()) {
-            BiTerminalGraph putReturnValueInReturnRegister =
-                    BiTerminalGraph.sequenceOf(
-                            new NativeExprGraphFactory(value.get(), scope).getGraph(),
-                            BiTerminalGraph.ofInstructions(pop(Register.RAX)));
-
-            start.setNext(putReturnValueInReturnRegister.getBeginning());
-            putReturnValueInReturnRegister.getEnd().setNext(returnNode);
-        } else {
-            // Don't modify the stack or any registers.
-            start.setNext(returnNode);
-        }
-        
-        return new ControlTerminalGraph(start,end,
-                new ControlNodes(breakNode,continueNode,returnNode));
-        
-    }
 
     @Override
-    public ControlTerminalGraph getGraph() {
-        return calculateGraph(rs, scope);
+    public FlowGraph<Instruction> getGraph() {
+        BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
+        Optional<NativeExpression> returnValue = rs.getValue();
+        // If there is a return expression, evaluate it and move it into RAX.
+        if (returnValue.isPresent()) {
+            builder.append(new NativeExprGraphFactory(returnValue.get(), scope).getGraph())
+                    .append(pop(RAX));
+        }
+        return builder.build();
     }
-
 }
