@@ -171,7 +171,7 @@ public class DataFlow {
      */
     public BcrFlowGraph<ScopedStatement> asDataFlowGraph() {
         BcrFlowGraph.Builder<ScopedStatement> builder = BcrFlowGraph.builder();
-        
+
         Map<DataFlowNode, Node<ScopedStatement>> newNodes =
                 new HashMap<DataFlowNode, Node<ScopedStatement>>();
         // The beginning node must be added upfront, because it has no parent.  (Other nodes
@@ -186,7 +186,7 @@ public class DataFlow {
 
         Set<DataFlowNode> visited = new HashSet<DataFlowNode>();
         Deque<DataFlowNode> agenda = new ArrayDeque<DataFlowNode>();
-        
+
         agenda.push(beginning);
         while(!agenda.isEmpty()) {
             DataFlowNode node = agenda.pop();
@@ -194,11 +194,11 @@ public class DataFlow {
                 continue;
             }
             visited.add(node);
-            
+
             if (node instanceof BranchSinkDataFlowNode
                     || node instanceof SequentialDataFlowNode) {
                 Set<DataFlowNode> successors = node.getSuccessors();
-                
+
                 if (!successors.isEmpty()) {
                     // Only BranchSourceDataFlowNode has multiple successors.
                     DataFlowNode next = Iterables.getOnlyElement(successors);
@@ -235,7 +235,7 @@ public class DataFlow {
         builder.setBreakTerminal(newNodes.get(controlNodes.breakNode));
         builder.setContinueTerminal(newNodes.get(controlNodes.continueNode));
         builder.setReturnTerminal(newNodes.get(controlNodes.returnNode));
-        
+
         return builder.build();
     }
 
