@@ -4,7 +4,7 @@ import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 
-public class Call implements Instruction {
+public class Call extends Instruction {
     private InstructionType type = InstructionType.CALL;
     private final Label function;
 

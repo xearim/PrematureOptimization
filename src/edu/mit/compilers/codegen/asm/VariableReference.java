@@ -22,7 +22,7 @@ public class VariableReference implements Value{
     public Scope getScope() {
         return scope;
     }
-    
+
     @Override
     public String inAttSyntax() {
         Scope targetScope = scope.getLocation(variable);
@@ -66,5 +66,10 @@ public class VariableReference implements Value{
         default:
             throw new AssertionError("Variable " + variable + " not in scope, this should never happen");
         }
+    }
+
+    @Override
+    public String toString() {
+        return inAttSyntax();
     }
 }

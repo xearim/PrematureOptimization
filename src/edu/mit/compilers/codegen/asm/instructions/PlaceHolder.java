@@ -1,6 +1,6 @@
 package edu.mit.compilers.codegen.asm.instructions;
 
-public class PlaceHolder implements Instruction {
+public class PlaceHolder extends Instruction {
 
     private final String annotation;
 

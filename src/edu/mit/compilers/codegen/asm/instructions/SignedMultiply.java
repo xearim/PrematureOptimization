@@ -2,7 +2,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 
 import edu.mit.compilers.codegen.asm.Value;
 
-public class SignedMultiply implements Instruction {
+public class SignedMultiply extends Instruction {
     private InstructionType type = InstructionType.IMUL;
     private final Value leftArgument;
     private final Value rightArgument;

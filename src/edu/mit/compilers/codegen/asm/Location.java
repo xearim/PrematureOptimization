@@ -9,7 +9,7 @@ public class Location implements Value {
         this.base = base;
         this.offset = offset;
     }
-    
+
     public Register getBase() {
     	return base;
     }
@@ -21,5 +21,10 @@ public class Location implements Value {
     @Override
     public String inAttSyntax() {
         return Long.toString(offset) + "(" + base.inAttSyntax() + ")";
+    }
+
+    @Override
+    public String toString() {
+        return inAttSyntax();
     }
 }

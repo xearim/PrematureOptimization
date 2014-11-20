@@ -2,7 +2,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 
 import edu.mit.compilers.codegen.asm.Value;
 
-public class Or implements Instruction {
+public class Or extends Instruction {
     private InstructionType type = InstructionType.OR;
     private final Value leftArgument;
     private final Value rightArgument;

@@ -29,13 +29,13 @@ public class Register implements Value {
         R11("r11"), 
         RSP("rsp"), 
         RBP("rbp");
-        
+
         String name;
-        
+
         RegisterId(String name){
         	this.name = name;
         }
-        
+
         public String getName(){
         	return this.name;
         }
@@ -50,5 +50,10 @@ public class Register implements Value {
     @Override
     public String inAttSyntax() {
         return "%" + this.id.getName();
+    }
+
+    @Override
+    public String toString() {
+        return inAttSyntax();
     }
 }

@@ -3,7 +3,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 import edu.mit.compilers.codegen.asm.Value;
 import edu.mit.compilers.codegen.asm.VariableReference;
 
-public class MoveScalar implements Instruction {
+public class MoveScalar extends Instruction {
     private InstructionType type = InstructionType.MOV;
     private final VariableReference reference;
     private final Value target;

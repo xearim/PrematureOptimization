@@ -3,7 +3,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Value;
 
-public class Negate implements Instruction {
+public class Negate extends Instruction {
     private InstructionType type = InstructionType.NEG;
     private final Value Argument;
 

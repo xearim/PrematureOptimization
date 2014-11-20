@@ -2,7 +2,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 
 import edu.mit.compilers.codegen.asm.Value;
 
-public class Subtract implements Instruction {
+public class Subtract extends Instruction {
     private InstructionType type = InstructionType.SUB;
     private final Value leftArgument;
     private final Value rightArgument;

@@ -2,7 +2,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 
 import edu.mit.compilers.codegen.asm.Value;
 
-public class Move implements Instruction {
+public class Move extends Instruction {
     private InstructionType type = InstructionType.MOV;
     private final Value source;
     private final Value dest;

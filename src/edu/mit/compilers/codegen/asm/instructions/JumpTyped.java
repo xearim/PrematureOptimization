@@ -2,7 +2,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 
 import edu.mit.compilers.codegen.asm.Label;
 
-public class JumpTyped implements Instruction {
+public class JumpTyped extends Instruction {
     private InstructionType type = InstructionType.JMP;
     private final JumpType jumpType;
     private final Label target;
