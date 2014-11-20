@@ -44,6 +44,10 @@ public class Scope {
         this(variables, parent, false);
     }
 
+    public Scope(Scope template) {
+        this(template.entries, template.parent, template.ofLoop);
+    }
+
     public Optional<Scope> getParent() {
         return parent;
     }
