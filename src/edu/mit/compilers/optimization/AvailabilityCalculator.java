@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.management.RuntimeErrorException;
+
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.BinaryOperation;
@@ -22,6 +24,8 @@ import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.StatementDataFlowNode;
+import edu.mit.compilers.codegen.dataflow.ScopedStatement;
+import edu.mit.compilers.graph.FlowGraph;
 
 /**
  * Given a basic block, the AvailabilityCalculator computes all available
@@ -32,6 +36,11 @@ public class AvailabilityCalculator {
 
     public AvailabilityCalculator (DataFlowNode entryBlock) {
         calculateAvailability(entryBlock);
+    }
+
+    public AvailabilityCalculator(FlowGraph<ScopedStatement> dataFlowGraph) {
+        // TODO(jasonpr): Implement once manny's refactoring has been merged.
+        throw new RuntimeException("Not yet implemented!");
     }
 
     /**
@@ -288,5 +297,10 @@ public class AvailabilityCalculator {
         	}
         }
         return false;
+    }
+
+    public boolean isAvailable(GeneralExpression expr, ScopedStatement node) {
+        // TODO(jasonpr): Implement once manny has merged our refactoring.
+        throw new RuntimeException("Not yet implemented.");
     }
 }

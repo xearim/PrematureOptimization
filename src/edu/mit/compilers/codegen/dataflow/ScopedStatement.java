@@ -1,19 +1,19 @@
 package edu.mit.compilers.codegen.dataflow;
 
 import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.ast.Statement;
+import edu.mit.compilers.ast.StaticStatement;
 
 public class ScopedStatement {
 
-    private final Statement statement;
+    private final StaticStatement statement;
     private final Scope scope;
     
-    public ScopedStatement(Statement statement, Scope scope) {
+    public ScopedStatement(StaticStatement statement, Scope scope) {
         this.statement = statement;
         this.scope = scope;
     }
     
-    public Statement getStatement() {
+    public StaticStatement getStatement() {
         return statement;
     }
     

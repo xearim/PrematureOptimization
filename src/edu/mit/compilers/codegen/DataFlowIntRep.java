@@ -7,7 +7,7 @@ import edu.mit.compilers.graph.FlowGraph;
 public class DataFlowIntRep {
     private final FlowGraph<ScopedStatement> dataFlowGraph;
     private final Scope scope;
-    
+
     public DataFlowIntRep(FlowGraph<ScopedStatement> dataFlowGraph, Scope scope) {
         this.dataFlowGraph = dataFlowGraph;
         this.scope = scope;
