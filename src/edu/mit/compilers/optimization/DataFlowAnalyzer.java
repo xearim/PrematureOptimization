@@ -21,10 +21,10 @@ import edu.mit.compilers.codegen.StatementDataFlowNode;
  * Given a basic block, the AvailabilityCalculator computes all available
  * subexpressions at each block accessible from the input basic block.
  */
-public class AvailabilityCalculator<T> {
+public class DataFlowAnalyzer<T> {
     private AnalysisSpec<T> spec;
 
-    public AvailabilityCalculator(AnalysisSpec<T> spec) {
+    public DataFlowAnalyzer(AnalysisSpec<T> spec) {
         this.spec = spec;
         //        calculateAvailability(entryBlock);
     }
