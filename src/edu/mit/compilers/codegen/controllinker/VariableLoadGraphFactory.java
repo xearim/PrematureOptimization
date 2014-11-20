@@ -84,6 +84,7 @@ public class VariableLoadGraphFactory implements GraphFactory {
                     scope.getFromScope(location.getVariable()).get().getLength().get()).getGraph());
         }
         builder.append(pop(Register.R11)).append(arrayBaseLoader);
+        return builder.build();
     }
     
     private static long offset(ArrayLocation location, Scope scope) {
