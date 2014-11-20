@@ -8,7 +8,9 @@ import edu.mit.compilers.codegen.ControlFlowNode;
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
+import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.dataflow.DataFlow;
+import edu.mit.compilers.graph.FlowGraph;
 
 /**
  * Produce a BiTerminalGraph that represents the entire execution of a method.
@@ -17,9 +19,9 @@ import edu.mit.compilers.codegen.dataflow.DataFlow;
  * exposing a "return" node, it just connects the return statement to the correct
  * instructions near the end of the BiTerminalGraph.
  */
-public class MethodGraphFactory implements GraphFactory {
+public class MethodGraphFactory {
 
-    private final BiTerminalGraph graph;
+    private final FlowGraph<Instruction> graph;
 
     /**
      * Constructor.
@@ -36,7 +38,7 @@ public class MethodGraphFactory implements GraphFactory {
         this.graph = calculateGraph(methodDataFlowGraph, name, isVoid, entriesToAllocate);
     }
 
-    private BiTerminalGraph calculateGraph(
+    private FlowGraph<Instruction> calculateGraph(
             DataFlow methodDataFlowGraph, String name, boolean isVoid, long entriesToAllocate) {
         // If we are the main method, we need to write down the base pointer for error handling
         boolean isMain = name.equals(Architecture.MAIN_METHOD_NAME);
@@ -69,11 +71,12 @@ public class MethodGraphFactory implements GraphFactory {
         blockGraph.getEnd().setNext(fallThroughChecker.getBeginning());
         fallThroughChecker.getEnd().setNext(sink);
 
-        return new BiTerminalGraph(enterInstruction.getBeginning(), returnInstruction.getEnd());
+        BiTerminalGraph result = new BiTerminalGraph(enterInstruction.getBeginning(), returnInstruction.getEnd());
+
+        return result.asFlowGraph();
     }
 
-    @Override
-    public BiTerminalGraph getGraph() {
+    public FlowGraph<Instruction> getGraph() {
         return graph;
     }
 }

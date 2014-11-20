@@ -5,7 +5,7 @@ import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
 import edu.mit.compilers.codegen.asm.VariableReference;
 
-public class SignedDivide implements Instruction {
+public class SignedDivide extends Instruction {
     private InstructionType type = InstructionType.IDIV;
     private final Value leftArgument;
     private final Value rightArgument;

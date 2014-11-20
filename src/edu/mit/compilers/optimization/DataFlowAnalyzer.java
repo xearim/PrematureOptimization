@@ -21,8 +21,8 @@ import edu.mit.compilers.codegen.StatementDataFlowNode;
  * subexpressions at each block accessible from the input basic block.
  */
 public class DataFlowAnalyzer<T> {
-    public static final DataFlowAnalyzer<Subexpression> AVAILABLE_EXPRESSIONS =
-            new DataFlowAnalyzer<Subexpression>(new AvailabilitySpec());
+    public static final DataFlowAnalyzer<ScopedExpression> AVAILABLE_EXPRESSIONS =
+            new DataFlowAnalyzer<ScopedExpression>(new AvailabilitySpec());
     private AnalysisSpec<T> spec;
 
     public DataFlowAnalyzer(AnalysisSpec<T> spec) {

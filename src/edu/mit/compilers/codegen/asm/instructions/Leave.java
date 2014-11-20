@@ -1,8 +1,7 @@
 package edu.mit.compilers.codegen.asm.instructions;
 
-import edu.mit.compilers.codegen.asm.Value;
 
-public class Leave implements Instruction {
+public class Leave extends Instruction {
     private InstructionType type = InstructionType.LEAVE;
 
     public Leave() {}

@@ -3,7 +3,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Value;
 
-public class Decrement implements Instruction {
+public class Decrement extends Instruction {
     private InstructionType type = InstructionType.INC;
     private final Value Argument;
 

@@ -68,8 +68,13 @@ public class VariableLoadGraphFactory implements GraphFactory {
         Scope immediateScope = scope.getLocation(location.getVariable());
         ScopeType scopeType = immediateScope.getScopeType();
         if (scopeType == ScopeType.LOCAL) {
-            return !check
+            return check
             		? BiTerminalGraph.sequenceOf(
+                    		new NativeExprGraphFactory(location.getIndex(), scope).getGraph(),
+                    		BiTerminalGraph.ofInstructions(
+                                    pop(Register.R11),
+                                    move(Register.RBP, Register.R10)))
+            		: BiTerminalGraph.sequenceOf(
             		// The size of the array for bounds checking, we will trash this in the checker
             		BiTerminalGraph.ofInstructions(
             				push(new Literal(scope.getFromScope(location.getVariable()).get().getLength().get().get64BitValue()))
@@ -81,16 +86,16 @@ public class VariableLoadGraphFactory implements GraphFactory {
                     new ArrayBoundsCheckGraphFactory().getGraph(),
                     BiTerminalGraph.ofInstructions(
                             pop(Register.R11),
-                            move(Register.RBP, Register.R10)))
-                    : BiTerminalGraph.sequenceOf(
+                            move(Register.RBP, Register.R10)));
+
+        } else if (scopeType == ScopeType.GLOBAL) {
+            return check
+            		? BiTerminalGraph.sequenceOf(
                     		new NativeExprGraphFactory(location.getIndex(), scope).getGraph(),
                     		BiTerminalGraph.ofInstructions(
                                     pop(Register.R11),
-                                    move(Register.RBP, Register.R10)));
-
-        } else if (scopeType == ScopeType.GLOBAL) {
-            return !check
-            		? BiTerminalGraph.sequenceOf(
+                                    move(Register.RBP, Register.R10)))
+            		: BiTerminalGraph.sequenceOf(
             		// The size of the array for bounds checking, we will trash this in the checker
             		BiTerminalGraph.ofInstructions(
             				push(new Literal(scope.getFromScope(location.getVariable()).get().getLength().get().get64BitValue()))
@@ -102,12 +107,7 @@ public class VariableLoadGraphFactory implements GraphFactory {
                     BiTerminalGraph.ofInstructions(
                             pop(Register.R11),
                             movePointer(new Label(LabelType.GLOBAL, location.getVariable()),
-                                    Register.R10)))
-                    : BiTerminalGraph.sequenceOf(
-                    		new NativeExprGraphFactory(location.getIndex(), scope).getGraph(),
-                    		BiTerminalGraph.ofInstructions(
-                                    pop(Register.R11),
-                                    move(Register.RBP, Register.R10)));
+                                    Register.R10)));
         } else {
             throw new AssertionError("Unexepected ScopeType for array: " + scopeType);
         }

@@ -33,7 +33,7 @@ public class Label implements Value {
         this.type = type;
         this.name = name;
     }
-    
+
     public Label(LabelType type, Variable variable) {
         this(type, variable.generateName());
     }
@@ -44,8 +44,13 @@ public class Label implements Value {
                 ? "$" + labelText()
                 : labelText();
     }
-    
+
     public String labelText() {
         return type.getPrefix() + name;
+    }
+
+    @Override
+    public String toString() {
+        return inAttSyntax();
     }
 }

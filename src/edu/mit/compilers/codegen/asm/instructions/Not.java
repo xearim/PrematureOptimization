@@ -4,7 +4,7 @@ import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
 
-public class Not implements Instruction {
+public class Not extends Instruction {
     private InstructionType type = InstructionType.NOT;
     private final Value Argument;
 

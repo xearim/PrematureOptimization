@@ -96,7 +96,7 @@ public class BlockDataFlowFactory implements DataFlowFactory{
 		NativeExpression zero = new IntLiteral(0L);
 		// create a new assignment instruction setting the var = 0
 		Assignment assignment = new Assignment(arrayVariable, AssignmentOperation.SET_EQUALS,
-				zero, LocationDescriptor.machineCode(), false);
+				zero, LocationDescriptor.machineCode(), true);
 		
 		ForLoop zeroLoop = new ForLoop(
 				zeroIndexVar,

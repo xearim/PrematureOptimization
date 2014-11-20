@@ -69,7 +69,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         private final Collection<DataFlowNode> nodes;
         // TODO(jasonpr): Use ScopedExpression, not NativeExpression.
         private final Map<NativeExpression, Variable> tempVars;
-        private final Multimap<DataFlowNode, Subexpression> inSets;
+        private final Multimap<DataFlowNode, ScopedExpression> inSets;
 
         public Eliminator(DataFlowIntRep ir) {
             this.ir = ir;
@@ -111,10 +111,10 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                 // Only NativeExpressions are ever available.
                 return false;
             }
-            Subexpression scopedExpr = new Subexpression((NativeExpression) expr, node.getScope());
+            ScopedExpression scopedExpr = new ScopedExpression((NativeExpression) expr, node.getScope());
 
             // TODO Figure out why a direct contains doesnt work
-            for(Subexpression ex : inSets.get(node)){
+            for(ScopedExpression ex : inSets.get(node)){
                 if(ex.equals(scopedExpr)){
                     return true;
                 }

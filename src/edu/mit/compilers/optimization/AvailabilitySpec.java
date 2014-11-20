@@ -18,16 +18,16 @@ import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.StatementDataFlowNode;
 
-public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
+public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     /**
      * Map each node to its GEN set of Subexpressions, filtering out Expressions
      * that contain MethodCalls.
      *
      * <p>This function assignments that the StatementDataFlowNodes all have an expression.
      */
-    public Multimap<DataFlowNode, Subexpression> getGenSets(
+    public Multimap<DataFlowNode, ScopedExpression> getGenSets(
             Set<StatementDataFlowNode> statementNodes) {
-        ImmutableMultimap.Builder<DataFlowNode,Subexpression> builder = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<DataFlowNode,ScopedExpression> builder = ImmutableMultimap.builder();
 
         for (StatementDataFlowNode node : statementNodes) {
             // Design Decision: don't recurse into method calls
@@ -40,22 +40,22 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
                 continue;
             }
 
-            builder.put(node, new Subexpression(ne, node.getScope()));
+            builder.put(node, new ScopedExpression(ne, node.getScope()));
         }
 
         return builder.build();
     }
 
-    public Multimap<DataFlowNode, Subexpression> getKillSets(
+    public Multimap<DataFlowNode, ScopedExpression> getKillSets(
             Set<StatementDataFlowNode> statementNodes) {
-        ImmutableMultimap.Builder<DataFlowNode, Subexpression> builder = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<DataFlowNode, ScopedExpression> builder = ImmutableMultimap.builder();
 
         Multimap<StatementDataFlowNode,ScopedVariable> victimVariables = getPotentiallyChangedVariables(statementNodes);
-        Multimap<ScopedVariable,Subexpression> expressionsContaining = getExpressionsContaining(statementNodes);
+        Multimap<ScopedVariable,ScopedExpression> expressionsContaining = getExpressionsContaining(statementNodes);
         for (StatementDataFlowNode node : statementNodes) {
             for (ScopedVariable victimVariable : victimVariables.get(node)) {
                 // If a subexpression contains a changed variable, it must be killed.
-                for (Subexpression victim : expressionsContaining.get(victimVariable)) {
+                for (ScopedExpression victim : expressionsContaining.get(victimVariable)) {
                     builder.put(node,victim);
                 }
             }
@@ -65,11 +65,11 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
     }
 
     /** Returns the set of all expressions */
-    public Set<Subexpression> getInfinum(Set<StatementDataFlowNode> nodes) {
-        ImmutableSet.Builder<Subexpression> builder = ImmutableSet.builder();
+    public Set<ScopedExpression> getInfinum(Set<StatementDataFlowNode> nodes) {
+        ImmutableSet.Builder<ScopedExpression> builder = ImmutableSet.builder();
 
         for (StatementDataFlowNode node : nodes) {
-            builder.add(new Subexpression(node.getExpression().get(), node.getScope()));
+            builder.add(new ScopedExpression(node.getExpression().get(), node.getScope()));
         }
 
         return builder.build();
@@ -78,11 +78,11 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
     /**
      * Returns the union of all the sets.
      */
-    public Set<Subexpression> getInSetFromPredecessors(Iterable<Collection<Subexpression>> outSets,
-            Collection<Subexpression> seed) {
-        Set<Subexpression> newInSet = new HashSet<Subexpression>(seed);
+    public Set<ScopedExpression> getInSetFromPredecessors(Iterable<Collection<ScopedExpression>> outSets,
+            Collection<ScopedExpression> seed) {
+        Set<ScopedExpression> newInSet = new HashSet<ScopedExpression>(seed);
 
-        for (Collection<Subexpression> predecessorOutSet : outSets) {
+        for (Collection<ScopedExpression> predecessorOutSet : outSets) {
             newInSet.retainAll(predecessorOutSet);
         }
 
@@ -92,9 +92,9 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
     /**
      * Returns (gen U in) - kill.
      */
-    public Set<Subexpression> getOutSetFromInSet(Collection<Subexpression> gen,
-            Collection<Subexpression> in, Collection<Subexpression> kill) {
-        Set<Subexpression> newOutSet = new HashSet<Subexpression>(gen);
+    public Set<ScopedExpression> getOutSetFromInSet(Collection<ScopedExpression> gen,
+            Collection<ScopedExpression> in, Collection<ScopedExpression> kill) {
+        Set<ScopedExpression> newOutSet = new HashSet<ScopedExpression>(gen);
 
         newOutSet.addAll(in);
         newOutSet.removeAll(kill);
@@ -168,12 +168,12 @@ public class AvailabilitySpec implements AnalysisSpec<Subexpression> {
     /**
      * Maps variables to expressions that contain them.
      */
-    private static Multimap<ScopedVariable, Subexpression> getExpressionsContaining(
+    private static Multimap<ScopedVariable, ScopedExpression> getExpressionsContaining(
             Set<StatementDataFlowNode> statementNodes) {
-        ImmutableMultimap.Builder<Subexpression, ScopedVariable> variablesIn = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<ScopedExpression, ScopedVariable> variablesIn = ImmutableMultimap.builder();
 
         for (StatementDataFlowNode node : statementNodes) {
-            Subexpression newSubexpr = new Subexpression(node.getExpression().get(), node.getScope());
+            ScopedExpression newSubexpr = new ScopedExpression(node.getExpression().get(), node.getScope());
             variablesIn.putAll(newSubexpr, newSubexpr.getVariables());
         }
 

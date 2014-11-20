@@ -9,15 +9,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.Method;
-import edu.mit.compilers.codegen.controllinker.BiTerminalGraph;
+import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 import edu.mit.compilers.codegen.dataflow.BlockDataFlowFactory;
 import edu.mit.compilers.codegen.dataflow.DataFlow;
+import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.optimization.CommonExpressionEliminator;
 import edu.mit.compilers.optimization.DataFlowOptimizer;
 
 /**
- * Converts AST method nodes to control flow graphs.
+ * Converts AST method nodes to instruction-level control flow graphs.
  *
  * Eventually, this will be the place where we optionally apply optimizations.
  */
@@ -47,7 +48,7 @@ public class AstToCfgConverter {
         return new AstToCfgConverter(optimizations);
     }
 
-    public BiTerminalGraph convert(Method method) {
+    public FlowGraph<Instruction> convert(Method method) {
         DataFlow dataFlowGraph = new BlockDataFlowFactory(method.getBlock()).getDataFlow();
         DataFlowIntRep ir = new DataFlowIntRep(dataFlowGraph, method.getBlock().getScope());
         for (String optName : enabledOptimizations) {

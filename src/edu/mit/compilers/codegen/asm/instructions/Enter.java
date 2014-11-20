@@ -2,7 +2,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 
 import edu.mit.compilers.codegen.asm.Architecture;
 
-public class Enter implements Instruction {
+public class Enter extends Instruction {
     private InstructionType type = InstructionType.ENTER;
     private final long entries;
 
