@@ -133,9 +133,20 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
         }
 
         public BasicFlowGraph<T> build() {
-            // We couldn't enforce this as the graph was being build up, so we
-            // check it right now.
-            checkState(jumpDestinations.keySet().equals(haveNonJumpBranch));
+            // We couldn't enforce these constraints as the graph was being built up,
+            // so we check them now.
+            for (Node<T> source : edges.keySet()) {
+                if (jumpDestinations.containsKey(source)) {
+                    checkState(edges.get(source).size() == 2);
+                }
+                if (haveNonJumpBranch.contains(source)) {
+                    checkState(edges.get(source).size() == 2);
+                }
+                if (edges.get(source).size() == 2) {
+                    checkState(jumpDestinations.containsKey(source));
+                    checkState(haveNonJumpBranch.contains(source));
+                }
+            }
             return new BasicFlowGraph<T>(edges, jumpDestinations, start, end);
         }
 
