@@ -182,10 +182,8 @@ class Main {
         ImmutableMap<String, Method> methods = methodsBuilder.build();
         // TODO(jasonpr): Do it for everything, not just main.
         Method main = methods.get(MAIN_METHOD_NAME);
-        DataFlowIntRep dataFlowGraph = AstToCfgConverter.withOptimizations(optimizationNames).optimize(main);
-        // TODO(jasonpr): Implement.
-        throw new RuntimeException("Not yet implemented!");
-        //new DataFlowGraphPrinter(outputStream).print(dataFlowGraph.getDataFlowGraph().getBeginning());
+        DataFlowIntRep method = AstToCfgConverter.withOptimizations(optimizationNames).optimize(main);
+        FlowGraphPrinter.print(outputStream, method.getDataFlowGraph());
     }
 
     private static void genCode(InputStream inputStream, PrintStream outputStream,

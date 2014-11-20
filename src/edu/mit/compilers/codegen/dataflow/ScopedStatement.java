@@ -62,7 +62,6 @@ public class ScopedStatement {
 
     @Override
     public String toString() {
-        return "ScopedStatement [statement=" + statement + ", scope=" + scope
-                + "]";
+        return statement.toString();
     }
 }

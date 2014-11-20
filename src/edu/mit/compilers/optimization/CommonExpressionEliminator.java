@@ -3,12 +3,15 @@ package edu.mit.compilers.optimization;
 import java.util.Collection;
 import java.util.Map;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 
 import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.Condition;
 import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.GeneralExpression;
@@ -20,7 +23,17 @@ import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.StaticStatement;
+import edu.mit.compilers.ast.TernaryOperation;
+import edu.mit.compilers.ast.UnaryOperation;
+import edu.mit.compilers.codegen.AssignmentDataFlowNode;
+import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowIntRep;
+import edu.mit.compilers.codegen.DataFlowNode;
+import edu.mit.compilers.codegen.MethodCallDataFlowNode;
+import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
+import edu.mit.compilers.codegen.StatementDataFlowNode;
+import edu.mit.compilers.codegen.dataflow.DataFlow;
+import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.common.Variable;
 import edu.mit.compilers.graph.BasicFlowGraph;
@@ -57,15 +70,15 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
     private static final class Eliminator {
         private final DataFlowIntRep ir;
         private final FlowGraph<ScopedStatement> dataFlowGraph;
-        private final AvailabilityCalculator availCalc;
         // TODO(jasonpr): Use ScopedExpression, not NativeExpression.
         private final Map<NativeExpression, Variable> tempVars;
+        private final Multimap<Node<ScopedStatement>, ScopedExpression> inSets;
 
         public Eliminator(DataFlowIntRep ir) {
             this.ir = ir;
             this.dataFlowGraph = ir.getDataFlowGraph();
-            this.availCalc = new AvailabilityCalculator(dataFlowGraph);
             this.tempVars = tempVars(expressions(dataFlowGraph));
+            inSets = DataFlowAnalyzer.AVAILABLE_EXPRESSIONS.calculateAvailability(ir.getDataFlowGraph());
         }
 
         public DataFlowIntRep optimized() {
@@ -78,23 +91,49 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                     // NOPs have nothing to optimize!
                     continue;
                 }
-                ScopedStatement scopedStatement = node.value();
 
                 for (NativeExpression expr : nodeExprs(node.value())) {
-                    if (availCalc.isAvailable(expr, scopedStatement)) {
+                    if (!isComplexEnough(expr)) {
+                        continue;
+                    }
+
+                    if (isAvailable(expr, node)) {
                         newBuilder.replace(node, useTemp(node.value(), expr));
-                    } else if(AvailabilityCalculator.isComplexEnough(expr)) {
+                    } else {
                         // For now, we alway generate if it's not available.
-                        if (scopedStatement.getStatement() instanceof MethodCall) {
+                        if (node.value().getStatement() instanceof MethodCall) {
                             // Just skip it!  We only call it for its side effects.
                             continue;
                         }
-                        addTempToScope(scopedStatement, expr, newScope);
+                        addTempToScope(node.value(), expr, newScope);
                         newBuilder.replace(node, fillAndUseTemp(node.value(), expr));
                     }
                 }
             }
+
             return new DataFlowIntRep(newBuilder.build(), newScope);
+        }
+
+        /** Return whether an expression is available at a DataFlowNode. */
+        private boolean isAvailable(GeneralExpression expr, Node<ScopedStatement> node) {
+            if (!(expr instanceof NativeExpression)) {
+                // Only NativeExpressions are ever available.
+                return false;
+            }
+
+            if (!node.hasValue()) {
+                return false;
+            }
+
+            ScopedExpression scopedExpr = new ScopedExpression((NativeExpression) expr, node.value().getScope());
+
+            // TODO(xearim): Figure out why a direct contains() call doesn't work.
+            for(ScopedExpression ex : inSets.get(node)){
+                if(ex.equals(scopedExpr)){
+                    return true;
+                }
+            }
+            return false;
         }
 
 
@@ -122,6 +161,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
          * its temp variable, and uses that temp variable when executing the
          * node's statement.
          */
+
         private FlowGraph<ScopedStatement> fillAndUseTemp(ScopedStatement node, NativeExpression expr) {
             // The node to replace should actually contain statements
             Preconditions.checkState(tempVars.containsKey(expr));
@@ -169,7 +209,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         ImmutableMap.Builder<NativeExpression, Variable> builder = ImmutableMap.builder();
         int tempNumber = 0;
         for (NativeExpression expr : exprs) {
-                builder.put(expr, Variable.forCompiler(TEMP_VAR_PREFIX + tempNumber++));
+            builder.put(expr, Variable.forCompiler(TEMP_VAR_PREFIX + tempNumber++));
         }
         return builder.build();
     }
@@ -195,5 +235,20 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         return statement.hasExpression()
                 ? ImmutableList.of(statement.getExpression())
                 : ImmutableList.<NativeExpression>of();
+    }
+
+    /**
+     * Determines if a NativeExpression is complex enough to be worth saving.
+     *
+     * <p>Does not check for MethodCalls inside of GeneralExpression.
+     *
+     * <p>Any GeneralExpression that passes this check may be considered a
+     * NativeExpression.
+     */
+    private static boolean isComplexEnough(GeneralExpression ge) {
+        return (ge instanceof BinaryOperation)
+                || (ge instanceof MethodCall)
+                || (ge instanceof TernaryOperation)
+                || (ge instanceof UnaryOperation);
     }
 }
