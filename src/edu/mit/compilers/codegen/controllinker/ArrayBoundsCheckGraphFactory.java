@@ -45,7 +45,8 @@ public class ArrayBoundsCheckGraphFactory implements GraphFactory {
         Node<Instruction> validPusher = Node.of(push(Register.R10));
         builder.append(lowerBoundBranch)
                 .linkNonJumpBranch(lowerBoundBranch, validPusher)
-                .linkJumpBranch(lowerBoundBranch, JumpType.JL, errorExit.getStart());
+                .linkJumpBranch(lowerBoundBranch, JumpType.JL, errorExit.getStart())
+                .setEnd(validPusher);
 
         return builder.build();
     }
