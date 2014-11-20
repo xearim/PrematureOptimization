@@ -8,6 +8,8 @@ import edu.mit.compilers.ast.NativeLiteral;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
+import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.graph.FlowGraph;
 
 /** A GraphFactory that delegates to any NativeExpression's custom factory. */
 public class NativeExprGraphFactory implements GraphFactory {
@@ -21,7 +23,7 @@ public class NativeExprGraphFactory implements GraphFactory {
     }
 
     @Override
-    public BiTerminalGraph getGraph() {
+    public FlowGraph<Instruction> getGraph() {
         return getDelegate().getGraph();
     }
 
