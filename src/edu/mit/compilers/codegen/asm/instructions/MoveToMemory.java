@@ -3,7 +3,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
 
-public class MoveToMemory implements Instruction {
+public class MoveToMemory extends Instruction {
     private final long offset;
     private final Register reference;
     private final Register index;

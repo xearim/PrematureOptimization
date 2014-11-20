@@ -2,7 +2,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 
 import edu.mit.compilers.codegen.asm.Value;
 
-public class And implements Instruction {
+public class And extends Instruction {
     private InstructionType type = InstructionType.AND;
     private final Value leftArgument;
     private final Value rightArgument;

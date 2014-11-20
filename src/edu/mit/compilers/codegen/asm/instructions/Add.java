@@ -7,7 +7,7 @@ import edu.mit.compilers.codegen.asm.Value;
  *
  * <p>See Intel documentation for the spec.
  */
-public class Add implements Instruction {
+public class Add extends Instruction {
     private InstructionType type = InstructionType.ADD;
     private final Value leftArgument;
     private final Value rightArgument;
@@ -24,5 +24,4 @@ public class Add implements Instruction {
     	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax();
     	return syntax;
     }
-
 }

@@ -5,7 +5,7 @@ import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
 
-public class Compare implements Instruction {
+public class Compare extends Instruction {
     private InstructionType type = InstructionType.CMP;
     private final BinaryOperator op;
     private final Register leftArgument;

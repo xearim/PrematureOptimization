@@ -3,7 +3,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
 
-public class CompareFlagged implements Instruction {
+public class CompareFlagged extends Instruction {
     private InstructionType type = InstructionType.CMPF;
     private final Value leftArgument;
     private final Value rightArgument;

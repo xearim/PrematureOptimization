@@ -27,4 +27,9 @@ public class Literal implements Value {
     public String inAttSyntax() {
         return "$" + Long.toString(value);
     }
+
+    @Override
+    public String toString() {
+        return inAttSyntax();
+    }
 }

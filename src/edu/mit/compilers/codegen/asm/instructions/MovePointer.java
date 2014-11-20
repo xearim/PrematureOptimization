@@ -3,7 +3,7 @@ package edu.mit.compilers.codegen.asm.instructions;
 import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Value;
 
-public class MovePointer implements Instruction {
+public class MovePointer extends Instruction {
     private InstructionType type = InstructionType.MOV;
     private final Label source;
     private final Value dest;

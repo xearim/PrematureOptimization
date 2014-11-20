@@ -4,7 +4,7 @@ import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
 
-public class Modulo implements Instruction {
+public class Modulo extends Instruction {
     private InstructionType type = InstructionType.MODULO;
     private final Value leftArgument;
     private final Value rightArgument;
