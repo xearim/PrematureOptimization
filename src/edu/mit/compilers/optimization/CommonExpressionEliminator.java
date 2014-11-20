@@ -10,7 +10,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
 
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.AssignmentOperation;
@@ -69,16 +68,15 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
      */
     private static final class Eliminator {
         private final DataFlowIntRep ir;
-        private final Multimap<DataFlowNode,Subexpression> availableExpressions;
+        private final AvailabilityCalculator<Subexpression> availCalc;
         private final Collection<DataFlowNode> nodes;
         // TODO(jasonpr): Use ScopedExpression, not NativeExpression.
         private final Map<NativeExpression, Variable> tempVars;
 
         public Eliminator(DataFlowIntRep ir) {
             this.ir = ir;
-            this.availableExpressions =
-                    AvailabilityCalculator.AVAILABLE_EXPRESSIONS.calculate(
-                            ir.getDataFlowGraph().getBeginning());
+            this.availCalc = new AvailabilityCalculator<Subexpression>(ir.getDataFlowGraph().getBeginning(),
+                    new AvailabilitySpec());
             this.nodes = DataFlowUtil.nodesIn(ir);
             this.tempVars = tempVars(expressions(nodes));
         }
@@ -95,7 +93,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                         continue;
                     }
 
-                    if (isAvailable(expr, statementNode)) {
+                    if (availCalc.isAvailable(expr, statementNode)) {
                         replace(statementNode, useTemp(node, expr));
                     } else {
                         // For now, we alway generate if it's not available.
@@ -108,22 +106,6 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                     }
                 }
             }
-        }
-        
-        public boolean isAvailable(GeneralExpression expr, StatementDataFlowNode node) {
-            if (!(expr instanceof NativeExpression)) {
-                // Only NativeExpressions are ever available.
-                return false;
-            }
-            Subexpression scopedExpr = new Subexpression((NativeExpression) expr, node.getScope());
-
-            // TODO Figure out why a direct contains doesnt work
-            for(Subexpression ex : availableExpressions.get(node)){
-                if(ex.equals(scopedExpr)){
-                    return true;
-                }
-            }
-            return false;
         }
 
 
