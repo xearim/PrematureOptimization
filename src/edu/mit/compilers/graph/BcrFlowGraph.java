@@ -6,10 +6,16 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
-import edu.mit.compilers.graph.BasicFlowGraph.Builder;
 
+/**
+ * A FlowGraph with Break, Continue, and Return terminals, in addition to
+ * the standard Start and End terminals.
+ *
+ * @param <T>  The type of element at this graph's nodes.
+ */
 public class BcrFlowGraph<T> implements FlowGraph<T> {
 
+    /** Nearly all functionality is delegated to this underlying FlowGraph. */
     private final FlowGraph<T> flowGraph;
     private final Node<T> breakTerminal;
     private final Node<T> continueTerminal;
@@ -69,7 +75,7 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
     public JumpType getJumpType(Node<T> node) {
         return flowGraph.getJumpType(node);
     }
-    
+
     public Node<T> getBreakTerminal() {
         return breakTerminal;
     }
@@ -118,16 +124,16 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
             this.returnTerminal = returnTerminal;
             return this;
         }
-        
+
         public Node<T> getStartTerminal() {
             return basicBuilder.getStart();
         }
-        
+
         public Builder<T> setStartTerminal(Node<T> start) {
             basicBuilder.setStart(start);
             return this;
         }
-        
+
         public Node<T> getEndTerminal() {
             return basicBuilder.getEnd();
         }
@@ -141,27 +147,30 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
             basicBuilder.link(source, sink);
             return this;
         }
-        
+
         public Builder<T> linkNonJumpBranch(Node<T> branchPoint, Node<T> nonJumpBranch) {
             basicBuilder.linkNonJumpBranch(branchPoint, nonJumpBranch);
             return this;
         }
-        
+
         public Builder<T> linkJumpBranch(Node<T> branchPoint, JumpType type, Node<T> jumpBranch) {
             basicBuilder.linkJumpBranch(branchPoint, type, jumpBranch);
             return this;
         }
 
+        /** Link a node to the current end node, and point the end node at the new end. */
         public Builder<T> append(Node<T> node) {
             basicBuilder.append(node);
             return this;
         }
-        
+
+        /** Link a node to the current end node, and point the end node at the new end. */
         public Builder<T> append(T value) {
             basicBuilder.append(value);
             return this;
         }
 
+        /** Link a graph to the current end node, and point the end node at the new end. */
         public Builder<T> copyIn(FlowGraph<T> graph) {
             basicBuilder.copyIn(graph);
             return this;

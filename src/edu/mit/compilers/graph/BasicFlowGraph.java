@@ -19,6 +19,7 @@ import com.google.common.collect.Sets;
 
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
 
+/** A basic implementation of FlowGraph. */
 public class BasicFlowGraph<T> implements FlowGraph<T> {
     private final ImmutableMultimap<Node<T>, Node<T>> forwardEdges;
     /** Just the inverse of forwardEdges, for convenience/speed. */
@@ -33,7 +34,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
         return start;
     }
 
-    @Override    
+    @Override
     public Node<T> getEnd() {
         return end;
     }
@@ -152,6 +153,12 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             return this;
         }
 
+        /**
+         * Specify the flow of execution when the jump condition is not met.
+         *
+         * <p>The jump condition is specified when #linkJumpBranch() is called with
+         * the same branchPoint.
+         */
         public Builder<T> linkNonJumpBranch(Node<T> branchPoint, Node<T> nonJumpBranch) {
             checkArgument(!haveNonJumpBranch.contains(branchPoint),
                     "Tried to add second Default Branch %s at branch point %s.",
@@ -161,6 +168,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             return this;
         }
 
+        /** Specify the jump destination, and the condition on which the jump occurs. */
         public Builder<T> linkJumpBranch(Node<T> branchPoint, JumpType type, Node<T> jumpBranch) {
             checkArgument(!jumpDestinations.containsKey(branchPoint),
                     "Tried to add a second Jump Branch %s at branch point %s.",
@@ -206,7 +214,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             end = builder.end;
             return this;
         }
-        
+
         public Builder<T> append(FlowGraph<T> graph) {
             copyIn(graph);
             link(end, graph.getStart());
@@ -272,7 +280,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
                 }
             }
         }
-        
+
         /**
          * Copy all links from a graph into this builder.
          *
