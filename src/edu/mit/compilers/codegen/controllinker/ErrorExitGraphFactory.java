@@ -14,20 +14,21 @@ import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.graph.Node;
 
-public class ErrorExitGraphFactory {
+public class ErrorExitGraphFactory implements GraphFactory {
     private final Literal exitValue;
 
     public ErrorExitGraphFactory(Literal exitValue) {
         this.exitValue = exitValue;
     }
 
+    @Override
     public FlowGraph<Instruction> getGraph() {
         // We need to be able to identify these nodes for the loop.
         Node<Instruction> compareBasePointer = Node.of(compareFlagged(Register.RBP, Register.R10));
         Node<Instruction> cleanMethodScope = Node.of(
                 move(new Location(Register.RBP, 0*Architecture.BYTES_PER_ENTRY), Register.RBP));
         Node<Instruction> exitNop = Node.nop();
-        
+
         BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
         return builder.append(move(Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE, Register.R10))
                 .append(compareBasePointer)
