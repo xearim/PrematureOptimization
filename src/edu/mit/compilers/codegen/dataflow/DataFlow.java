@@ -211,21 +211,21 @@ public class DataFlow {
                 }
             } else if (node instanceof BranchSourceDataFlowNode) {
                 BranchSourceDataFlowNode sourceNode = (BranchSourceDataFlowNode) node;
-                
+
                 DataFlowNode nonJumpBranch = sourceNode.getTrueBranch();
                 agenda.push(nonJumpBranch);
                 if (!newNodes.containsKey(nonJumpBranch)) {
                     newNodes.put(nonJumpBranch, newNode(nonJumpBranch));
                 }
                 builder.linkNonJumpBranch(newNodes.get(node), newNodes.get(nonJumpBranch));
-                
+
                 DataFlowNode jumpBranch = sourceNode.getFalseBranch();
                 agenda.push(jumpBranch);
                 if (!newNodes.containsKey(jumpBranch)) {
                     newNodes.put(jumpBranch, newNode(jumpBranch));
                 }
                 builder.linkJumpBranch(
-                        newNodes.get(node), sourceNode.getType(), newNodes.get(nonJumpBranch));
+                        newNodes.get(node), sourceNode.getType(), newNodes.get(jumpBranch));
             } else {
                 throw new AssertionError("Unexpected node type for " + node);
             }
