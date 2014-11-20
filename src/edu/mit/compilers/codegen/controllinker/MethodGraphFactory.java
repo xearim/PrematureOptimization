@@ -35,12 +35,12 @@ public class MethodGraphFactory {
      * @param entriesToAllocate How many quadwords of memory need to be allocated on the stack to
      *      hold the variables at and below the method's scope.
      */
-    public MethodGraphFactory(FlowGraph<ScopedStatement> methodDataFlowGraph,
+    public MethodGraphFactory(BcrFlowGraph<ScopedStatement> methodDataFlowGraph,
             String name, boolean isVoid, long entriesToAllocate) {
         this.graph = calculateGraph(methodDataFlowGraph, name, isVoid, entriesToAllocate);
     }
 
-    private FlowGraph<Instruction> calculateGraph(FlowGraph<ScopedStatement> methodDataFlowGraph,
+    private FlowGraph<Instruction> calculateGraph(BcrFlowGraph<ScopedStatement> methodDataFlowGraph,
             String name, boolean isVoid, long entriesToAllocate) {
         // If we are the main method, we need to write down the base pointer for error handling
         boolean isMain = name.equals(Architecture.MAIN_METHOD_NAME);
@@ -55,7 +55,7 @@ public class MethodGraphFactory {
         
         // Block graph.
         BcrFlowGraph<Instruction> blockGraph =
-                new DataFlowGraphFactory(methodDataFlowGraph).getGraph(); 
+                DataFlowToControlFlowConverter.convert(methodDataFlowGraph);
         builder.append(blockGraph);
 
         // Fall Through Checking.
