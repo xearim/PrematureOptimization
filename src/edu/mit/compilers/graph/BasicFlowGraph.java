@@ -180,6 +180,16 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             return linkJumpBranch(branchPoint, type, jumpBranch.start);
         }
 
+        public Builder<T> linkNonJumpBranch(Node<T> branchPoint, FlowGraph<T> nonJumpBranch) {
+            copyIn(nonJumpBranch);
+            return linkNonJumpBranch(branchPoint, nonJumpBranch.getStart());
+        }
+
+        public Builder<T> linkJumpBranch(Node<T> branchPoint, JumpType type, FlowGraph<T> jumpBranch) {
+            copyIn(jumpBranch);
+            return linkJumpBranch(branchPoint, type, jumpBranch.getStart());
+        }
+
         public Builder<T> append(Node<T> node) {
             link(end, node);
             end = node;
