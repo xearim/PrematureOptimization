@@ -33,8 +33,13 @@ public class Node<T> {
 
     @Override
     public String toString() {
+        return "Node [" + contentString() + "]";
+    }
+
+    /** Returns a string describing the value contained, or "NOP". */
+    public String contentString() {
         return hasValue()
-                ? "Node [value=" + value() + "]"
-                : "Node [NOP]";
+                ? value().toString()
+                : "NOP";
     }
 }
