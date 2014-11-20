@@ -44,7 +44,7 @@ public class DataFlowAnalyzer<T> {
         Set<DataFlowNode> allBlocks = ImmutableSet.copyOf(inSets.keySet());
 
         Set<StatementDataFlowNode> savableNodes = getNodesWithSavableExpressions(allBlocks);
-        Set<T> allSubexpressions = spec.getOriginalOutSet(savableNodes);
+        Set<T> infinum = spec.getOriginalOutSet(savableNodes);
         Multimap<DataFlowNode, T> genSets = spec.getGenSets(savableNodes);
         Multimap<DataFlowNode, T> killSets = spec.getKillSets(savableNodes);
 
@@ -55,7 +55,7 @@ public class DataFlowAnalyzer<T> {
 
         // Run algorithm
         for (DataFlowNode node : inSets.keySet()) {
-            outSets.put(node, new HashSet<T>(allSubexpressions));
+            outSets.put(node, new HashSet<T>(infinum));
         }
 
         outSets.put(entryNode, new HashSet<T>(
@@ -66,17 +66,15 @@ public class DataFlowAnalyzer<T> {
                 "entryNode is not in set of all nodes.");
 
         while (!changed.isEmpty()) {
-            DataFlowNode node;
+            Collection<Set<T>> predecessorOutSets = new ArrayList<Set<T>>();
+            DataFlowNode node = changed.iterator().next();
             Set<T> newOut;
-
-            node = changed.iterator().next();
             changed.remove(node);
-
-            Collection<Set<T>> allOutSets = new ArrayList<Set<T>>();
+            
             for (DataFlowNode predecessor: node.getPredecessors()) {
-                allOutSets.add(outSets.get(predecessor));
+                predecessorOutSets.add(outSets.get(predecessor));
             }
-            inSets.put(node, spec.getInSet(allOutSets, allSubexpressions));
+            inSets.put(node, spec.getInSet(predecessorOutSets, infinum));
 
             newOut = spec.getOutSetFromInSet(genSets.get(node), inSets.get(node), killSets.get(node));
 
