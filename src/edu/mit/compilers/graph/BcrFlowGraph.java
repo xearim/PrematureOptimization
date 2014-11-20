@@ -161,7 +161,12 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
             basicBuilder.append(value);
             return this;
         }
-        
+
+        public Builder<T> copyIn(FlowGraph<T> graph) {
+            basicBuilder.copyIn(graph);
+            return this;
+        }
+
         public Builder<T> setEndToSinkFor(Node<T> node, Node<T> otherNode) {
             basicBuilder.setEndToSinkFor(node, otherNode);
             return this;

@@ -276,12 +276,12 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
         /**
          * Copy all links from a graph into this builder.
          *
-         * <p>this method checks that all links are "compatible" with the links that
+         * <p>This method checks that all links are "compatible" with the links that
          * are already present in this graph.  For example, if this graph already contains
          * a jump destination for a node, and the other graph has a different jump
          * destination for the same node, it will throw an AssertionError.
          */
-        private void copyIn(FlowGraph<T> graph) {
+        public void copyIn(FlowGraph<T> graph) {
             for (Node<T> source : graph.getNodes()) {
                 if (graph.isBranch(source)) {
                     linkNonJumpBranch(source, graph.getNonJumpSuccessor(source));
