@@ -16,11 +16,10 @@ import static edu.mit.compilers.ast.BinaryOperator.PLUS;
 import static edu.mit.compilers.ast.BinaryOperator.TIMES;
 import static edu.mit.compilers.codegen.asm.Register.R10;
 import static edu.mit.compilers.codegen.asm.Register.R11;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.compare;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.compareFlagged;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.compare;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.compareFlagged;
 
 import java.util.Set;
 
@@ -29,13 +28,14 @@ import com.google.common.collect.ImmutableSet;
 import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.BinaryOperator;
 import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.codegen.BranchingControlFlowNode;
-import edu.mit.compilers.codegen.SequentialControlFlowNode;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.asm.instructions.Instructions;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
+import edu.mit.compilers.graph.BasicFlowGraph;
+import edu.mit.compilers.graph.FlowGraph;
+import edu.mit.compilers.graph.Node;
 
 public class BinOpGraphFactory implements GraphFactory {
 
@@ -48,15 +48,13 @@ public class BinOpGraphFactory implements GraphFactory {
 
     private final BinaryOperation binOp;
     private final Scope scope;
-    private final BiTerminalGraph graph;
-    
+
     public BinOpGraphFactory(BinaryOperation binOp, Scope scope) {
         this.binOp = binOp;
         this.scope = scope;
-        this.graph = calculateOperation();
     }
-    
-    private BiTerminalGraph calculateOperation() {
+
+    private FlowGraph<Instruction> calculateOperation() {
         switch(binOp.getOperator()) {
             // TODO(manny): Factor this enum out from ast package into a compilers.common package.
             case PLUS:
@@ -79,20 +77,19 @@ public class BinOpGraphFactory implements GraphFactory {
                 throw new AssertionError("Unexpected operator: " + binOp.getOperator());
         }
     }
- 
-    private BiTerminalGraph calculateArithmeticOperation() {
+
+    private FlowGraph<Instruction> calculateArithmeticOperation() {
         BinaryOperator operator = binOp.getOperator();
         checkState(ARITHMETIC_OPS.contains(operator));
 
-        return BiTerminalGraph.sequenceOf(
-                new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
-                new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
-                BiTerminalGraph.ofInstructions(
-                        pop(R10),
-                        pop(R11),
-                        arithmeticOperator(binOp.getOperator(), R10, R11),
-                        push(R11)
-                        ));
+        return BasicFlowGraph.<Instruction>builder()
+                .append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph())
+                .append(new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph())
+                .append(pop(R10))
+                .append(pop(R11))
+                .append(arithmeticOperator(binOp.getOperator(), R10, R11))
+                .append(push(R11))
+                .build();
     }
 
     private Instruction arithmeticOperator(BinaryOperator operator, Register operand, Register target) {
@@ -112,7 +109,7 @@ public class BinOpGraphFactory implements GraphFactory {
         }
     }
 
-    private BiTerminalGraph calculateLogicOperation() {
+    private FlowGraph<Instruction> calculateLogicOperation() {
         BinaryOperator operator = binOp.getOperator();
         checkState(LOGIC_OPS.contains(operator));
         
@@ -125,93 +122,61 @@ public class BinOpGraphFactory implements GraphFactory {
         		throw new AssertionError("Unexpected logical operator: " + operator);
         }
     }
-    
-    private BiTerminalGraph calculateShortCircutAnd() {
-    	// Our short circuiting return value (for and we short circuit to false)
-    	SequentialControlFlowNode ReturnFalse = SequentialControlFlowNode.terminal(push(Literal.FALSE));
-    	
-    	// The left hand expression to be evaluated and branched off of
-    	BiTerminalGraph LeftHandExpression = BiTerminalGraph.sequenceOf(
-    						new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
-    						BiTerminalGraph.ofInstructions(
-    								pop(R10),
-    								move(Literal.TRUE, R11),
-    								compareFlagged(R10, R11)));
-    	
-    	// The right hand expression, we will use its value as the return value if we reach it
-    	BiTerminalGraph RightHandExpression = BiTerminalGraph.sequenceOf(
-				new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph());
-    	
-    	// The short circuit branch, if we are true for the right hand, we need to 
-    	// evaluate the left, if not, we can just straight return false
-    	BranchingControlFlowNode ShortCircuit = new BranchingControlFlowNode(
-    													JumpType.JE,
-    													ReturnFalse,
-    													RightHandExpression.getBeginning());
-    					
-    	// Where we join the control flow back up after an AND
-    	SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
-    	
-    	// Link it up
-    	LeftHandExpression.getEnd().setNext(ShortCircuit);
-    	RightHandExpression.getEnd().setNext(end);
-    	ReturnFalse.setNext(end);
-    	
-    	return new BiTerminalGraph(LeftHandExpression.getBeginning(), end);
-    }
-    
-    private BiTerminalGraph calculateShortCircutOr() {
-    	// Our short circuiting return value (for or we short circuit to true)
-    	SequentialControlFlowNode ReturnTrue = SequentialControlFlowNode.terminal(push(Literal.TRUE));
-    	
-    	// The left hand expression to be evaluated and branched off of
-    	BiTerminalGraph LeftHandExpression = BiTerminalGraph.sequenceOf(
-    						new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
-    						BiTerminalGraph.ofInstructions(
-    								pop(R10),
-    								move(Literal.TRUE, R11),
-    								compareFlagged(R10, R11)));
-    	
-    	// The right hand expression, we will use its value as the return value if we reach it
-    	BiTerminalGraph RightHandExpression = BiTerminalGraph.sequenceOf(
-				new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph());
-    	
-    	// The short circuit branch, if we are false for the right hand, we need to 
-    	// evaluate the left, if not, we can just straight return true
-    	BranchingControlFlowNode ShortCircuit = new BranchingControlFlowNode(
-    													JumpType.JE,
-    													RightHandExpression.getBeginning(),
-    													ReturnTrue);
-    					
-    	// Where we join the control flow back up after an OR
-    	SequentialControlFlowNode end = SequentialControlFlowNode.nopTerminal();
-    	
-    	// Link it up
-    	LeftHandExpression.getEnd().setNext(ShortCircuit);
-    	RightHandExpression.getEnd().setNext(end);
-    	ReturnTrue.setNext(end);
-    	
-    	return new BiTerminalGraph(LeftHandExpression.getBeginning(), end);
+
+    private FlowGraph<Instruction> calculateShortCircutAnd() {
+        BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
+
+        builder.append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph())
+                .append(pop(R10))
+                .append(compareFlagged(R10, Literal.TRUE));
+
+        Node<Instruction> shortCircuitBranch = Node.nop();
+        FlowGraph<Instruction> rightHandExpression =
+                new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph();
+
+        builder.append(shortCircuitBranch)
+                .linkNonJumpBranch(shortCircuitBranch, rightHandExpression)
+                .linkJumpBranch(shortCircuitBranch, JumpType.JNE, Node.of(push(Literal.FALSE)))
+                .setEnd(rightHandExpression.getEnd());
+        return builder.build();
     }
 
-    private BiTerminalGraph calculateComparisonOperation() {
+    // TODO(jasonpr): Factor out common code from here and calculateShortCircuitAnd().
+    private FlowGraph<Instruction> calculateShortCircutOr() {
+        BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
+
+        builder.append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph())
+                .append(pop(R10))
+                .append(compareFlagged(R10, Literal.FALSE));
+
+        Node<Instruction> shortCircuitBranch = Node.nop();
+        FlowGraph<Instruction> rightHandExpression =
+                new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph();
+
+        builder.append(shortCircuitBranch)
+                .linkNonJumpBranch(shortCircuitBranch, rightHandExpression)
+                .linkJumpBranch(shortCircuitBranch, JumpType.JNE, Node.of(push(Literal.TRUE)))
+                .setEnd(rightHandExpression.getEnd());
+
+        return builder.build();
+    }
+
+    private FlowGraph<Instruction> calculateComparisonOperation() {
         BinaryOperator operator = binOp.getOperator();
         checkState(COMPARISON_OPS.contains(operator));
 
-
-        return BiTerminalGraph.sequenceOf(
-	        new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph(),
-	        new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph(),
-	        BiTerminalGraph.ofInstructions(
-			pop(R11), // Right argument.
-			pop(R10), // Left argument.
-	                compare(binOp.getOperator(), R10, R11),
-	                push(R11)
-	                ));
+        return BasicFlowGraph.<Instruction>builder()
+                .append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph())
+                .append(new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph())
+                .append(pop(R11)) // Right argument.
+                .append(pop(R10)) // Left argument.
+	            .append(compare(binOp.getOperator(), R10, R11))
+	            .append(push(R11))
+	            .build();
     }
 
     @Override
-    public BiTerminalGraph getGraph() {
-        return graph;
+    public FlowGraph<Instruction> getGraph() {
+        return calculateOperation();
     }
 }
