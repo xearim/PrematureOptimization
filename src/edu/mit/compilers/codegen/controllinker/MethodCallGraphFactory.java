@@ -1,5 +1,6 @@
 package edu.mit.compilers.codegen.controllinker;
 
+import static edu.mit.compilers.codegen.asm.Register.R10;
 import static edu.mit.compilers.codegen.asm.Register.R8;
 import static edu.mit.compilers.codegen.asm.Register.R9;
 import static edu.mit.compilers.codegen.asm.Register.RAX;
@@ -10,9 +11,9 @@ import static edu.mit.compilers.codegen.asm.Register.RSI;
 import static edu.mit.compilers.codegen.asm.Register.RSP;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.add;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.call;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.subtract;
 
 import java.util.List;
@@ -27,6 +28,10 @@ import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Location;
 import edu.mit.compilers.codegen.asm.Register;
+import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.graph.BasicFlowGraph;
+import edu.mit.compilers.graph.BasicFlowGraph.Builder;
+import edu.mit.compilers.graph.FlowGraph;
 
 /**
  * A GraphFactory that calls a method or callout using the GCC calling convention.
@@ -45,99 +50,73 @@ public class MethodCallGraphFactory implements GraphFactory {
     private static final List<Register> ARG_REGISTERS =
             ImmutableList.of(RDI, RSI, RDX, RCX, R8, R9);
 
-    private final BiTerminalGraph graph;
+    private final MethodCall methodCall;
+    private final Scope scope;
 
     public MethodCallGraphFactory(MethodCall methodCall, Scope scope) {
-        this.graph = calculateGraph(methodCall, scope);
+        this.methodCall = methodCall;
+        this.scope = scope;
     }
 
-    private BiTerminalGraph calculateGraph(MethodCall methodCall, Scope scope) {
+    private FlowGraph<Instruction> calculateGraph(MethodCall methodCall, Scope scope) {
+        BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
+
         List<GeneralExpression> args = ImmutableList.copyOf(methodCall.getParameterValues());
 
-        SequentialControlFlowNode preCallStart = SequentialControlFlowNode.namedNop(methodCall.getMethodName() + "()");
-        
-        // We need to store the extra arguments above the stored registers
-        int numOverflowingArgs = args.size() > ARG_REGISTERS.size()
-        						? args.size() - ARG_REGISTERS.size()
-        						: 0;
-        BiTerminalGraph offsetStack = BiTerminalGraph.ofInstructions(subtract(new Literal(args.size() * Architecture.WORD_SIZE), RSP));
-        preCallStart.setNext(offsetStack.getBeginning());
-        
-        SequentialControlFlowNode preCallEnd = offsetStack.getEnd();
-        
-        // Setup args for call.
-        int argNumber = 0;
-        while (argNumber < args.size()) {
-            BiTerminalGraph argEvaluator =
-                    new GeneralExprGraphFactory(args.get(argNumber), scope).getGraph();
+        // Offset the stack.
+        builder.append(subtract(new Literal(args.size() * Architecture.WORD_SIZE), RSP));
 
-            // Once it's on the stack, we leave it there for the function call.
-            BiTerminalGraph argSetup = BiTerminalGraph.sequenceOf(argEvaluator,
-                				BiTerminalGraph.ofInstructions(
-                				pop(Register.R10),
-                				move(Register.R10, 
-                					new Location(RSP, (argNumber)*Architecture.BYTES_PER_ENTRY))
-                					));
-
-            // Hook this arg setup into the graph.
-            preCallEnd.setNext(argSetup.getBeginning());
-            preCallEnd = argSetup.getEnd();
-
-            argNumber++;
+        // Stash args for call.  Evaluate them left to right, as Decaf specifies.
+        for (int argNumber = 0; argNumber < args.size(); argNumber++) {
+            builder.append(
+                    // Put the arg on the stack.
+                    new GeneralExprGraphFactory(args.get(argNumber), scope).getGraph())
+                    // Stash the arg in a temp location.  We'll later move it into place
+                    // as specified by the calling convention.
+                    .append(pop(R10))
+                    .append(move(R10,
+                            new Location(RSP, argNumber * Architecture.BYTES_PER_ENTRY)));
         }
-        
-        // Need to save Arg registers before method call
-        BiTerminalGraph saveArgRegisters = RegisterSaver.pushAll();
-        preCallEnd.setNext(saveArgRegisters.getBeginning());
-        preCallEnd = saveArgRegisters.getEnd();
-        
-        // Now we need to move the guys we stashed above to their final resting spots
-        argNumber = args.size() - 1;
+
+        builder.append(RegisterSaver.pushAll());
+        // Move stashed values to the spots specified by the x86 calling convention.
         int offset = 0;
-        while (argNumber >= 0){
-        	BiTerminalGraph socketArgs;
+        for (int argNumber = args.size() - 1; argNumber >= 0; argNumber--){
+            Location argLocation = new Location(RSP,
+                    (argNumber + ARG_REGISTERS.size() + offset) * Architecture.BYTES_PER_ENTRY);
         	if(argNumber >= ARG_REGISTERS.size()){
             	// Take if off the stack and put it in the expected loc at the bottom
-        		socketArgs = BiTerminalGraph.ofInstructions(
-        			move(new Location(RSP, (argNumber + ARG_REGISTERS.size() + offset)*Architecture.BYTES_PER_ENTRY), Register.R10),
-        			push(Register.R10));
-        		offset++;
+                builder.append(move(argLocation, R10))
+                        .append(push(R10));
+                offset++;
         	} else {
             	// Take if off the stack and put it in a register for the function call.
-                socketArgs = BiTerminalGraph.ofInstructions(
-            			move(new Location(RSP, (argNumber + ARG_REGISTERS.size() + offset)*Architecture.BYTES_PER_ENTRY),
-            					ARG_REGISTERS.get(argNumber)));
+                builder.append(move(argLocation, ARG_REGISTERS.get(argNumber)));
         	}
-        	
-        	preCallEnd.setNext(socketArgs.getBeginning());
-        	preCallEnd = socketArgs.getEnd();
-        	
-        	argNumber--;
         }
-        
-        
-        BiTerminalGraph preCall = new BiTerminalGraph(preCallStart, preCallEnd);
 
-        BiTerminalGraph call = BiTerminalGraph.ofInstructions(call(methodCall.getMethodName()));
-
-        BiTerminalGraph postCall = BiTerminalGraph.sequenceOf(
-                        // Remove the pushed arguments from the stack.
-                        BiTerminalGraph.ofInstructions(add(new Literal(numOverflowingArgs * Architecture.WORD_SIZE), RSP)),
-                        // Restore Arg Registers
-                        RegisterSaver.popAll(),
-                        // fix the scratch space
-                        BiTerminalGraph.ofInstructions(add(new Literal(args.size() * Architecture.WORD_SIZE), RSP)),
-                        // Put the return value on the stack
-                        BiTerminalGraph.ofInstructions(push(RAX)));
         // TODO(jasonpr): Do 16-byte alignment.
-        return BiTerminalGraph.sequenceOf(
-        		preCall, 
-        		call, 
-        		postCall);
+        // Actually do the call.
+        builder.append(call(methodCall.getMethodName()));
+
+        int numOverflowingArgs = args.size() > ARG_REGISTERS.size()
+                ? args.size() - ARG_REGISTERS.size()
+                : 0;
+
+        // Do post-call bookkeeping.
+        // Remove the pushed arguments from the stack.
+        builder.append(add(new Literal(numOverflowingArgs * Architecture.WORD_SIZE), RSP))
+                .append(RegisterSaver.popAll())
+                // Remove scratch space.
+                .append(add(new Literal(args.size() * Architecture.WORD_SIZE), RSP))
+                // Push the return value to the stack.
+                .append(push(RAX));
+
+        return builder.build();
     }
 
     @Override
-    public BiTerminalGraph getGraph() {
-        return graph;
+    public FlowGraph<Instruction> getGraph() {
+        return calculateGraph(methodCall, scope);
     }
 }
