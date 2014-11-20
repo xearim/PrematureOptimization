@@ -3,7 +3,7 @@ package edu.mit.compilers.ast;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-public class ReturnStatement implements Statement {
+public class ReturnStatement extends StaticStatement {
 
     private final Optional<NativeExpression> value;
     private final LocationDescriptor locationDescriptor;
@@ -12,20 +12,25 @@ public class ReturnStatement implements Statement {
         this.value = value;
 	this.locationDescriptor = locationDescriptor;
     }
-    
+
     public static ReturnStatement ofVoid(LocationDescriptor locationDescriptor) {
         return new ReturnStatement(Optional.<NativeExpression>absent(), locationDescriptor);
     }
-    
+
     public static ReturnStatement
             of(NativeExpression value, LocationDescriptor locationDescriptor) {
         return new ReturnStatement(Optional.of(value), locationDescriptor);
     }
-    
+
     public static ReturnStatement compilerReturn(NativeExpression value) {
     	return new ReturnStatement(Optional.of(value), LocationDescriptor.machineCode());
     }
-    
+
+    @Override
+    protected Optional<NativeExpression> expression() {
+        return value;
+    }
+
     @Override
     public Iterable<? extends Node> getChildren() {
         if (value.isPresent()) {
@@ -39,11 +44,6 @@ public class ReturnStatement implements Statement {
     public String getName() {
         return "return";
     }
-
-	@Override
-	public Iterable<Block> getBlocks() {
-		return ImmutableList.of();
-	}
 
 	@Override
 	public boolean canReturn() {

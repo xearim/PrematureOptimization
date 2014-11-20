@@ -1,5 +1,6 @@
 package edu.mit.compilers.ast;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -12,14 +13,19 @@ import com.google.common.collect.ImmutableList;
  * <p>On an x86 architecture, this statement sets the flag bits so that, for
  * example, a JNE instruction can be executed meaningfully.
  */
-public class Condition implements Statement {
+public class Condition extends StaticStatement {
 
     private final NativeExpression expr;
-    
+
     public Condition(NativeExpression expr) {
         this.expr = expr;
     }
-    
+
+    @Override
+    protected Optional<NativeExpression> expression() {
+        return Optional.of(expr);
+    }
+
     @Override
     public Iterable<NativeExpression> getChildren() {
         return ImmutableList.of(expr);
@@ -40,16 +46,6 @@ public class Condition implements Statement {
         return 0;
     }
 
-    @Override
-    public Iterable<Block> getBlocks() {
-        return ImmutableList.of();
-    }
-
-    /** Get the expression whose truthiness will be evaluated. */
-    public NativeExpression getExpression() {
-        return expr;
-    }
-    
     @Override
     public int hashCode() {
         final int prime = 31;

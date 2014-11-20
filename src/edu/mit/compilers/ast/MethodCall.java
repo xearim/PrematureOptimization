@@ -2,9 +2,9 @@ package edu.mit.compilers.ast;
 
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Optional;
 
-public class MethodCall implements Statement, NativeExpression {
+public class MethodCall extends StaticStatement implements NativeExpression {
 
     private final String methodName;
     private final NodeSequence<GeneralExpression> parameterValues;
@@ -16,7 +16,13 @@ public class MethodCall implements Statement, NativeExpression {
         this.parameterValues = new NodeSequence<GeneralExpression>(parameterValues, "parameters");
         this.locationDescriptor = locationDescriptor;
     }
-    
+
+    @Override
+    protected Optional<NativeExpression> expression() {
+        // Method call is both a statement and an expression!
+        return Optional.<NativeExpression>of(this);
+    }
+
     @Override
     public Iterable<? extends GeneralExpression> getChildren() {
         return parameterValues.getChildren();
@@ -28,20 +34,15 @@ public class MethodCall implements Statement, NativeExpression {
     }
 
 	@Override
-	public Iterable<Block> getBlocks() {
-		return ImmutableList.of();
-	}
-	
-	@Override
 	public boolean canReturn() {
 		return false;
 	}
-	
+
 	@Override
 	public long getMemorySize() {
 		return 0;
 	}
-	
+
 	public String getMethodName(){
 		return methodName;
 	}
@@ -53,7 +54,7 @@ public class MethodCall implements Statement, NativeExpression {
     public NodeSequence<GeneralExpression> getParameterValues() {
         return parameterValues;
     }
-    
+
     public String asText() {
     	String out = getMethodName();
     	for(GeneralExpression param: getParameterValues()){
