@@ -90,7 +90,7 @@ public class ForLoopDataFlowFactory implements DataFlowFactory{
 		DataFlow body = new BlockDataFlowFactory(forLoop.getBody()).getDataFlow();
 		
 		// Finally the branch at the beginning of the loop
-		BranchSourceDataFlowNode loopCmpBranch = new BranchSourceDataFlowNode(JumpType.JE);
+		BranchSourceDataFlowNode loopCmpBranch = new BranchSourceDataFlowNode(JumpType.JNE);
 		
 		// Time to hook everything up
 		link(start,setLooping);
