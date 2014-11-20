@@ -35,6 +35,7 @@ import edu.mit.compilers.semantics.errors.SemanticError;
 import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
+import edu.mit.compilers.tools.FlowGraphPrinter;
 
 class Main {
 
