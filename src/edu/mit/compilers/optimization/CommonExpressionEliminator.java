@@ -67,7 +67,6 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
      */
     private static final class Eliminator {
         private final DataFlowIntRep ir;
-        private final DataFlowAnalyzer<Subexpression> availCalc;
         private final Collection<DataFlowNode> nodes;
         // TODO(jasonpr): Use ScopedExpression, not NativeExpression.
         private final Map<NativeExpression, Variable> tempVars;
@@ -75,11 +74,9 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
 
         public Eliminator(DataFlowIntRep ir) {
             this.ir = ir;
-            this.availCalc =
-                    new DataFlowAnalyzer<Subexpression>(new AvailabilitySpec());
             this.nodes = DataFlowUtil.nodesIn(ir);
             this.tempVars = tempVars(expressions(nodes));
-            inSets = availCalc.calculateAvailability(ir.getDataFlowGraph().getBeginning());
+            inSets = DataFlowAnalyzer.AVAILABLE_EXPRESSIONS.calculateAvailability(ir.getDataFlowGraph().getBeginning());
         }
 
         public void optimize() {
