@@ -14,19 +14,13 @@ import edu.mit.compilers.ast.Condition;
 import edu.mit.compilers.codegen.AssignmentDataFlowNode;
 import edu.mit.compilers.codegen.BranchSinkDataFlowNode;
 import edu.mit.compilers.codegen.BranchSourceDataFlowNode;
-import edu.mit.compilers.codegen.BranchingControlFlowNode;
 import edu.mit.compilers.codegen.CompareDataFlowNode;
-import edu.mit.compilers.codegen.ControlFlowNode;
 import edu.mit.compilers.codegen.DataFlowNode;
 import edu.mit.compilers.codegen.MethodCallDataFlowNode;
 import edu.mit.compilers.codegen.NopDataFlowNode;
 import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
-import edu.mit.compilers.codegen.SequentialControlFlowNode;
 import edu.mit.compilers.codegen.SequentialDataFlowNode;
-import edu.mit.compilers.codegen.asm.instructions.Instruction;
-import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.BcrFlowGraph;
-import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.graph.Node;
 
 /**
@@ -175,7 +169,7 @@ public class DataFlow {
      * <p>DataFlows are now deprecated in favor of FlowGraph<ScopedStatement>.  This
      * method exists to help us transition.
      */
-    public FlowGraph<ScopedStatement> asDataFlowGraph() {
+    public BcrFlowGraph<ScopedStatement> asDataFlowGraph() {
         BcrFlowGraph.Builder<ScopedStatement> builder = BcrFlowGraph.builder();
         
         Map<DataFlowNode, Node<ScopedStatement>> newNodes =
