@@ -33,12 +33,11 @@ import edu.mit.compilers.codegen.StatementDataFlowNode;
  * subexpressions at each block accessible from the input basic block.
  */
 public class AvailabilityCalculator<T> {
-    private Map<DataFlowNode, Set<T>> inSets;
     private AnalysisSpec<T> spec;
 
-    public AvailabilityCalculator (DataFlowNode entryBlock, AnalysisSpec<T> spec) {
+    public AvailabilityCalculator(AnalysisSpec<T> spec) {
         this.spec = spec;
-        calculateAvailability(entryBlock);
+//        calculateAvailability(entryBlock);
     }
 
     /**
@@ -48,10 +47,10 @@ public class AvailabilityCalculator<T> {
      *
      * TODO(Manny): refactor so it's not one mega function.
      */
-    private void calculateAvailability(DataFlowNode entryNode) {
+    public Map<DataFlowNode, Set<T>> calculateAvailability(DataFlowNode entryNode) {
         // Set up IN
-        createInSets(entryNode);
-        Set<DataFlowNode> allBlocks = ImmutableSet.copyOf(this.inSets.keySet());
+        Map<DataFlowNode, Set<T>> inSets = createInSets(entryNode);
+        Set<DataFlowNode> allBlocks = ImmutableSet.copyOf(inSets.keySet());
 
         Set<StatementDataFlowNode> savableNodes = getNodesWithSavableExpressions(allBlocks);
         Set<T> allSubexpressions = spec.getOriginalOutSet(savableNodes);
@@ -71,7 +70,7 @@ public class AvailabilityCalculator<T> {
         outSets.put(entryNode, new HashSet<T>(
                 genSets.get(entryNode)));
 
-        changed = new HashSet<DataFlowNode>(this.inSets.keySet());
+        changed = new HashSet<DataFlowNode>(inSets.keySet());
         checkState(changed.remove(entryNode),
                 "entryNode is not in set of all nodes.");
 
@@ -95,15 +94,17 @@ public class AvailabilityCalculator<T> {
                 changed.addAll(node.getSuccessors());
             }
         }
+        
+        return inSets;
     }
 
     /**
      * Creates IN sets for all nodes. Does not initialize any values. Makes
      * sure that each node is included only once.
      */
-    private void createInSets(DataFlowNode entryNode) {
+    private Map<DataFlowNode, Set<T>> createInSets(DataFlowNode entryNode) {
         // Just do DFS. Use inSets as the visted set!
-        inSets = new HashMap<DataFlowNode, Set<T>>();
+        Map<DataFlowNode, Set<T>> inSets =  new HashMap<DataFlowNode, Set<T>>();
         Deque<DataFlowNode> queue = new ArrayDeque<DataFlowNode>();
 
         queue.push(entryNode);
@@ -124,6 +125,8 @@ public class AvailabilityCalculator<T> {
                 queue.push(child);
             }
         }
+        
+        return inSets;
     }
 
     /*
@@ -146,28 +149,5 @@ public class AvailabilityCalculator<T> {
         }
 
         return builder.build();
-    }
-
-    /** Returns all subexpressions available at that node. */
-    public Set<T> availableSubexpressionsAt(DataFlowNode node) {
-        return this.inSets.get(node);
-    }
-
-
-    /** Return whether an expression is available at a DataFlowNode. */
-    public boolean isAvailable(GeneralExpression expr, StatementDataFlowNode node) {
-        if (!(expr instanceof NativeExpression)) {
-            // Only NativeExpressions are ever available.
-            return false;
-        }
-        Subexpression scopedExpr = new Subexpression((NativeExpression) expr, node.getScope());
-
-        // TODO Figure out why a direct contains doesnt work
-        for(T ex : inSets.get(node)){
-            if(ex.equals(scopedExpr)){
-                return true;
-            }
-        }
-        return false;
     }
 }

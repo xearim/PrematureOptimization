@@ -4,6 +4,7 @@ import static edu.mit.compilers.codegen.SequentialDataFlowNode.link;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -72,13 +73,15 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         private final Collection<DataFlowNode> nodes;
         // TODO(jasonpr): Use ScopedExpression, not NativeExpression.
         private final Map<NativeExpression, Variable> tempVars;
+        private final Map<DataFlowNode, Set<Subexpression>> inSets;
 
         public Eliminator(DataFlowIntRep ir) {
             this.ir = ir;
-            this.availCalc = new AvailabilityCalculator<Subexpression>(ir.getDataFlowGraph().getBeginning(),
-                    new AvailabilitySpec());
+            this.availCalc =
+                    new AvailabilityCalculator<Subexpression>(new AvailabilitySpec());
             this.nodes = DataFlowUtil.nodesIn(ir);
             this.tempVars = tempVars(expressions(nodes));
+            inSets = availCalc.calculateAvailability(ir.getDataFlowGraph().getBeginning());
         }
 
         public void optimize() {
@@ -93,7 +96,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                         continue;
                     }
 
-                    if (availCalc.isAvailable(expr, statementNode)) {
+                    if (isAvailable(expr, statementNode)) {
                         replace(statementNode, useTemp(node, expr));
                     } else {
                         // For now, we alway generate if it's not available.
@@ -106,6 +109,23 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                     }
                 }
             }
+        }
+        
+        /** Return whether an expression is available at a DataFlowNode. */
+        public boolean isAvailable(GeneralExpression expr, StatementDataFlowNode node) {
+            if (!(expr instanceof NativeExpression)) {
+                // Only NativeExpressions are ever available.
+                return false;
+            }
+            Subexpression scopedExpr = new Subexpression((NativeExpression) expr, node.getScope());
+
+            // TODO Figure out why a direct contains doesnt work
+            for(Subexpression ex : this.inSets.get(node)){
+                if(ex.equals(scopedExpr)){
+                    return true;
+                }
+            }
+            return false;
         }
 
 
