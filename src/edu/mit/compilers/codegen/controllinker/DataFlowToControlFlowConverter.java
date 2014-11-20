@@ -35,13 +35,19 @@ public class DataFlowToControlFlowConverter {
             Node<Instruction> nodeExpansionEnd = expansions.get(node).getEnd();
             for (Node<ScopedStatement> sink : dataFlowGraph.getSuccessors(node)) {
                 Node<Instruction> sinkExpansionStart = expansions.get(sink).getStart();
+                if (!dataFlowGraph.isBranch(node)) {
+                    cfgBuilder.link(nodeExpansionEnd, sinkExpansionStart);
+                    continue;
+                }
                 if (sink.equals(dataFlowGraph.getNonJumpSuccessor(node))) {
                     cfgBuilder.linkNonJumpBranch(nodeExpansionEnd, sinkExpansionStart);
                 } else if (sink.equals(dataFlowGraph.getJumpSuccessor(node))) {
                     cfgBuilder.linkJumpBranch(
                             nodeExpansionEnd, dataFlowGraph.getJumpType(node), sinkExpansionStart);
                 } else {
-                    cfgBuilder.link(nodeExpansionEnd, sinkExpansionStart);
+                    throw new AssertionError(
+                            "Branch successor is neither the jump successor "
+                            + "nor the nonjump successor!");
                 }
             }
         }
