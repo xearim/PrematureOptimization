@@ -285,4 +285,11 @@ public class Scope {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "Scp[" + entries + "]"
+                + (parent.isPresent() ? "<-" + parent.get() : "");
+
+    }
 }

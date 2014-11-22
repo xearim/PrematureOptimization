@@ -110,4 +110,11 @@ public class FieldDescriptor {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return type
+                + (length.isPresent() ? "[" + length.get() + "]" : "")
+                + ": " + variable.asText();
+    }
 }
