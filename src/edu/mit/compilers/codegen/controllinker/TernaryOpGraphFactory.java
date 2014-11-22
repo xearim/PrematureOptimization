@@ -2,44 +2,36 @@ package edu.mit.compilers.codegen.controllinker;
 
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.TernaryOperation;
-import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.codegen.asm.instructions.JumpType;
+import edu.mit.compilers.codegen.controllinker.statements.CompareGraphFactory;
+import edu.mit.compilers.graph.BasicFlowGraph;
+import edu.mit.compilers.graph.FlowGraph;
 
 public class TernaryOpGraphFactory implements GraphFactory {
 
-    private final BiTerminalGraph graph;
-    
-    public TernaryOpGraphFactory(TernaryOperation operation, Scope scope) {
-        this.graph = calculateGraph(operation, scope);
-    }
+    private final TernaryOperation operation;
+    private final Scope scope;
 
-    private BiTerminalGraph calculateGraph(TernaryOperation operation, Scope scope) {
-    	
-    	// Construct a label for the false branch
-        SequentialControlFlowNode trueNode = SequentialControlFlowNode.namedNop("ternary true");
-        SequentialControlFlowNode falseNode = SequentialControlFlowNode.namedNop("ternary false");
-    	
-    	BiTerminalGraph trueBranch = new NativeExprGraphFactory(operation.getTrueResult(), scope).getGraph();
-    	BiTerminalGraph falseBranch = new NativeExprGraphFactory(operation.getFalseResult(), scope).getGraph();
-    	
-    	// Hook up the true target
-        trueNode.setNext(trueBranch.getBeginning());
-        BiTerminalGraph trueTarget = new BiTerminalGraph(trueNode,
-                trueBranch.getEnd());
-    	
-    	// Hook up the false target
-    	falseNode.setNext(falseBranch.getBeginning());
-    	BiTerminalGraph falseTarget = new BiTerminalGraph(falseNode,
-                falseBranch.getEnd());
-        
-        return new BranchGraphFactory(
-                new NativeExprGraphFactory(operation.getCondition(), scope).getGraph(),
-                trueTarget,
-                falseTarget)
-                .getGraph();
+    public TernaryOpGraphFactory(TernaryOperation operation, Scope scope) {
+        this.operation = operation;
+        this.scope = scope;
     }
 
     @Override
-    public BiTerminalGraph getGraph() {
-        return graph;
+    public FlowGraph<Instruction> getGraph() {
+        FlowGraph<Instruction> comparison =
+                new CompareGraphFactory(operation.getCondition(), scope).getGraph();
+        FlowGraph<Instruction> trueBranch =
+                new NativeExprGraphFactory(operation.getTrueResult(), scope).getGraph();
+        FlowGraph<Instruction> falseBranch =
+                new NativeExprGraphFactory(operation.getFalseResult(), scope).getGraph();
+
+        return BasicFlowGraph.<Instruction>builder()
+                .append(comparison)
+                .linkNonJumpBranch(comparison.getEnd(), trueBranch)
+                .linkJumpBranch(comparison.getEnd(), JumpType.JNE, falseBranch)
+                .setEndToSinkFor(trueBranch.getEnd(), falseBranch.getEnd())
+                .build();
     }
 }

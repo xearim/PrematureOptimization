@@ -1,15 +1,16 @@
 package edu.mit.compilers.ast;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-public class Assignment implements Statement {
+public class Assignment extends StaticStatement {
     private final Location location;
     private final AssignmentOperation operation;
     private final NativeExpression expression;
     private final LocationDescriptor locationDescriptor;
-    
+
     private final boolean fromCompiler;
-    
+
     public Assignment(Location location, AssignmentOperation operation,
             NativeExpression expression, LocationDescriptor locationDescriptor, boolean fromCompiler) {
         this.location = location;
@@ -18,12 +19,12 @@ public class Assignment implements Statement {
         this.locationDescriptor = locationDescriptor;
         this.fromCompiler = fromCompiler;
     }
-    
+
     public Assignment(Location location, AssignmentOperation operation,
             NativeExpression expression, LocationDescriptor locationDescriptor) {
         this(location, operation, expression, locationDescriptor, false);
     }
-    
+
     public static Assignment compilerAssignment(Location location, NativeExpression expr){
     	return new Assignment(location, AssignmentOperation.SET_EQUALS,
     						  expr, LocationDescriptor.machineCode(), true);
@@ -33,7 +34,12 @@ public class Assignment implements Statement {
         return new Assignment(old.getLocation(), old.getOperation(),
                 expr, LocationDescriptor.machineCode(), old.getFromCompiler());
     }
-    
+
+    @Override
+    protected Optional<NativeExpression> expression() {
+        return Optional.of(expression);
+    }
+
     @Override
     public Iterable<? extends Node> getChildren() {
         return ImmutableList.of(location, expression);
@@ -44,10 +50,6 @@ public class Assignment implements Statement {
         return operation.getSymbol();
     }
 
-	@Override
-	public Iterable<Block> getBlocks() {
-		return ImmutableList.of();
-	}
 
 	@Override
 	public boolean canReturn() {
@@ -71,14 +73,10 @@ public class Assignment implements Statement {
         return operation;
     }
 
-    public NativeExpression getExpression() {
-        return expression;
-    }
-    
     public boolean getFromCompiler() {
     	return fromCompiler;
     }
-    
+
     public String asText() {
     	return location.asText() + " " + operation.getSymbol() + " " + expression.asText();
     }

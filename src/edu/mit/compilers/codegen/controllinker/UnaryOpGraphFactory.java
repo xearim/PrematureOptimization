@@ -1,8 +1,8 @@
 package edu.mit.compilers.codegen.controllinker;
 
 import static edu.mit.compilers.codegen.asm.Register.R10;
-import static edu.mit.compilers.codegen.asm.instructions.Instructions.not;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.negate;
+import static edu.mit.compilers.codegen.asm.instructions.Instructions.not;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
 import edu.mit.compilers.ast.FieldDescriptor;
@@ -11,61 +11,62 @@ import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.codegen.asm.Literal;
+import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.graph.BasicFlowGraph;
+import edu.mit.compilers.graph.FlowGraph;
 
 
 public class UnaryOpGraphFactory implements GraphFactory {
 
     private final UnaryOperation operation;
-    private final BiTerminalGraph graph;
+    private final Scope scope;
 
     public UnaryOpGraphFactory(UnaryOperation operation, Scope scope) {
         this.operation = operation;
-        this.graph = calculateOperation(scope);
+        this.scope = scope;
     }
 
-    private BiTerminalGraph calculateOperation(Scope scope) {
-        switch (operation.getOperator()) {
-            case ARRAY_LENGTH:
-                return calculateLengthOperation(scope);
-            case NEGATIVE:
-                return calculateNegativeOperation(scope);
-            case NOT:
-                return calculateNotOperation(scope);
-            default:
-                throw new AssertionError("Unexpected unary operator " + operation.getOperator());
-        }
-    }
-
-    private BiTerminalGraph calculateLengthOperation(Scope scope) {
+    private FlowGraph<Instruction> calculateLengthOperation() {
         // TODO(jasonpr): Eliminate the need for this cast.
         Location targetLocation = (Location) operation.getArgument();
-        // If these get()s fails, our semantic checker is broken.
+        // If these get()s fail, our semantic checker is broken.
         FieldDescriptor descriptor = scope.getFromScope(targetLocation.getVariable()).get();
         IntLiteral length = descriptor.getLength().get();
-        return BiTerminalGraph.ofInstructions(push(new Literal(length)));
+        return BasicFlowGraph.<Instruction>builder()
+                .append(push(new Literal(length)))
+                .build();
     }
 
-    private BiTerminalGraph calculateNegativeOperation(Scope scope) {
-        return BiTerminalGraph.sequenceOf(
-                new NativeExprGraphFactory(operation.getArgument(), scope).getGraph(),
-                BiTerminalGraph.ofInstructions(
-                        pop(R10),
-                        negate(R10),
-                        push(R10)));
+    private FlowGraph<Instruction> calculateNegativeOperation() {
+        return BasicFlowGraph.<Instruction>builder()
+                .append(new NativeExprGraphFactory(operation.getArgument(), scope).getGraph())
+                .append(pop(R10))
+                .append(negate(R10))
+                .append(push(R10))
+                .build();
     }
 
-    private BiTerminalGraph calculateNotOperation(Scope scope) {
-        return BiTerminalGraph.sequenceOf(
-                new NativeExprGraphFactory(operation.getArgument(), scope).getGraph(),
-                BiTerminalGraph.ofInstructions(
-                        pop(R10),
-                        not(R10),
-                        push(R10)));
+    private FlowGraph<Instruction> calculateNotOperation() {
+        return BasicFlowGraph.<Instruction>builder()
+                .append(new NativeExprGraphFactory(operation.getArgument(), scope).getGraph())
+                .append(pop(R10))
+                .append(not(R10))
+                .append(push(R10))
+                .build();
     }
 
     @Override
-    public BiTerminalGraph getGraph() {
-        return graph;
+    public FlowGraph<Instruction> getGraph() {
+        switch (operation.getOperator()) {
+            case ARRAY_LENGTH:
+                return calculateLengthOperation();
+            case NEGATIVE:
+                return calculateNegativeOperation();
+            case NOT:
+                return calculateNotOperation();
+            default:
+                throw new AssertionError("Unexpected unary operator " + operation.getOperator());
+        }
     }
 
 }

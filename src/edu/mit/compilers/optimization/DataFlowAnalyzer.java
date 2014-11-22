@@ -2,10 +2,8 @@ package edu.mit.compilers.optimization;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,8 +11,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
-import edu.mit.compilers.codegen.DataFlowNode;
-import edu.mit.compilers.codegen.StatementDataFlowNode;
+import edu.mit.compilers.codegen.dataflow.ScopedStatement;
+import edu.mit.compilers.graph.FlowGraph;
+import edu.mit.compilers.graph.Node;
 
 /**
  * Given a basic block, the AvailabilityCalculator computes all available
@@ -35,30 +34,32 @@ public class DataFlowAnalyzer<T> {
      * Afterwards, can be asked what the available expressions are at each
      * basic block.
      */
-    public Multimap<DataFlowNode, T> calculateAvailability(DataFlowNode entryNode) {
-        Set<DataFlowNode> allNodes = getAllNodes(entryNode);
-        Set<StatementDataFlowNode> savableNodes = spec.filterNodes(allNodes);
+    public Multimap<Node<ScopedStatement>, T>
+            calculateAvailability(FlowGraph<ScopedStatement> dataFlowGraph) {
+        Set<Node<ScopedStatement>> allNodes = allNodes(dataFlowGraph);
+        Set<Node<ScopedStatement>> savableNodes = spec.filterNodes(allNodes);
         Set<T> infinum = spec.getInfinum(savableNodes);
-        Multimap<DataFlowNode, T> inSets = HashMultimap.<DataFlowNode,T>create();
-        Multimap<DataFlowNode, T> outSets = HashMultimap.<DataFlowNode,T>create();
-        Multimap<DataFlowNode, T> genSets = spec.getGenSets(savableNodes);
-        Multimap<DataFlowNode, T> killSets = spec.getKillSets(savableNodes);
-        Set<DataFlowNode> changed;
+        Multimap<Node<ScopedStatement>, T> inSets = HashMultimap.<Node<ScopedStatement>,T>create();
+        Multimap<Node<ScopedStatement>, T> outSets = HashMultimap.<Node<ScopedStatement>,T>create();
+        Multimap<Node<ScopedStatement>, T> genSets = spec.getGenSets(savableNodes);
+        Multimap<Node<ScopedStatement>, T> killSets = spec.getKillSets(savableNodes);
+        Set<Node<ScopedStatement>> changed;
 
+        Node<ScopedStatement> entryNode = dataFlowGraph.getStart();
         // Run algorithm
         outSets.replaceValues(entryNode, genSets.get(entryNode));
 
-        changed = new HashSet<DataFlowNode>(allNodes);
+        changed = new HashSet<Node<ScopedStatement>>(allNodes);
         checkState(changed.remove(entryNode),
                 "entryNode is not in set of all nodes.");
 
         while (!changed.isEmpty()) {
-            DataFlowNode node = changed.iterator().next();
+            Node<ScopedStatement> node = changed.iterator().next();
             Set<T> newOut;
             changed.remove(node);
 
             Collection<Collection<T>> predecessorOutSets = new ArrayList<Collection<T>>();
-            for (DataFlowNode predecessor: node.getPredecessors()) {
+            for (Node<ScopedStatement> predecessor: dataFlowGraph.getPredecessors(node)) {
                 predecessorOutSets.add(outSets.get(predecessor));
             }
             inSets.replaceValues(node, spec.getInSetFromPredecessors(predecessorOutSets, infinum));
@@ -67,38 +68,16 @@ public class DataFlowAnalyzer<T> {
 
             if (!newOut.equals(outSets.get(node))) {
                 outSets.replaceValues(node, newOut);
-                changed.addAll(node.getSuccessors());
+                changed.addAll(dataFlowGraph.getSuccessors(node));
             }
         }
 
         return inSets;
     }
 
-    /** Uses DFS to retrieve all nodes from the entryNode. */
-    private Set<DataFlowNode> getAllNodes(DataFlowNode entryNode) {
-        // Just do DFS.
-        Set<DataFlowNode> visited = new HashSet<DataFlowNode>();
-        Deque<DataFlowNode> queue = new ArrayDeque<DataFlowNode>();
-
-        queue.push(entryNode);
-
-        while (!queue.isEmpty()) {
-            DataFlowNode node = queue.pop();
-            if (visited.contains(node)) {
-                continue;
-            }
-
-            // Add a new, currently empty, set of subexpressions.
-            visited.add(node);
-
-            for (DataFlowNode child : node.getSuccessors()) {
-                queue.push(child);
-            }
-            for (DataFlowNode child : node.getPredecessors()) {
-                queue.push(child);
-            }
-        }
-
-        return ImmutableSet.copyOf(visited);
+    // TODO(jasonpr): Consider moving this to some FlowGraphs class.
+    /** Get all nodes in a graph that have a value. */
+    private static <E> Set<Node<E>> allNodes(FlowGraph<E> dataFlowGraph) {
+        return ImmutableSet.copyOf(dataFlowGraph.getNodes());
     }
 }

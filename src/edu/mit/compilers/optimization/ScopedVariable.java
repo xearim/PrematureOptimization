@@ -6,14 +6,13 @@ import java.util.Set;
 import com.google.common.base.Optional;
 
 import edu.mit.compilers.ast.ArrayLocation;
+import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.Location;
-import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.ScopeType;
-import edu.mit.compilers.codegen.AssignmentDataFlowNode;
-import edu.mit.compilers.codegen.StatementDataFlowNode;
+import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.common.Variable;
 
 /**
@@ -43,10 +42,10 @@ public class ScopedVariable {
     }
 
     /** Returns the variable on the left of the assignment. */
-    public static ScopedVariable getAssigned(AssignmentDataFlowNode assignmentNode) {
-    	Location loc = assignmentNode.getAssignment().getLocation();
+    public static ScopedVariable getAssigned(Assignment assignment, Scope scope) {
+    	Location loc = assignment.getLocation();
         Variable var = loc.getVariable();
-        return new ScopedVariable(loc, getScopeOf(var, assignmentNode.getScope()));
+        return new ScopedVariable(loc, getScopeOf(var, scope));
     }
 
     /** Returns the scope that variable is in. */
@@ -80,16 +79,9 @@ public class ScopedVariable {
     	}
     	return variables;
     }
-    
-    public static Set<ScopedVariable> getVariablesOf(StatementDataFlowNode node) {
-    	HashSet<ScopedVariable> variables = new HashSet<ScopedVariable>();
-    	for(GeneralExpression expr : node.getExpressions()){
-    		for(ScopedVariable var : ScopedVariable.getVariablesOf(expr, 
-    						((StatementDataFlowNode) node).getScope())){
-    			variables.add(var);
-    		}
-    	}
-    	return variables;
+
+    public static Set<ScopedVariable> getVariablesOf(ScopedStatement statement) {
+        return getVariablesOf(statement.getStatement().getExpression(), statement.getScope());
     }
 
     @Override

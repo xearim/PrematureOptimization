@@ -8,30 +8,32 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
+import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
+import edu.mit.compilers.ast.StaticStatement;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
-import edu.mit.compilers.codegen.AssignmentDataFlowNode;
-import edu.mit.compilers.codegen.DataFlowNode;
-import edu.mit.compilers.codegen.StatementDataFlowNode;
+import edu.mit.compilers.codegen.dataflow.ScopedStatement;
+import edu.mit.compilers.graph.Node;
 
 public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     /**
      * Map each node to its GEN set of Subexpressions, filtering out Expressions
      * that contain MethodCalls.
      *
-     * <p>This function assignments that the StatementDataFlowNodes all have an expression.
+     * <p>Requires that the statements all have an expression.
      */
-    public Multimap<DataFlowNode, ScopedExpression> getGenSets(
-            Set<StatementDataFlowNode> statementNodes) {
-        ImmutableMultimap.Builder<DataFlowNode,ScopedExpression> builder = ImmutableMultimap.builder();
+    @Override
+    public Multimap<Node<ScopedStatement>, ScopedExpression> getGenSets(
+            Set<Node<ScopedStatement>> statementNodes) {
+        ImmutableMultimap.Builder<Node<ScopedStatement>,ScopedExpression> builder = ImmutableMultimap.builder();
 
-        for (StatementDataFlowNode node : statementNodes) {
+        for (Node<ScopedStatement> node : statementNodes) {
             // Design Decision: don't recurse into method calls
-            NativeExpression ne = node.getExpression().get();
+            NativeExpression ne = node.value().getStatement().getExpression();
             if (containsMethodCall(ne)) {
                 /*
                  * "b+foo()" can return different values on different calls,
@@ -40,19 +42,20 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
                 continue;
             }
 
-            builder.put(node, new ScopedExpression(ne, node.getScope()));
+            builder.put(node, new ScopedExpression(ne, node.value().getScope()));
         }
 
         return builder.build();
     }
 
-    public Multimap<DataFlowNode, ScopedExpression> getKillSets(
-            Set<StatementDataFlowNode> statementNodes) {
-        ImmutableMultimap.Builder<DataFlowNode, ScopedExpression> builder = ImmutableMultimap.builder();
+    @Override
+    public Multimap<Node<ScopedStatement>, ScopedExpression> getKillSets(
+            Set<Node<ScopedStatement>> statementNodes) {
+        ImmutableMultimap.Builder<Node<ScopedStatement>, ScopedExpression> builder = ImmutableMultimap.builder();
 
-        Multimap<StatementDataFlowNode,ScopedVariable> victimVariables = getPotentiallyChangedVariables(statementNodes);
+        Multimap<Node<ScopedStatement>,ScopedVariable> victimVariables = getPotentiallyChangedVariables(statementNodes);
         Multimap<ScopedVariable,ScopedExpression> expressionsContaining = getExpressionsContaining(statementNodes);
-        for (StatementDataFlowNode node : statementNodes) {
+        for (Node<ScopedStatement> node : statementNodes) {
             for (ScopedVariable victimVariable : victimVariables.get(node)) {
                 // If a subexpression contains a changed variable, it must be killed.
                 for (ScopedExpression victim : expressionsContaining.get(victimVariable)) {
@@ -65,11 +68,12 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     }
 
     /** Returns the set of all expressions */
-    public Set<ScopedExpression> getInfinum(Set<StatementDataFlowNode> nodes) {
+    @Override
+    public Set<ScopedExpression> getInfinum(Set<Node<ScopedStatement>> nodes) {
         ImmutableSet.Builder<ScopedExpression> builder = ImmutableSet.builder();
 
-        for (StatementDataFlowNode node : nodes) {
-            builder.add(new ScopedExpression(node.getExpression().get(), node.getScope()));
+        for (Node<ScopedStatement> node : nodes) {
+            builder.add(new ScopedExpression(node.value().getStatement().getExpression(), node.value().getScope()));
         }
 
         return builder.build();
@@ -78,6 +82,7 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     /**
      * Returns the union of all the sets.
      */
+    @Override
     public Set<ScopedExpression> getInSetFromPredecessors(Iterable<Collection<ScopedExpression>> outSets,
             Collection<ScopedExpression> seed) {
         Set<ScopedExpression> newInSet = new HashSet<ScopedExpression>(seed);
@@ -92,6 +97,7 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     /**
      * Returns (gen U in) - kill.
      */
+    @Override
     public Set<ScopedExpression> getOutSetFromInSet(Collection<ScopedExpression> gen,
             Collection<ScopedExpression> in, Collection<ScopedExpression> kill) {
         Set<ScopedExpression> newOutSet = new HashSet<ScopedExpression>(gen);
@@ -103,20 +109,18 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     }
 
     /** Filters all the nodes that do not have an expression. */
-    public Set<StatementDataFlowNode> filterNodes(Iterable<DataFlowNode> nodes) {
-        ImmutableSet.Builder<StatementDataFlowNode> builder = ImmutableSet.builder();
+    @Override 
+    public Set<Node<ScopedStatement>> filterNodes(Iterable<Node<ScopedStatement>> nodes) {
+        ImmutableSet.Builder<Node<ScopedStatement>> builder = ImmutableSet.builder();
 
-        for (DataFlowNode node : nodes) {
-            if (!(node instanceof StatementDataFlowNode)) {
+        for (Node<ScopedStatement> node : nodes) {
+            if (!node.hasValue()) {
                 continue;
             }
-
-            StatementDataFlowNode statementNode = (StatementDataFlowNode) node;
-            if (!(statementNode.getExpression().isPresent())) {
+            if (!node.value().getStatement().hasExpression()) {
                 continue;
             }
-
-            builder.add(statementNode);
+            builder.add(node);
         }
 
         return builder.build();
@@ -144,20 +148,22 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     }
 
     /**
-     * Maps StatementDataFlowNodes to variables they may change during
+     * Maps StatementNode<ScopedStatement>s to variables they may change during
      * execution.
      */
-    private static Multimap<StatementDataFlowNode,ScopedVariable> getPotentiallyChangedVariables(
-            Set<StatementDataFlowNode> statementNodes) {
-        ImmutableMultimap.Builder<StatementDataFlowNode,ScopedVariable> builder = ImmutableMultimap.builder();
+    private static Multimap<Node<ScopedStatement>, ScopedVariable> getPotentiallyChangedVariables(
+            Set<Node<ScopedStatement>> statementNodes) {
+        ImmutableMultimap.Builder<Node<ScopedStatement>, ScopedVariable> builder = ImmutableMultimap.builder();
         Set<ScopedVariable> globals = getGlobals(statementNodes);
 
-        for (StatementDataFlowNode node : statementNodes) {
-            if (node instanceof AssignmentDataFlowNode) {
-                builder.put(node, ScopedVariable.getAssigned((AssignmentDataFlowNode) node));
+        for (Node<ScopedStatement> node : statementNodes) {
+            StaticStatement statement = node.value().getStatement();
+            if (statement instanceof Assignment) {
+                builder.put(node, ScopedVariable.getAssigned(
+                        (Assignment) node.value().getStatement(), node.value().getScope()));
             }
 
-            if (containsMethodCall(node.getExpression().get())) {
+            if (containsMethodCall(statement.getExpression())) {
                 builder.putAll(node, globals);
             }
         }
@@ -169,11 +175,11 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      * Maps variables to expressions that contain them.
      */
     private static Multimap<ScopedVariable, ScopedExpression> getExpressionsContaining(
-            Set<StatementDataFlowNode> statementNodes) {
+            Set<Node<ScopedStatement>> statementNodes) {
         ImmutableMultimap.Builder<ScopedExpression, ScopedVariable> variablesIn = ImmutableMultimap.builder();
 
-        for (StatementDataFlowNode node : statementNodes) {
-            ScopedExpression newSubexpr = new ScopedExpression(node.getExpression().get(), node.getScope());
+        for (Node<ScopedStatement> node : statementNodes) {
+            ScopedExpression newSubexpr = new ScopedExpression(node.value().getStatement().getExpression(), node.value().getScope());
             variablesIn.putAll(newSubexpr, newSubexpr.getVariables());
         }
 
@@ -182,13 +188,13 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
 
     /**
      * Returns the set of all global variables. Intended for generating kill
-     * sets of StatementDataFlowNodes containing MethodCalls.
+     * sets of StatementNode<ScopedStatement>s containing MethodCalls.
      */
-    private static Set<ScopedVariable> getGlobals(Set<StatementDataFlowNode> nodes) {
+    private static Set<ScopedVariable> getGlobals(Set<Node<ScopedStatement>> nodes) {
         Set<ScopedVariable> globalVars = new HashSet<ScopedVariable>();
-        for (DataFlowNode node : nodes){
+        for (Node<ScopedStatement> node : nodes){
             for (ScopedVariable var :
-                ScopedVariable.getVariablesOf((StatementDataFlowNode) node)){
+                ScopedVariable.getVariablesOf(node.value())){
                 if (var.isGlobal()){
                     globalVars.add(var);
                 }

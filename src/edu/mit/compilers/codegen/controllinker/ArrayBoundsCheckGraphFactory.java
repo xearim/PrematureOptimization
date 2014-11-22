@@ -3,65 +3,51 @@ package edu.mit.compilers.codegen.controllinker;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.compareFlagged;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
-import edu.mit.compilers.codegen.BranchingControlFlowNode;
-import edu.mit.compilers.codegen.SequentialControlFlowNode;
+import edu.mit.compilers.ast.IntLiteral;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
+import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
+import edu.mit.compilers.graph.BasicFlowGraph;
+import edu.mit.compilers.graph.FlowGraph;
+import edu.mit.compilers.graph.Node;
 
 public class ArrayBoundsCheckGraphFactory implements GraphFactory {
-    
-    private final BiTerminalGraph graph;
 
-    public ArrayBoundsCheckGraphFactory() {
-        this.graph = constructGraph();
-    }
+    private final IntLiteral arrayLength;
 
-    private BiTerminalGraph constructGraph() {
-        // Return our array bounds to the stack
-        SequentialControlFlowNode valid = SequentialControlFlowNode.terminal(push(Register.R10));
-        
-        // Get the proposed array bounds from the stack and put it in R10
-        // Set R11 to the total size of the array minus 1 (aka valid indexes), we pop this
-        BiTerminalGraph initialize = BiTerminalGraph.ofInstructions(
-                pop(Register.R10),
-                pop(Register.R11)
-                );
-        
-        // Check if the array is in bounds
-        BiTerminalGraph compareArrayUpperBounds = BiTerminalGraph.ofInstructions(
-                compareFlagged(Register.R10, Register.R11));
-        
-        BiTerminalGraph compareArrayLowerBounds = BiTerminalGraph.ofInstructions(
-                compareFlagged(Register.R10, new Literal(0)));
-        
-        // If it isnt, we are going to exit with an error Array out of Bounds
-        BiTerminalGraph exit = new ErrorExitGraphFactory(Literal.ARRAY_OUT_OF_BOUNDS_EXIT).getGraph();
-        
-        BranchingControlFlowNode boundsUpperBranch = new BranchingControlFlowNode(
-                JumpType.JGE,
-                compareArrayLowerBounds.getBeginning(),
-                exit.getBeginning()
-                );
-        
-        BranchingControlFlowNode boundsLowerBranch = new BranchingControlFlowNode(
-                JumpType.JL,
-                valid,
-                exit.getBeginning()
-                );
-        
-        
-        
-        // Link all the graph nodes up
-        initialize.getEnd().setNext(compareArrayUpperBounds.getBeginning());
-        compareArrayUpperBounds.getEnd().setNext(boundsUpperBranch);
-        compareArrayLowerBounds.getEnd().setNext(boundsLowerBranch);
-
-        return new BiTerminalGraph(initialize.getBeginning(), valid);
+    public ArrayBoundsCheckGraphFactory(IntLiteral arrayLength) {
+        this.arrayLength = arrayLength;
     }
 
     @Override
-    public BiTerminalGraph getGraph() {
-        return graph;
+    public FlowGraph<Instruction> getGraph() {
+        BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
+
+        // Set R10 to the requested index, and compare them.
+        builder.append(pop(Register.R10))
+                .append(compareFlagged(Register.R10, new Literal(arrayLength)));
+
+        // Exit if the index is too high.
+        Node<Instruction> upperBoundBranch = Node.nop();
+        FlowGraph<Instruction> errorExit =
+                new ErrorExitGraphFactory(Literal.ARRAY_OUT_OF_BOUNDS_EXIT).getGraph();
+        Node<Instruction> lowerBoundComparator =
+                Node.of(compareFlagged(Register.R10, new Literal(0)));
+        builder.append(upperBoundBranch)
+                .linkNonJumpBranch(upperBoundBranch, lowerBoundComparator)
+                .setEnd(lowerBoundComparator)
+                .linkJumpBranch(upperBoundBranch, JumpType.JGE, errorExit);
+
+        // Exit if the index is too low.  Otherwise, push the valid index back
+        // onto the stack.
+        Node<Instruction> lowerBoundBranch = Node.nop();
+        Node<Instruction> validPusher = Node.of(push(Register.R10));
+        builder.append(lowerBoundBranch)
+                .linkNonJumpBranch(lowerBoundBranch, validPusher)
+                .linkJumpBranch(lowerBoundBranch, JumpType.JL, errorExit.getStart())
+                .setEnd(validPusher);
+
+        return builder.build();
     }
 }

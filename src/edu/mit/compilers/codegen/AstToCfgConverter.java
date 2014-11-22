@@ -12,7 +12,8 @@ import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 import edu.mit.compilers.codegen.dataflow.BlockDataFlowFactory;
-import edu.mit.compilers.codegen.dataflow.DataFlow;
+import edu.mit.compilers.codegen.dataflow.ScopedStatement;
+import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.optimization.CommonExpressionEliminator;
 import edu.mit.compilers.optimization.DataFlowOptimizer;
@@ -49,20 +50,22 @@ public class AstToCfgConverter {
     }
 
     public FlowGraph<Instruction> convert(Method method) {
-        DataFlow dataFlowGraph = new BlockDataFlowFactory(method.getBlock()).getDataFlow();
+        BcrFlowGraph<ScopedStatement> dataFlowGraph =
+                new BlockDataFlowFactory(method.getBlock()).getDataFlow().asDataFlowGraph();
         DataFlowIntRep ir = new DataFlowIntRep(dataFlowGraph, method.getBlock().getScope());
         for (String optName : enabledOptimizations) {
-            OPTIMIZERS.get(optName).optimize(ir);
+            ir = OPTIMIZERS.get(optName).optimized(ir);
         }
         return new MethodGraphFactory(dataFlowGraph, method.getName(),
                 method.isVoid(), method.getBlock().getMemorySize()).getGraph();
     }
     
     public DataFlowIntRep optimize(Method method) {
-    	DataFlow dataFlowGraph = new BlockDataFlowFactory(method.getBlock()).getDataFlow();
+        FlowGraph<ScopedStatement> dataFlowGraph =
+                new BlockDataFlowFactory(method.getBlock()).getDataFlow().asDataFlowGraph();
         DataFlowIntRep ir = new DataFlowIntRep(dataFlowGraph, method.getBlock().getScope());
         for (String optName : enabledOptimizations) {
-            OPTIMIZERS.get(optName).optimize(ir);
+            ir = OPTIMIZERS.get(optName).optimized(ir);
         }
         return ir;
     }

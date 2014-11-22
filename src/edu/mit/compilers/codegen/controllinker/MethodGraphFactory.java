@@ -4,12 +4,13 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.enter;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.leave;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
-import edu.mit.compilers.codegen.ControlFlowNode;
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
-import edu.mit.compilers.codegen.dataflow.DataFlow;
+import edu.mit.compilers.codegen.dataflow.ScopedStatement;
+import edu.mit.compilers.graph.BasicFlowGraph;
+import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 
 /**
@@ -33,47 +34,42 @@ public class MethodGraphFactory {
      * @param entriesToAllocate How many quadwords of memory need to be allocated on the stack to
      *      hold the variables at and below the method's scope.
      */
-    public MethodGraphFactory(
-            DataFlow methodDataFlowGraph, String name, boolean isVoid, long entriesToAllocate) {
+    public MethodGraphFactory(BcrFlowGraph<ScopedStatement> methodDataFlowGraph,
+            String name, boolean isVoid, long entriesToAllocate) {
         this.graph = calculateGraph(methodDataFlowGraph, name, isVoid, entriesToAllocate);
     }
 
-    private FlowGraph<Instruction> calculateGraph(
-            DataFlow methodDataFlowGraph, String name, boolean isVoid, long entriesToAllocate) {
+    private FlowGraph<Instruction> calculateGraph(BcrFlowGraph<ScopedStatement> methodDataFlowGraph,
+            String name, boolean isVoid, long entriesToAllocate) {
         // If we are the main method, we need to write down the base pointer for error handling
         boolean isMain = name.equals(Architecture.MAIN_METHOD_NAME);
-        BiTerminalGraph enterInstruction = isMain
-                ? BiTerminalGraph.ofInstructions(
-                        enter(entriesToAllocate),
-                        move(Register.RBP, Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE))
-                : BiTerminalGraph.ofInstructions(enter(entriesToAllocate));
+        
+        BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
+        
+        // Entry code.
+        builder.append(enter(entriesToAllocate));
+        if (isMain){
+            builder.append(move(Register.RBP, Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE));
+        }
+        
+        // Block graph.
+        BcrFlowGraph<Instruction> blockGraph =
+                DataFlowToControlFlowConverter.convert(methodDataFlowGraph);
+        builder.append(blockGraph);
 
-        //DataFlow test = new BlockDataFlowFactory(block).getDataFlow();				
-        ControlTerminalGraph blockGraph = new DataFlowGraphFactory(
-                methodDataFlowGraph).getGraph();
-        //ControlTerminalGraph blockGraph = new BlockGraphFactory(block).getGraph();
-        // Link the Entry instruction to the start of the block
-        enterInstruction.getEnd().setNext(blockGraph.getBeginning());
+        // Fall Through Checking.
+        if (!isVoid) {
+            builder.append(new ErrorExitGraphFactory(Literal.CONTROL_DROP_OFF_EXIT).getGraph());
+        }
 
-        BiTerminalGraph returnInstruction = BiTerminalGraph.ofInstructions(
-        										leave(),
-        										ret());
-        ControlFlowNode sink = returnInstruction.getBeginning();
-
-        BiTerminalGraph fallThroughChecker = isVoid
-                ? BiTerminalGraph.ofInstructions()
-                : new ErrorExitGraphFactory(Literal.CONTROL_DROP_OFF_EXIT).getGraph();
+        builder.setEndToSinkFor(builder.getEnd(), blockGraph.getReturnTerminal())
+                .append(leave())
+                .append(ret());
 
         // TODO(jasonpr): Connect break and continue to an explicit error thrower.
         // The semantic checker should ensure that we'll never have one in a method's block,
         // but... just in case.
-        blockGraph.getControlNodes().getReturnNode().setNext(sink);
-        blockGraph.getEnd().setNext(fallThroughChecker.getBeginning());
-        fallThroughChecker.getEnd().setNext(sink);
-
-        BiTerminalGraph result = new BiTerminalGraph(enterInstruction.getBeginning(), returnInstruction.getEnd());
-
-        return result.asFlowGraph();
+        return builder.build();
     }
 
     public FlowGraph<Instruction> getGraph() {

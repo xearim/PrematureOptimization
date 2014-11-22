@@ -20,11 +20,17 @@ import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.graph.Node;
 
 public class MethodBlockPrinter {
+    // We use a static unique identifier so that nodes in different methods have
+    // different ids.
+    // If we don't like having a static UniqueIdentifier, we could generate
+    // per-instance unique ids, and prepend a unique prefix like methodName
+    // to any generated values.
+    private static final UniqueIdentifier<Node<Instruction>> uniqueIdentifier =
+            new UniqueIdentifier<Node<Instruction>>();
+
     private final FlowGraph<Instruction> methodGraph;
     private final Set<Node<Instruction>> multiSourced;
     private final Set<Node<Instruction>> visited = new HashSet<Node<Instruction>>();
-    private final UniqueIdentifier<Node<Instruction>> uniqueIdentifier =
-            new UniqueIdentifier<Node<Instruction>>();
 
     MethodBlockPrinter(Method method, Set<String> optimizationNames) {
         this.methodGraph = AstToCfgConverter.withOptimizations(optimizationNames).convert(method);

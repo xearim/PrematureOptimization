@@ -92,10 +92,10 @@ public class WhileLoopDataFlowFactory implements DataFlowFactory{
 		DataFlow body = new BlockDataFlowFactory(whileLoop.getBody()).getDataFlow();
 		
 		// Finally the branch at the beginning of the loop
-		BranchSourceDataFlowNode loopCmpBranch = new BranchSourceDataFlowNode(JumpType.JE);
+		BranchSourceDataFlowNode loopCmpBranch = new BranchSourceDataFlowNode(JumpType.JNE);
 		
 		// And the branch for the max Reps variable
-		BranchSourceDataFlowNode maxRepsBranch = new BranchSourceDataFlowNode(JumpType.JE);
+		BranchSourceDataFlowNode maxRepsBranch = new BranchSourceDataFlowNode(JumpType.JNE);
 		
 		// Time to hook everything up
 		if(whileLoop.getMaxRepetitions().isPresent()){

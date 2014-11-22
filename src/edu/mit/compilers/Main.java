@@ -35,7 +35,6 @@ import edu.mit.compilers.semantics.errors.SemanticError;
 import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
-import edu.mit.compilers.tools.DataFlowGraphPrinter;
 import edu.mit.compilers.tools.FlowGraphPrinter;
 
 class Main {
@@ -68,7 +67,7 @@ class Main {
             } else if (CLI.target == Action.ASSEMBLY) {
                 genCode(inputStream, outputStream, getOptimizations());
             } else if (CLI.target == Action.DFG) {
-            	dataFlowGraph(inputStream, outputStream, getOptimizations());
+                dataFlowGraph(inputStream, outputStream, getOptimizations());
             }
         } catch(Exception e) {
             // An unrecoverable error occurred.
@@ -183,8 +182,8 @@ class Main {
         ImmutableMap<String, Method> methods = methodsBuilder.build();
         // TODO(jasonpr): Do it for everything, not just main.
         Method main = methods.get(MAIN_METHOD_NAME);
-        DataFlowIntRep dataFlowGraph = AstToCfgConverter.withOptimizations(optimizationNames).optimize(main);
-        new DataFlowGraphPrinter(outputStream).print(dataFlowGraph.getDataFlowGraph().getBeginning());
+        DataFlowIntRep method = AstToCfgConverter.withOptimizations(optimizationNames).optimize(main);
+        FlowGraphPrinter.print(outputStream, method.getDataFlowGraph());
     }
 
     private static void genCode(InputStream inputStream, PrintStream outputStream,

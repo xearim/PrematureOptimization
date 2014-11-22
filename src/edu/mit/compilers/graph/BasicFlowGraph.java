@@ -111,6 +111,10 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
         return new Builder<T>();
     }
 
+    public static <T> Builder<T> builderOf(FlowGraph<T> graph) {
+        return new Builder<T>().append(graph);
+    }
+
     public static class Builder<T> {
         private final Multimap<Node<T>, Node<T>> edges = HashMultimap.create();
         private final Map<Node<T>, JumpDestination<T>> jumpDestinations =
@@ -133,9 +137,20 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
         }
 
         public BasicFlowGraph<T> build() {
-            // We couldn't enforce this as the graph was being build up, so we
-            // check it right now.
-            checkState(jumpDestinations.keySet().equals(haveNonJumpBranch));
+            // We couldn't enforce these constraints as the graph was being built up,
+            // so we check them now.
+            for (Node<T> source : edges.keySet()) {
+                if (jumpDestinations.containsKey(source)) {
+                    checkState(edges.get(source).size() == 2);
+                }
+                if (haveNonJumpBranch.contains(source)) {
+                    checkState(edges.get(source).size() == 2);
+                }
+                if (edges.get(source).size() == 2) {
+                    checkState(jumpDestinations.containsKey(source));
+                    checkState(haveNonJumpBranch.contains(source));
+                }
+            }
             return new BasicFlowGraph<T>(edges, jumpDestinations, start, end);
         }
 
@@ -237,6 +252,37 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             return this;
         }
 
+        /** Replace an Node with a FlowGraph. */
+        public Builder<T> replace(Node<T> node, FlowGraph<T> replacement) {
+            copyIn(replacement);
+
+            // Either this graph is at the beginning, or it needs to be linked up
+            // to its predecessors.
+            if (node.equals(start)) {
+                start = replacement.getStart();
+            } else {
+                // TODO(jasonpr): Deal with this supreme inefficiency. Maybe
+                // use a BiMultiMap lookalike?
+                for (Node<T> predecessor : ImmutableMultimap.copyOf(edges).inverse().get(node)) {
+                    edges.remove(predecessor, node);
+                    link(predecessor, replacement.getStart());
+                }
+            }
+
+            // Either this graph is at the end, or it needs to be linked up to
+            // its predecessors.
+            if (node.equals(end)) {
+                end = replacement.getEnd();
+            } else {
+                for (Node<T> successor : edges.get(node)) {
+                    edges.remove(node, successor);
+                    link(replacement.getEnd(), successor);
+                }
+            }
+
+            return this;
+        }
+
         public Node<T> getStart() {
             return start;
         }
@@ -289,7 +335,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
          * a jump destination for a node, and the other graph has a different jump
          * destination for the same node, it will throw an AssertionError.
          */
-        public void copyIn(FlowGraph<T> graph) {
+        public Builder<T> copyIn(FlowGraph<T> graph) {
             for (Node<T> source : graph.getNodes()) {
                 if (graph.isBranch(source)) {
                     linkNonJumpBranch(source, graph.getNonJumpSuccessor(source));
@@ -298,6 +344,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
                     link(source, Iterables.getOnlyElement(graph.getSuccessors(source)));
                 }
             }
+            return this;
         }
     }
 }
