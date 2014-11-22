@@ -33,7 +33,7 @@ public class MethodBlockPrinter {
     private final Set<Node<Instruction>> visited = new HashSet<Node<Instruction>>();
 
     MethodBlockPrinter(Method method, Set<String> optimizationNames) {
-        this.methodGraph = AstToCfgConverter.withOptimizations(optimizationNames).convert(method);
+        this.methodGraph = Targets.controlFlowGraph(method, optimizationNames);
         this.multiSourced = getMultiSourceNodes(this.methodGraph);
     }
 

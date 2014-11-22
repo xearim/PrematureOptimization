@@ -3,7 +3,6 @@ package edu.mit.compilers.optimization;
 import java.util.Collection;
 import java.util.Map;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -25,18 +24,11 @@ import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.StaticStatement;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
-import edu.mit.compilers.codegen.AssignmentDataFlowNode;
-import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowIntRep;
-import edu.mit.compilers.codegen.DataFlowNode;
-import edu.mit.compilers.codegen.MethodCallDataFlowNode;
-import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
-import edu.mit.compilers.codegen.StatementDataFlowNode;
-import edu.mit.compilers.codegen.dataflow.DataFlow;
-import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.common.Variable;
 import edu.mit.compilers.graph.BasicFlowGraph;
+import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.graph.Node;
 
@@ -69,7 +61,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
      */
     private static final class Eliminator {
         private final DataFlowIntRep ir;
-        private final FlowGraph<ScopedStatement> dataFlowGraph;
+        private final BcrFlowGraph<ScopedStatement> dataFlowGraph;
         // TODO(jasonpr): Use ScopedExpression, not NativeExpression.
         private final Map<NativeExpression, Variable> tempVars;
         private final Multimap<Node<ScopedStatement>, ScopedExpression> inSets;
@@ -82,8 +74,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         }
 
         public DataFlowIntRep optimized() {
-            BasicFlowGraph.Builder<ScopedStatement> newBuilder =
-                    BasicFlowGraph.builderOf(dataFlowGraph);
+            BcrFlowGraph.Builder<ScopedStatement> newBuilder =
+                    BcrFlowGraph.builderOf(dataFlowGraph);
             Scope newScope = new Scope(ir.getScope());
 
             for (Node<ScopedStatement> node : dataFlowGraph.getNodes()) {
