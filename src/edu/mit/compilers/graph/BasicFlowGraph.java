@@ -252,42 +252,51 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             return this;
         }
 
-        private void replaceEdgeEnd(Node<T> start, Node<T> originalEnd, Node<T> newEnd) {
-            checkState(edges.get(start).contains(originalEnd));
-            edges.remove(start, originalEnd);
-            if (haveNonJumpBranch.contains(start) || jumpDestinations.containsKey(start)) {
-                // It's a branch node.
-                if (originalEnd.equals(jumpDestinations.get(start))) {
-                    JumpDestination<T> oldDest = jumpDestinations.remove(start);
-                    linkJumpBranch(start, oldDest.jumpType, newEnd);
-                } else {
-                    haveNonJumpBranch.remove(start);
-                    linkNonJumpBranch(start, newEnd);
-                }
-            } else {
-                link(start, newEnd);
-            }
-        }
+        // There's something strange about this function.  It exists to factor
+        // out the ton of common code from #replaceEdgeStart and #replaceEdgeEnd.
+        // But, it's not a very natural interface-- something about the only-replace-
+        // one-node requirement is odd.  I can't figure out how to make anything more
+        // natural, though.
+        /**
+         * Replaces either the start node or the end node of an edge.
+         *
+         * <p>Requires that either the start node or the end node is unchanged.
+         */
+        private void replaceEdge(Node<T> originalStart, Node<T> newStart,
+                Node<T> originalEnd, Node<T> newEnd) {
+            // This method is only meant to replace the edge's start OR its end.
+            // Trying to replace both would be strange, and probably would not be
+            // done on purpose.
+            checkState(originalStart.equals(newStart) || originalEnd.equals(newEnd));
 
-        private void replaceEdgeStart(Node<T> end, Node<T> originalStart, Node<T> newStart) {
-            checkState(edges.get(originalStart).contains(end));
-            edges.remove(originalStart, end);
+            checkState(edges.get(originalStart).contains(originalEnd));
+            edges.remove(originalStart, originalEnd);
             if (haveNonJumpBranch.contains(originalStart)
                     || jumpDestinations.containsKey(originalStart)) {
                 // It's a branch node.
-                if (end.equals(jumpDestinations.get(originalStart))) {
-                    JumpDestination<T> dest = jumpDestinations.remove(originalStart);
-                    linkJumpBranch(newStart, dest.jumpType, end);
+                if (originalEnd.equals(jumpDestinations.get(originalStart))) {
+                    JumpDestination<T> destination = jumpDestinations.remove(originalStart);
+                    linkJumpBranch(newStart, destination.jumpType, newEnd);
                 } else {
                     haveNonJumpBranch.remove(originalStart);
-                    linkNonJumpBranch(newStart, end);
+                    linkNonJumpBranch(newStart, newEnd);
                 }
             } else {
-                link(newStart, end);
+                link(newStart, newEnd);
             }
         }
 
-        /** Replace an Node with a FlowGraph. */
+        /** Replaces the end node of an edge. */
+        private void replaceEdgeEnd(Node<T> start, Node<T> originalEnd, Node<T> newEnd) {
+            replaceEdge(start, start, originalEnd, newEnd);
+        }
+
+        /** Replaces the start node of an edge. */
+        private void replaceEdgeStart(Node<T> end, Node<T> originalStart, Node<T> newStart) {
+            replaceEdge(originalStart, newStart, end, end);
+        }
+
+        /** Replaces an Node with a FlowGraph. */
         public Builder<T> replace(Node<T> node, FlowGraph<T> replacement) {
             copyIn(replacement);
 
