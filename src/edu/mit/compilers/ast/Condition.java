@@ -75,4 +75,9 @@ public class Condition extends StaticStatement {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "Cond[" + expr + "]";
+    }
 }
