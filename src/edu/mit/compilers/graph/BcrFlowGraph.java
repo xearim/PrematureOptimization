@@ -202,6 +202,16 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
             return this;
         }
 
+        public Builder<T> removeNops() {
+            basicBuilder.removeNops(ImmutableSet.of(
+                    basicBuilder.getStart(),
+                    basicBuilder.getEnd(),
+                    breakTerminal,
+                    continueTerminal,
+                    returnTerminal));
+            return this;
+        }
+
         public BcrFlowGraph<T> build() {
             return new BcrFlowGraph<T>(
                     basicBuilder.build(), breakTerminal, continueTerminal, returnTerminal);

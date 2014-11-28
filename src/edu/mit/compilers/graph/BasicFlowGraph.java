@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -117,6 +118,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
 
     public static class Builder<T> {
         private final Multimap<Node<T>, Node<T>> edges = HashMultimap.create();
+        private final Multimap<Node<T>, Node<T>> backwardEdges = HashMultimap.create();
         private final Map<Node<T>, JumpDestination<T>> jumpDestinations =
                 new HashMap<Node<T>, JumpDestination<T>>();
         /**
@@ -165,6 +167,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             checkArgument(!edges.containsKey(source),
                     "Tried to add a second sink %s to a non-branch node %s.", sink, source);
             edges.put(source, sink);
+            backwardEdges.put(sink, source);
             return this;
         }
 
@@ -179,6 +182,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
                     "Tried to add second Default Branch %s at branch point %s.",
                     nonJumpBranch, branchPoint);
             edges.put(branchPoint, nonJumpBranch);
+            backwardEdges.put(nonJumpBranch, branchPoint);
             haveNonJumpBranch.add(branchPoint);
             return this;
         }
@@ -189,6 +193,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
                     "Tried to add a second Jump Branch %s at branch point %s.",
                     jumpBranch, branchPoint);
             edges.put(branchPoint, jumpBranch);
+            backwardEdges.put(jumpBranch, branchPoint);
             jumpDestinations.put(branchPoint, new JumpDestination<>(type, jumpBranch));
             return this;
         }
@@ -271,10 +276,11 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
 
             checkState(edges.get(originalStart).contains(originalEnd));
             edges.remove(originalStart, originalEnd);
+            backwardEdges.remove(originalEnd, originalStart);
             if (haveNonJumpBranch.contains(originalStart)
                     || jumpDestinations.containsKey(originalStart)) {
                 // It's a branch node.
-                if (originalEnd.equals(jumpDestinations.get(originalStart))) {
+                if (originalEnd.equals(jumpDestinations.get(originalStart).destination)) {
                     JumpDestination<T> destination = jumpDestinations.remove(originalStart);
                     linkJumpBranch(newStart, destination.jumpType, newEnd);
                 } else {
@@ -323,6 +329,40 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             }
 
             return this;
+        }
+
+        /**
+         * Remove all removable NOPs.
+         *
+         * <p>A NOP is removable if it is not a branch node, and if it is not a "special" node.
+         *
+         * @param specialNodes All nodes that must not be replaced, such as terminals.
+         */
+        public Builder<T> removeNops(Set<Node<T>> specialNodes) {
+            FlowGraph<T> currentGraph = build();
+            for (Node<T> node : currentGraph.getNodes()) {
+                if (node.hasValue()
+                        || currentGraph.isBranch(node)
+                        || specialNodes.contains(node)) {
+                    continue;
+                }
+                // There's only one successor, since this is not a branch node.
+                Node<T> successor = Iterables.getOnlyElement(edges.get(node));
+                edges.remove(node, successor);
+                backwardEdges.remove(successor, node);
+                for (Node<T> predecessor : ImmutableList.copyOf(backwardEdges.get(node))) {
+                    replaceEdgeEnd(predecessor, node, successor);
+                }
+            }
+            return this;
+        }
+
+        /**
+         * Remove all removable NOPs, with the only special nodes being the start and end
+         * terminals.
+         */
+        public Builder<T> removeNops() {
+            return removeNops(ImmutableSet.of(start, end));
         }
 
         public Node<T> getStart() {
