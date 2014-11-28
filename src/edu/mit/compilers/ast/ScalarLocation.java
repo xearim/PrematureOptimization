@@ -70,6 +70,6 @@ public class ScalarLocation implements Location {
 
     @Override
     public String toString() {
-        return variable.generateName();
+        return variable.asText();
     }
 }

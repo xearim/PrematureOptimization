@@ -82,4 +82,9 @@ public class ArrayLocation implements Location {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return variable.asText() + "[" + index + "]";
+    }
 }
