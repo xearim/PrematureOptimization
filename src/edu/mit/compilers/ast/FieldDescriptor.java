@@ -27,6 +27,10 @@ public class FieldDescriptor {
         this.locationDescriptor = locationDescriptor;
     }
 
+    public FieldDescriptor(Variable variable, BaseType type) {
+        this(variable, type, LocationDescriptor.machineCode());
+    }
+
     public BaseType getType() {
         return type;
     }
