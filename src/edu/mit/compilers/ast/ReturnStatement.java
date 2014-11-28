@@ -92,4 +92,11 @@ public class ReturnStatement extends StaticStatement {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "return" + (value.isPresent()
+                ? " " + value.get()
+                : "");
+    }
 }

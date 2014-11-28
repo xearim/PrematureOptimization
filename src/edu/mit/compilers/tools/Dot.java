@@ -16,4 +16,8 @@ public class Dot {
     public static String edge(long sourceId, long destinationId) {
         return sourceId + " -> " + destinationId + ";";
     }
+
+    public static String labeledEdge(long sourceId, long destinationId, String label) {
+        return String.format("%d -> %d [taillabel = \"%s\"];", sourceId, destinationId, label);
+    }
 }

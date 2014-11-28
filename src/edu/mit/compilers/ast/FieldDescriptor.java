@@ -27,6 +27,10 @@ public class FieldDescriptor {
         this.locationDescriptor = locationDescriptor;
     }
 
+    public FieldDescriptor(Variable variable, BaseType type) {
+        this(variable, type, LocationDescriptor.machineCode());
+    }
+
     public BaseType getType() {
         return type;
     }
@@ -109,5 +113,12 @@ public class FieldDescriptor {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return type
+                + (length.isPresent() ? "[" + length.get() + "]" : "")
+                + ": " + variable.asText();
     }
 }

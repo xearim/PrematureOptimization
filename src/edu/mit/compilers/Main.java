@@ -21,7 +21,7 @@ import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.NodeMaker;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.codegen.AssemblyWriter;
-import edu.mit.compilers.codegen.AstToCfgConverter;
+import edu.mit.compilers.codegen.Targets;
 import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.grammar.DecafParser;
@@ -60,7 +60,7 @@ class Main {
             } else if (CLI.target == Action.INTER) {
                 semanticCheck(inputStream, outputStream);
             } else if (CLI.target == Action.CFG) {
-                controlFlowGraph(inputStream, outputStream);
+                controlFlowGraph(inputStream, outputStream, getOptimizations());
             } else if (CLI.target == Action.PARSE ||
                     CLI.target == Action.DEFAULT) {
                 parse(inputStream, outputStream);
@@ -157,8 +157,9 @@ class Main {
         }
     }
 
-    /** Print the unoptimized Control Flow Graph to outputStream in DOT format. */
-    private static void controlFlowGraph(InputStream inputStream, PrintStream outputStream)
+    /** Print the optimized Control Flow Graph to outputStream in DOT format. */
+    private static void controlFlowGraph(InputStream inputStream, PrintStream outputStream,
+            Set<String> optimizationNames)
             throws RecognitionException, TokenStreamException {
         Program validProgram = semanticallyValidProgram(inputStream, outputStream).get();
         ImmutableMap.Builder<String, Method> methodsBuilder = ImmutableMap.builder();
@@ -168,7 +169,8 @@ class Main {
         ImmutableMap<String, Method> methods = methodsBuilder.build();
         // TODO(jasonpr): Do it for everything, not just main.
         Method main = methods.get(MAIN_METHOD_NAME);
-        FlowGraph<Instruction> controlFlowGraph = AstToCfgConverter.unoptimizing().convert(main);
+        FlowGraph<Instruction> controlFlowGraph =
+                Targets.controlFlowGraph(main, optimizationNames);
         FlowGraphPrinter.print(outputStream, controlFlowGraph);
     }
 
@@ -182,8 +184,8 @@ class Main {
         ImmutableMap<String, Method> methods = methodsBuilder.build();
         // TODO(jasonpr): Do it for everything, not just main.
         Method main = methods.get(MAIN_METHOD_NAME);
-        DataFlowIntRep method = AstToCfgConverter.withOptimizations(optimizationNames).optimize(main);
-        FlowGraphPrinter.print(outputStream, method.getDataFlowGraph());
+        DataFlowIntRep ir = Targets.optimizedDataFlowIntRep(main, optimizationNames);
+        FlowGraphPrinter.print(outputStream, ir.getDataFlowGraph());
     }
 
     private static void genCode(InputStream inputStream, PrintStream outputStream,

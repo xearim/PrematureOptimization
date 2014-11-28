@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 import edu.mit.compilers.codegen.asm.instructions.JumpType;
+import edu.mit.compilers.graph.BasicFlowGraph.Builder;
 
 /**
  * A FlowGraph with Break, Continue, and Return terminals, in addition to
@@ -92,6 +93,13 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
         return new Builder<T>();
     }
 
+    public static <T> Builder<T> builderOf(BcrFlowGraph<T> graph) {
+        return new Builder<T>().append(graph)
+                .setBreakTerminal(graph.getBreakTerminal())
+                .setContinueTerminal(graph.getContinueTerminal())
+                .setReturnTerminal(graph.getReturnTerminal());
+    }
+
     public static class Builder<T> {
         private Node<T> breakTerminal = Node.nop();
         private Node<T> continueTerminal = Node.nop();
@@ -170,6 +178,11 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
             return this;
         }
 
+        public Builder<T> append(FlowGraph<T> graph) {
+            basicBuilder.append(graph);
+            return this;
+        }
+
         /** Link a graph to the current end node, and point the end node at the new end. */
         public Builder<T> copyIn(FlowGraph<T> graph) {
             basicBuilder.copyIn(graph);
@@ -178,6 +191,14 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
 
         public Builder<T> setEndToSinkFor(Node<T> node, Node<T> otherNode) {
             basicBuilder.setEndToSinkFor(node, otherNode);
+            return this;
+        }
+
+        public Builder<T> replace(Node<T> node, FlowGraph<T> replacement) {
+            basicBuilder.replace(node, replacement);
+            if (node.equals(returnTerminal)) {
+                setReturnTerminal(replacement.getEnd());
+            }
             return this;
         }
 

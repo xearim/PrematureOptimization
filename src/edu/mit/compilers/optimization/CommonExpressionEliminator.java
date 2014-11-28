@@ -1,16 +1,23 @@
 package edu.mit.compilers.optimization;
 
-import java.util.Collection;
-import java.util.Map;
+import static com.google.common.base.Preconditions.checkState;
 
-import com.google.common.base.Optional;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.BaseType;
 import edu.mit.compilers.ast.BinaryOperation;
 import edu.mit.compilers.ast.Condition;
 import edu.mit.compilers.ast.FieldDescriptor;
@@ -22,21 +29,15 @@ import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.ast.ScopeType;
 import edu.mit.compilers.ast.StaticStatement;
 import edu.mit.compilers.ast.TernaryOperation;
 import edu.mit.compilers.ast.UnaryOperation;
-import edu.mit.compilers.codegen.AssignmentDataFlowNode;
-import edu.mit.compilers.codegen.CompareDataFlowNode;
 import edu.mit.compilers.codegen.DataFlowIntRep;
-import edu.mit.compilers.codegen.DataFlowNode;
-import edu.mit.compilers.codegen.MethodCallDataFlowNode;
-import edu.mit.compilers.codegen.ReturnStatementDataFlowNode;
-import edu.mit.compilers.codegen.StatementDataFlowNode;
-import edu.mit.compilers.codegen.dataflow.DataFlow;
-import edu.mit.compilers.codegen.dataflow.DataFlow.DataControlNodes;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.common.Variable;
 import edu.mit.compilers.graph.BasicFlowGraph;
+import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.graph.Node;
 
@@ -69,7 +70,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
      */
     private static final class Eliminator {
         private final DataFlowIntRep ir;
-        private final FlowGraph<ScopedStatement> dataFlowGraph;
+        private final BcrFlowGraph<ScopedStatement> dataFlowGraph;
         // TODO(jasonpr): Use ScopedExpression, not NativeExpression.
         private final Map<NativeExpression, Variable> tempVars;
         private final Multimap<Node<ScopedStatement>, ScopedExpression> inSets;
@@ -78,40 +79,46 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             this.ir = ir;
             this.dataFlowGraph = ir.getDataFlowGraph();
             this.tempVars = tempVars(expressions(dataFlowGraph));
-            inSets = DataFlowAnalyzer.AVAILABLE_EXPRESSIONS.calculateAvailability(ir.getDataFlowGraph());
+            inSets = DataFlowAnalyzer.AVAILABLE_EXPRESSIONS.calculateAvailability(
+                    ir.getDataFlowGraph());
         }
 
         public DataFlowIntRep optimized() {
-            BasicFlowGraph.Builder<ScopedStatement> newBuilder =
-                    BasicFlowGraph.builderOf(dataFlowGraph);
-            Scope newScope = new Scope(ir.getScope());
+            // When we make an optimized DFG, we produce modified copies of some original scopes.
+            // When we make those copies, we need modify the children of those scopes, etc.
+            Set<Node<ScopedStatement>> replaceable = replacable(dataFlowGraph.getNodes());
+            Set<Scope> allScopes = reachableScopes(replaceable);
+            Multimap<Scope, Scope> scopeTree = scopeTree(allScopes);
+            Multimap<Scope, Variable> scopeAugmentations =
+                    scopeAugmentations(tempVars.values(), ir.getScope());
+            // Maps each scope to the "new" version of itself.  The new version may have
+            // temp space allocated, and its parent pointer points to the new version of
+            // its parent.
+            Map<Scope, Scope> augmentedScopes =
+                    newScopes(scopeTree, scopeAugmentations, ir.getScope());
 
-            for (Node<ScopedStatement> node : dataFlowGraph.getNodes()) {
-                if (!node.hasValue()) {
-                    // NOPs have nothing to optimize!
-                    continue;
-                }
-
+            BcrFlowGraph.Builder<ScopedStatement> statementBuilder =
+                    BcrFlowGraph.builderOf(dataFlowGraph);
+            for (Node<ScopedStatement> node : replaceable) {
+                Set<NativeExpression> toUseTemp = new HashSet<NativeExpression>();
+                Set<NativeExpression> toFillAndUseTemp = new HashSet<NativeExpression>();
                 for (NativeExpression expr : nodeExprs(node.value())) {
                     if (!isComplexEnough(expr)) {
                         continue;
                     }
-
                     if (isAvailable(expr, node)) {
-                        newBuilder.replace(node, useTemp(node.value(), expr));
+                        toUseTemp.add(expr);
                     } else {
                         // For now, we alway generate if it's not available.
-                        if (node.value().getStatement() instanceof MethodCall) {
-                            // Just skip it!  We only call it for its side effects.
-                            continue;
-                        }
-                        addTempToScope(node.value(), expr, newScope);
-                        newBuilder.replace(node, fillAndUseTemp(node.value(), expr));
+                        toFillAndUseTemp.add(expr);
                     }
                 }
+                statementBuilder.replace(node, doReplacements(node.value(), toUseTemp,
+                        toFillAndUseTemp, augmentedScopes.get(node.value().getScope())));
             }
 
-            return new DataFlowIntRep(newBuilder.build(), newScope);
+            return new DataFlowIntRep(
+                    statementBuilder.build(), augmentedScopes.get(ir.getScope()));
         }
 
         /** Return whether an expression is available at a DataFlowNode. */
@@ -125,7 +132,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                 return false;
             }
 
-            ScopedExpression scopedExpr = new ScopedExpression((NativeExpression) expr, node.value().getScope());
+            ScopedExpression scopedExpr = new ScopedExpression(
+                    (NativeExpression) expr, node.value().getScope());
 
             // TODO(xearim): Figure out why a direct contains() call doesn't work.
             for(ScopedExpression ex : inSets.get(node)){
@@ -136,6 +144,28 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             return false;
         }
 
+        private FlowGraph<ScopedStatement> doReplacements(ScopedStatement scopedStatement,
+                Collection<NativeExpression> toUseTemp,
+                Collection<NativeExpression> toFillAndUseTemp, Scope newScope) {
+            // For now, only allow one temp use or one temp fill.
+            // There are some added complexities for doing multiple uses and/or fills on a single
+            // statement.  Since the CommonExpressionElminator doesn't ever request multiple
+            // uses/fills, we don't want to devote time to unraveling those complexities, yet.
+            checkState(toUseTemp.size() == 0 || toFillAndUseTemp.size() == 0);
+            checkState(toUseTemp.size() <= 1);
+            checkState(toFillAndUseTemp.size() <= 1);
+            if (toUseTemp.size() == 1) {
+                return useTemp(scopedStatement, Iterables.getOnlyElement(toUseTemp), newScope); 
+            } else if (toFillAndUseTemp.size() == 1) {
+                return fillAndUseTemp(scopedStatement,
+                        Iterables.getOnlyElement(toFillAndUseTemp), newScope);
+            } else {
+                return BasicFlowGraph.<ScopedStatement>builder()
+                        .append(new ScopedStatement(scopedStatement.getStatement(), newScope))
+                        .build();
+            }
+        }
+
 
         /**
          * Return a replacement for 'node' that does not call for 'expr' to be
@@ -144,7 +174,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
          *
          * <p>Requires that the expression is available at the node.
          */
-        private FlowGraph<ScopedStatement> useTemp(ScopedStatement node, GeneralExpression expr) {
+        private FlowGraph<ScopedStatement> useTemp(
+                ScopedStatement node, GeneralExpression expr, Scope newScope) {
             Preconditions.checkState(tempVars.containsKey(expr));
             Preconditions.checkState(node.getStatement().hasExpression());
 
@@ -152,7 +183,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             StaticStatement newStatement = getReplacement(node.getStatement(), temp);
 
             return BasicFlowGraph.<ScopedStatement>builder()
-                    .append(new ScopedStatement(newStatement, node.getScope()))
+                    .append(new ScopedStatement(newStatement, newScope))
                     .build();
         }
 
@@ -161,43 +192,85 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
          * its temp variable, and uses that temp variable when executing the
          * node's statement.
          */
-
-        private FlowGraph<ScopedStatement> fillAndUseTemp(ScopedStatement node, NativeExpression expr) {
+        private FlowGraph<ScopedStatement>
+                fillAndUseTemp(ScopedStatement node, NativeExpression expr, Scope newScope) {
             // The node to replace should actually contain statements
             Preconditions.checkState(tempVars.containsKey(expr));
             Preconditions.checkState(node.getStatement().hasExpression());
 
-            Location temp = new ScalarLocation(tempVars.get(expr), LocationDescriptor.machineCode());
+            Location temp = new ScalarLocation(
+                    tempVars.get(expr), LocationDescriptor.machineCode());
 
             Assignment newTemp = Assignment.compilerAssignment(temp, expr);
             StaticStatement newStatement = getReplacement(node.getStatement(), temp);
 
             return BasicFlowGraph.<ScopedStatement>builder()
-                    .append(new ScopedStatement(newTemp, node.getScope()))
-                    .append(new ScopedStatement(newStatement, node.getScope()))
+                    .append(new ScopedStatement(newTemp, newScope))
+                    .append(new ScopedStatement(newStatement, newScope))
                     .build();
         }
 
-        private StaticStatement getReplacement(StaticStatement statement, NativeExpression replacement) {
+        private StaticStatement getReplacement(
+                StaticStatement statement, NativeExpression replacement) {
             if(statement instanceof Assignment){
-                return Assignment.assignmentWithReplacementExpr((Assignment) statement, replacement);
+                return Assignment.assignmentWithReplacementExpr(
+                        (Assignment) statement, replacement);
             } else if(statement instanceof Condition){
                 return new Condition(replacement);
             } else if(statement instanceof MethodCall){
-                throw new AssertionError("Right now we cannot replace methods, we dont know if they are idempotent");
+                throw new AssertionError("Right now we cannot replace methods, as we don't know"
+                        + " if they are idempotent.");
             } else if(statement instanceof ReturnStatement){
                 return ReturnStatement.compilerReturn(replacement);
             } else {
                 throw new AssertionError("Unexpected StaticStatement type for " + statement);
             }
         }
+    }
 
-        private void addTempToScope(ScopedStatement scopedStatement, NativeExpression expr, Scope scope) {
-            Variable var = tempVars.get(expr);
-            FieldDescriptor fieldDesc = FieldDescriptor.forCompilerVariable(var);
-            // TODO(jasonpr): Add to most specific scope possible.
-            scope.addVariable(fieldDesc);
+    /** Reject nodes that can never have their (sub)expressions replaced. */
+    private static Set<Node<ScopedStatement>> replacable(Iterable<Node<ScopedStatement>> nodes) {
+        ImmutableSet.Builder<Node<ScopedStatement>> replacable = ImmutableSet.builder();
+        for (Node<ScopedStatement> node : nodes) {
+            // NOPs are unoptimizable!
+            // We do not optimize method calls, as they may not be idempotent.
+            if (node.hasValue() && !(node.value().getStatement() instanceof MethodCall)) {
+                replacable.add(node);
+            }
         }
+        return replacable.build();
+    }
+
+    /**
+     * Get all scopes that are reachable from some node.
+     *
+     * <p> A scope is reachable if it is the scope some node, or if it is
+     * the ancestor of a reachable node.
+     */
+    private static Set<Scope> reachableScopes(Iterable<Node<ScopedStatement>> scopedStatements) {
+        ImmutableSet.Builder<Scope> reachable = ImmutableSet.builder();
+        for (Node<ScopedStatement> node : scopedStatements) {
+            Scope scope = node.value().getScope();
+            reachable.addAll(scope.lineage());
+        }
+        return reachable.build();
+    }
+
+    /**
+     * Get a tree representing all the scopes.
+     *
+     * Requires that, if a scope is in 'scopes', then its ancestors are also in 'scopes'.
+     *
+     * @returns The edges of the tree.
+     */
+    private static Multimap<Scope, Scope> scopeTree(Iterable<Scope> scopes) {
+        ImmutableMultimap.Builder<Scope, Scope> tree = ImmutableMultimap.builder();
+        for (Scope scope : scopes) {
+            if (scope.hasParent()) {
+                tree.put(scope.getParent().get(), scope);
+            }
+        }
+        return tree.build();
     }
 
     /**
@@ -212,6 +285,64 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             builder.put(expr, Variable.forCompiler(TEMP_VAR_PREFIX + tempNumber++));
         }
         return builder.build();
+    }
+
+    /** Maps each scope to the new temp variables it will need to contain. */
+    private static Multimap<Scope, Variable>
+            scopeAugmentations(Iterable<Variable> variables, Scope methodScope) {
+        // For now, all temps are stored in the method scope.  It's easier that way.
+        // We could do something fancier, but it only buys us a smaller stack.
+        return ImmutableMultimap.<Scope,Variable>builder().putAll(methodScope, variables).build();
+    }
+
+    /**
+     * Makes a map of original scopes to new, augmented scopes.
+     *
+     * @param oldScopeTree The (parent -> child) edges of the original tree of scopes.
+     * @param scopeAugmentations The new temp variables to add to each scope.
+     * @param methodScope The original method scope.  (The scope right under the PARAMETER scope.)
+     */
+    private static Map<Scope, Scope> newScopes(Multimap<Scope, Scope> oldScopeTree,
+            Multimap<Scope, Variable> scopeAugmentations, Scope methodScope) {
+        Map<Scope, Scope> newScopes = new HashMap<Scope, Scope>();
+        Scope parameterScope = methodScope.getParent().get();
+        checkState(parameterScope.getScopeType() == ScopeType.PARAMETER);
+        Scope globalScope = parameterScope.getParent().get();
+        checkState(globalScope.getScopeType() == ScopeType.GLOBAL);
+
+        // We don't duplicate these higher-than-method scopes.  Map them to themselves.
+        newScopes.put(parameterScope, parameterScope);
+        newScopes.put(globalScope, globalScope);
+
+        addScopeTree(oldScopeTree, newScopes, scopeAugmentations, methodScope);
+        return ImmutableMap.copyOf(newScopes);
+    }
+
+    /**
+     * Adds new mappings for the scope tree under 'current' to the 'newScopes' map.
+     *
+     * <p>This is a helper method for newScopes.
+     */
+    private static void addScopeTree(Multimap<Scope, Scope> oldScopeTree,
+            Map<Scope, Scope> newScopes, Multimap<Scope, Variable> scopeAugmentations,
+            Scope current) {
+        newScopes.put(current, augmented(
+                current,
+                scopeAugmentations.get(current),
+                newScopes.get(current.getParent().get())));
+        for (Scope methodChild : oldScopeTree.get(current)) {
+            addScopeTree(oldScopeTree, newScopes, scopeAugmentations, methodChild);
+        }
+    }
+
+    /** Gets a copy of a scope, but with some variables added, and with a new parent pointer. */
+    private static Scope augmented(Scope original, Collection<Variable> augmentations, Scope newParent) {
+        ImmutableList.Builder<FieldDescriptor> fieldDescs =
+                ImmutableList.<FieldDescriptor>builder().addAll(original.getVariables());
+        for (Variable newVar : augmentations) {
+            fieldDescs.add(new FieldDescriptor(newVar, BaseType.WILDCARD));
+        }
+        return new Scope(fieldDescs.build(), newParent, original.isLoop());
     }
 
     /** Get all the optimizable expressions from some nodes. */

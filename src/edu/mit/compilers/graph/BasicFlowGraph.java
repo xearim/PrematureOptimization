@@ -252,7 +252,51 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             return this;
         }
 
-        /** Replace an Node with a FlowGraph. */
+        // There's something strange about this function.  It exists to factor
+        // out the ton of common code from #replaceEdgeStart and #replaceEdgeEnd.
+        // But, it's not a very natural interface-- something about the only-replace-
+        // one-node requirement is odd.  I can't figure out how to make anything more
+        // natural, though.
+        /**
+         * Replaces either the start node or the end node of an edge.
+         *
+         * <p>Requires that either the start node or the end node is unchanged.
+         */
+        private void replaceEdge(Node<T> originalStart, Node<T> newStart,
+                Node<T> originalEnd, Node<T> newEnd) {
+            // This method is only meant to replace the edge's start OR its end.
+            // Trying to replace both would be strange, and probably would not be
+            // done on purpose.
+            checkState(originalStart.equals(newStart) || originalEnd.equals(newEnd));
+
+            checkState(edges.get(originalStart).contains(originalEnd));
+            edges.remove(originalStart, originalEnd);
+            if (haveNonJumpBranch.contains(originalStart)
+                    || jumpDestinations.containsKey(originalStart)) {
+                // It's a branch node.
+                if (originalEnd.equals(jumpDestinations.get(originalStart))) {
+                    JumpDestination<T> destination = jumpDestinations.remove(originalStart);
+                    linkJumpBranch(newStart, destination.jumpType, newEnd);
+                } else {
+                    haveNonJumpBranch.remove(originalStart);
+                    linkNonJumpBranch(newStart, newEnd);
+                }
+            } else {
+                link(newStart, newEnd);
+            }
+        }
+
+        /** Replaces the end node of an edge. */
+        private void replaceEdgeEnd(Node<T> start, Node<T> originalEnd, Node<T> newEnd) {
+            replaceEdge(start, start, originalEnd, newEnd);
+        }
+
+        /** Replaces the start node of an edge. */
+        private void replaceEdgeStart(Node<T> end, Node<T> originalStart, Node<T> newStart) {
+            replaceEdge(originalStart, newStart, end, end);
+        }
+
+        /** Replaces an Node with a FlowGraph. */
         public Builder<T> replace(Node<T> node, FlowGraph<T> replacement) {
             copyIn(replacement);
 
@@ -264,19 +308,17 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
                 // TODO(jasonpr): Deal with this supreme inefficiency. Maybe
                 // use a BiMultiMap lookalike?
                 for (Node<T> predecessor : ImmutableMultimap.copyOf(edges).inverse().get(node)) {
-                    edges.remove(predecessor, node);
-                    link(predecessor, replacement.getStart());
+                    replaceEdgeEnd(predecessor, node, replacement.getStart());
                 }
             }
 
             // Either this graph is at the end, or it needs to be linked up to
-            // its predecessors.
+            // its successors.
             if (node.equals(end)) {
                 end = replacement.getEnd();
             } else {
                 for (Node<T> successor : edges.get(node)) {
-                    edges.remove(node, successor);
-                    link(replacement.getEnd(), successor);
+                    replaceEdgeStart(successor, node, replacement.getEnd());
                 }
             }
 

@@ -128,7 +128,7 @@ public class Assignment extends StaticStatement {
 
     @Override
     public String toString() {
-        return "Assignment[" + location + " " + operation
-                + " " + expression + "]";
+        return location + " " + operation.getSymbol()
+                + " " + expression;
     }
 }
