@@ -3,11 +3,11 @@ package edu.mit.compilers.ast;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.codegen.asm.Architecture;
@@ -50,6 +50,10 @@ public class Scope {
 
     public Optional<Scope> getParent() {
         return parent;
+    }
+
+    public boolean hasParent() {
+        return parent.isPresent();
     }
 
 	public void setParent(Scope parent){
@@ -239,6 +243,15 @@ public class Scope {
 		return Optional.<FieldDescriptor>absent();
 	}
 
+	/** Returns the path from this scope to the global scope. */
+	public Iterable<Scope> lineage() {
+	    ImmutableList.Builder<Scope> lineage = ImmutableList.builder();
+	    lineage.add(this);
+	    if (hasParent()) {
+	        lineage.addAll(parent.get().lineage());
+	    }
+	    return lineage.build();
+	}
 	/** Get the global scope that is at the base of this scope's lineage. */
 	public Scope getGlobalScope() {
 	    if (parent.isPresent()) {
