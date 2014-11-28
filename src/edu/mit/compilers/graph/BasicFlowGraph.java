@@ -252,6 +252,41 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             return this;
         }
 
+        private void replaceEdgeEnd(Node<T> start, Node<T> originalEnd, Node<T> newEnd) {
+            checkState(edges.get(start).contains(originalEnd));
+            edges.remove(start, originalEnd);
+            if (haveNonJumpBranch.contains(start) || jumpDestinations.containsKey(start)) {
+                // It's a branch node.
+                if (originalEnd.equals(jumpDestinations.get(start))) {
+                    JumpDestination<T> oldDest = jumpDestinations.remove(start);
+                    linkJumpBranch(start, oldDest.jumpType, newEnd);
+                } else {
+                    haveNonJumpBranch.remove(start);
+                    linkNonJumpBranch(start, newEnd);
+                }
+            } else {
+                link(start, newEnd);
+            }
+        }
+
+        private void replaceEdgeStart(Node<T> end, Node<T> originalStart, Node<T> newStart) {
+            checkState(edges.get(originalStart).contains(end));
+            edges.remove(originalStart, end);
+            if (haveNonJumpBranch.contains(originalStart)
+                    || jumpDestinations.containsKey(originalStart)) {
+                // It's a branch node.
+                if (end.equals(jumpDestinations.get(originalStart))) {
+                    JumpDestination<T> dest = jumpDestinations.remove(originalStart);
+                    linkJumpBranch(newStart, dest.jumpType, end);
+                } else {
+                    haveNonJumpBranch.remove(originalStart);
+                    linkNonJumpBranch(newStart, end);
+                }
+            } else {
+                link(newStart, end);
+            }
+        }
+
         /** Replace an Node with a FlowGraph. */
         public Builder<T> replace(Node<T> node, FlowGraph<T> replacement) {
             copyIn(replacement);
@@ -264,19 +299,17 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
                 // TODO(jasonpr): Deal with this supreme inefficiency. Maybe
                 // use a BiMultiMap lookalike?
                 for (Node<T> predecessor : ImmutableMultimap.copyOf(edges).inverse().get(node)) {
-                    edges.remove(predecessor, node);
-                    link(predecessor, replacement.getStart());
+                    replaceEdgeEnd(predecessor, node, replacement.getStart());
                 }
             }
 
             // Either this graph is at the end, or it needs to be linked up to
-            // its predecessors.
+            // its successors.
             if (node.equals(end)) {
                 end = replacement.getEnd();
             } else {
                 for (Node<T> successor : edges.get(node)) {
-                    edges.remove(node, successor);
-                    link(replacement.getEnd(), successor);
+                    replaceEdgeStart(successor, node, replacement.getEnd());
                 }
             }
 
