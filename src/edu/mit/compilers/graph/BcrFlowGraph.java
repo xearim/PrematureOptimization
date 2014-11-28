@@ -94,7 +94,10 @@ public class BcrFlowGraph<T> implements FlowGraph<T> {
     }
 
     public static <T> Builder<T> builderOf(BcrFlowGraph<T> graph) {
-        return new Builder<T>().append(graph);
+        return new Builder<T>().append(graph)
+                .setBreakTerminal(graph.getBreakTerminal())
+                .setContinueTerminal(graph.getContinueTerminal())
+                .setReturnTerminal(graph.getReturnTerminal());
     }
 
     public static class Builder<T> {
