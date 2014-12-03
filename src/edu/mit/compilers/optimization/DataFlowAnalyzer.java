@@ -62,9 +62,9 @@ public class DataFlowAnalyzer<T> {
             for (Node<ScopedStatement> predecessor: dataFlowGraph.getPredecessors(node)) {
                 predecessorOutSets.add(outSets.get(predecessor));
             }
-            inSets.replaceValues(node, spec.getInSetFromPredecessors(predecessorOutSets, infinum));
+            inSets.replaceValues(node, spec.applyConfluenceOperator(predecessorOutSets, infinum));
 
-            newOut = spec.getOutSetFromInSet(genSets.get(node), inSets.get(node), killSets.get(node));
+            newOut = spec.applyTransferFunction(genSets.get(node), inSets.get(node), killSets.get(node));
 
             if (!newOut.equals(outSets.get(node))) {
                 outSets.replaceValues(node, newOut);

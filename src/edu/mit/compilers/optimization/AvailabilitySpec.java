@@ -83,7 +83,7 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      * Returns the union of all the sets.
      */
     @Override
-    public Set<ScopedExpression> getInSetFromPredecessors(Iterable<Collection<ScopedExpression>> outSets,
+    public Set<ScopedExpression> applyConfluenceOperator(Iterable<Collection<ScopedExpression>> outSets,
             Collection<ScopedExpression> seed) {
         Set<ScopedExpression> newInSet = new HashSet<ScopedExpression>(seed);
 
@@ -98,7 +98,7 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      * Returns (gen U in) - kill.
      */
     @Override
-    public Set<ScopedExpression> getOutSetFromInSet(Collection<ScopedExpression> gen,
+    public Set<ScopedExpression> applyTransferFunction(Collection<ScopedExpression> gen,
             Collection<ScopedExpression> in, Collection<ScopedExpression> kill) {
         Set<ScopedExpression> newOutSet = new HashSet<ScopedExpression>(gen);
 
