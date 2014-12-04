@@ -38,56 +38,34 @@ public class ReachingDefSpec implements AnalysisSpec<ReachingDefinition> {
         if (Util.containsMethodCall(statement.getExpression())) {
             // For now, just assume that functions can redefine every global!
             // TODO(jasonpr): Only add each function's global write set.
-            Scope globalScope = scope.getGlobalScope();
-            for (FieldDescriptor descriptor : globalScope.getVariables()) {
-                // TODO(jasonpr): Find a way to avoid treating every array slot separately.
-                // Every location of the global could potentially be written.
-                for (Location location : descriptor.getLocations()) {
-                    redefinedBuilder.add(new ScopedLocation(location, globalScope));
-                }
-            }
+            redefinedBuilder.addAll(Util.getGlobalLocations(scope));
         }
         return redefinedBuilder.build();
     }
 
-    @Override
-    public Multimap<Node<ScopedStatement>, ReachingDefinition> getGenSets(
-            Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<Node<ScopedStatement>, ReachingDefinition> defsBuilder =
-                ImmutableMultimap.builder();
-        for (Node<ScopedStatement> node : statementNodes) {
-            for (ScopedLocation redefined : redefined(node)) {
-                // Each redefined variable is gets a definition... at this node!
-                defsBuilder.put(node, new ReachingDefinition(redefined, node));
-            }
-        }
-        return defsBuilder.build();
-    }
-
+    /**
+     * Returns whether the reaching definition's variable is redefined at this node.
+     * i.e. returns redefined.curNode.contains(reachingDef.getVariable())
+     * */
     @Override
     public boolean mustKill(Node<ScopedStatement> curNode, ReachingDefinition reachingDef) {
         throw new RuntimeException("Not yet implemented!");
     }
 
     @Override
+    public Set<ReachingDefinition> getGenSet(Node<ScopedStatement> node) {
+        ImmutableSet.Builder<ReachingDefinition> builder = ImmutableSet.builder();
+        for (ScopedLocation redefined : redefined(node)) {
+            // Each redefined variable is gets a definition... at this node!
+            builder.add(new ReachingDefinition(redefined, node));
+        }
+        return builder.build();
+    }
+
+    @Override
     public Set<ReachingDefinition> applyConfluenceOperator(
             Iterable<Collection<ReachingDefinition>> inputs) {
         return union(inputs);
-    }
-
-    // Suppress generic varargs warning.
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<ReachingDefinition> applyTransferFunction(
-            Collection<ReachingDefinition> gen,
-            Collection<ReachingDefinition> input, Node<ScopedStatement> curNode) {
-        Set<ReachingDefinition> toKill = Sets.newHashSet();
-        for (ReachingDefinition candidate : input) {
-            if (mustKill(curNode, candidate)) {
-                toKill.add(candidate);
-            }
-        }
-        return union(gen, difference(input, toKill));
     }
 
     @Override
@@ -106,5 +84,10 @@ public class ReachingDefSpec implements AnalysisSpec<ReachingDefinition> {
         }
 
         return builder.build();
+    }
+
+    @Override
+    public boolean gensImmuneToKills() {
+        return true;
     }
 }

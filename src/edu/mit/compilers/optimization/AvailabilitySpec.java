@@ -7,9 +7,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import edu.mit.compilers.ast.Assignment;
@@ -19,33 +17,26 @@ import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
 
 public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
+
     /**
-     * Map each node to its GEN set of Subexpressions, filtering out Expressions
-     * that contain MethodCalls.
+     * Get the GEN set for a node, filtering out expressions that contains method calls.
      *
-     * <p>Requires that the statements all have an expression.
+     * <p>Requires that the node has a statement, and that that statement has an expression.
      */
-    @Override
-    public Multimap<Node<ScopedStatement>, ScopedExpression> getGenSets(
-            Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<Node<ScopedStatement>,ScopedExpression> builder =
-                ImmutableMultimap.builder();
-
-        for (Node<ScopedStatement> node : statementNodes) {
-            // Design Decision: don't recurse into method calls
-            NativeExpression ne = node.value().getStatement().getExpression();
-            if (containsMethodCall(ne)) {
-                /*
-                 * "b+foo()" can return different values on different calls,
-                 * so we don't want to claim that "b+foo()" is available.
-                 */
-                continue;
-            }
-
-            builder.put(node, new ScopedExpression(ne, node.value().getScope()));
+    public Set<ScopedExpression> getGenSet(Node<ScopedStatement> node) {
+        if (!node.hasValue() || !node.value().getStatement().hasExpression()) {
+            return ImmutableSet.of();
         }
-
-        return builder.build();
+        // Design Decision: don't recurse into method callsf
+        NativeExpression ne = node.value().getStatement().getExpression();
+        if (containsMethodCall(ne)) {
+            /*
+             * "b+foo()" can return different values on different calls,
+             * so we don't want to claim that "b+foo()" is available.
+             */
+            return ImmutableSet.of();
+        }
+        return ImmutableSet.of(new ScopedExpression(ne, node.value().getScope()));
     }
 
     @Override
@@ -65,25 +56,6 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     @Override
     public Set<ScopedExpression> applyConfluenceOperator(Iterable<Collection<ScopedExpression>> outSets) {
         return intersection(outSets);
-    }
-
-    /**
-     * Returns (gen U in) - kill.
-     */
-    @Override
-    public Set<ScopedExpression> applyTransferFunction(Collection<ScopedExpression> gen,
-            Collection<ScopedExpression> input, Node<ScopedStatement> curNode) {
-        Set<ScopedExpression> newOutSet = new HashSet<ScopedExpression>(input);
-        newOutSet.addAll(gen);
-
-        Set<ScopedExpression> toKill = Sets.newHashSet();
-        for (ScopedExpression candidate : newOutSet) {
-            if (mustKill(curNode, candidate)) {
-                toKill.add(candidate);
-            }
-        }
-        newOutSet.removeAll(toKill);
-        return newOutSet;
     }
 
     /** Filters all the nodes that do not have an expression. */
@@ -110,14 +82,16 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      * execution.
      */
     private static Set<ScopedLocation> getPotentiallyChangedVariables(
-            Node<ScopedStatement> node) {
+            Node<ScopedStatement> statementNode) {
+        if (!statementNode.hasValue()) {
+                return ImmutableSet.of();
+        }
         ImmutableSet.Builder<ScopedLocation> builder = ImmutableSet.builder();
-        Set<ScopedLocation> globals = null; //getGlobals(node);
-
-            StaticStatement statement = node.value().getStatement();
+        Set<ScopedLocation> globals = Util.getGlobalLocations(statementNode.value().getScope());
+            StaticStatement statement = statementNode.value().getStatement();
             if (statement instanceof Assignment) {
                 builder.add(ScopedLocation.getAssigned(
-                        (Assignment) node.value().getStatement(), node.value().getScope()));
+                        (Assignment) statementNode.value().getStatement(), statementNode.value().getScope()));
             }
 
             if (Util.containsMethodCall(statement.getExpression())) {
@@ -127,36 +101,8 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
         return builder.build();
     }
 
-    /**
-     * Maps variables to expressions that contain them.
-     */
-    private static Multimap<ScopedLocation, ScopedExpression> getExpressionsContaining(
-            Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<ScopedExpression, ScopedLocation> variablesIn = ImmutableMultimap.builder();
-
-        for (Node<ScopedStatement> node : statementNodes) {
-            ScopedExpression newSubexpr = new ScopedExpression(node.value().getStatement().getExpression(), node.value().getScope());
-            variablesIn.putAll(newSubexpr, newSubexpr.getVariables());
-        }
-
-        return variablesIn.build().inverse();
-    }
-
-    /**
-     * Returns the set of all global variables. Intended for generating kill
-     * sets of StatementNode<ScopedStatement>s containing MethodCalls.
-     */
-    private static Set<ScopedLocation> getGlobals(Set<Node<ScopedStatement>> nodes) {
-        Set<ScopedLocation> globalVars = new HashSet<ScopedLocation>();
-        for (Node<ScopedStatement> node : nodes){
-            for (ScopedLocation var :
-                ScopedLocation.getVariablesOf(node.value())){
-                if (var.isGlobal()){
-                    globalVars.add(var);
-                }
-            }
-        }
-
-        return ImmutableSet.copyOf(globalVars);
+    @Override
+    public boolean gensImmuneToKills() {
+        return false;
     }
 }

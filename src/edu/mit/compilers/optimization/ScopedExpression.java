@@ -2,7 +2,6 @@ package edu.mit.compilers.optimization;
 
 import java.util.Set;
 
-import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.Scope;
 
