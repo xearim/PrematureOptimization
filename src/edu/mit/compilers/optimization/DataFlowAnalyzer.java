@@ -38,7 +38,6 @@ public class DataFlowAnalyzer<T> {
             calculateAvailability(FlowGraph<ScopedStatement> dataFlowGraph) {
         Set<Node<ScopedStatement>> allNodes = allNodes(dataFlowGraph);
         Set<Node<ScopedStatement>> savableNodes = spec.filterNodes(allNodes);
-        Set<T> infinum = spec.getInfinum(savableNodes);
         Multimap<Node<ScopedStatement>, T> inSets = HashMultimap.<Node<ScopedStatement>,T>create();
         Multimap<Node<ScopedStatement>, T> outSets = HashMultimap.<Node<ScopedStatement>,T>create();
         Multimap<Node<ScopedStatement>, T> genSets = spec.getGenSets(savableNodes);
@@ -62,7 +61,7 @@ public class DataFlowAnalyzer<T> {
             for (Node<ScopedStatement> predecessor: dataFlowGraph.getPredecessors(node)) {
                 predecessorOutSets.add(outSets.get(predecessor));
             }
-            inSets.replaceValues(node, spec.applyConfluenceOperator(predecessorOutSets, infinum));
+            inSets.replaceValues(node, spec.applyConfluenceOperator(predecessorOutSets));
 
             newOut = spec.applyTransferFunction(genSets.get(node), inSets.get(node), killSets.get(node));
 
