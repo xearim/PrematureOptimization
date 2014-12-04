@@ -6,6 +6,7 @@ import static edu.mit.compilers.common.SetOperators.union;
 import java.util.Collection;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
@@ -51,7 +52,15 @@ public class ReachingDefSpec implements AnalysisSpec<ReachingDefinition> {
     @Override
     public Multimap<Node<ScopedStatement>, ReachingDefinition> getGenSets(
             Set<Node<ScopedStatement>> statementNodes) {
-        throw new UnsupportedOperationException("unimplemented");
+        ImmutableMultimap.Builder<Node<ScopedStatement>, ReachingDefinition> defsBuilder =
+                ImmutableMultimap.builder();
+        for (Node<ScopedStatement> node : statementNodes) {
+            for (ScopedLocation redefined : redefined(node)) {
+                // Each redefined variable is gets a definition... at this node!
+                defsBuilder.put(node, new ReachingDefinition(redefined, node));
+            }
+        }
+        return defsBuilder.build();
     }
 
     @Override
