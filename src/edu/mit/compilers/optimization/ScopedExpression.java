@@ -16,14 +16,14 @@ import edu.mit.compilers.ast.Scope;
 public class ScopedExpression {
     private final NativeExpression ne;
     private final Scope scope;
-    private final Set<ScopedVariable> variables;
+    private final Set<ScopedLocation> variables;
 
     /**
      * The Scope is the immediate scope.
      */
     public ScopedExpression(NativeExpression ne, Scope scope) {
         this.ne = ne;
-        this.variables = ScopedVariable.getVariablesOf(ne, scope);
+        this.variables = ScopedLocation.getVariablesOf(ne, scope);
         this.scope = getGeneralScope(scope);
     }
 
@@ -31,7 +31,7 @@ public class ScopedExpression {
      * Finds the first scope that contains a variable from the subexpression
      */
     public Scope getGeneralScope(Scope scope) {
-        Set<ScopedVariable> variables = getVariables();
+        Set<ScopedLocation> variables = getVariables();
 
         if (variables.isEmpty()) {
             return scope.getGlobalScope();
@@ -61,8 +61,8 @@ public class ScopedExpression {
      * Returns true if the Scope contains any of the variables from the
      * global NativeExpression ne.
      */
-    private boolean containsAVariable(Scope s, Set<ScopedVariable> variables) {
-        for(ScopedVariable var : variables){
+    private boolean containsAVariable(Scope s, Set<ScopedLocation> variables) {
+        for(ScopedLocation var : variables){
         	if(s.isInScopeImmediately(var.getLocation().getVariable())){
         		return true;
         	}
@@ -70,7 +70,7 @@ public class ScopedExpression {
         return false;
     }
 
-    public Set<ScopedVariable> getVariables() {
+    public Set<ScopedLocation> getVariables() {
         return this.variables;
     }
 

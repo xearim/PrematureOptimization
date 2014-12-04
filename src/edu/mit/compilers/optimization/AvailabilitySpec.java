@@ -52,10 +52,10 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
             Set<Node<ScopedStatement>> statementNodes) {
         ImmutableMultimap.Builder<Node<ScopedStatement>, ScopedExpression> builder = ImmutableMultimap.builder();
 
-        Multimap<Node<ScopedStatement>,ScopedVariable> victimVariables = getPotentiallyChangedVariables(statementNodes);
-        Multimap<ScopedVariable,ScopedExpression> expressionsContaining = getExpressionsContaining(statementNodes);
+        Multimap<Node<ScopedStatement>,ScopedLocation> victimVariables = getPotentiallyChangedVariables(statementNodes);
+        Multimap<ScopedLocation,ScopedExpression> expressionsContaining = getExpressionsContaining(statementNodes);
         for (Node<ScopedStatement> node : statementNodes) {
-            for (ScopedVariable victimVariable : victimVariables.get(node)) {
+            for (ScopedLocation victimVariable : victimVariables.get(node)) {
                 // If a subexpression contains a changed variable, it must be killed.
                 for (ScopedExpression victim : expressionsContaining.get(victimVariable)) {
                     builder.put(node,victim);
@@ -111,15 +111,15 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      * Maps StatementNode<ScopedStatement>s to variables they may change during
      * execution.
      */
-    private static Multimap<Node<ScopedStatement>, ScopedVariable> getPotentiallyChangedVariables(
+    private static Multimap<Node<ScopedStatement>, ScopedLocation> getPotentiallyChangedVariables(
             Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<Node<ScopedStatement>, ScopedVariable> builder = ImmutableMultimap.builder();
-        Set<ScopedVariable> globals = getGlobals(statementNodes);
+        ImmutableMultimap.Builder<Node<ScopedStatement>, ScopedLocation> builder = ImmutableMultimap.builder();
+        Set<ScopedLocation> globals = getGlobals(statementNodes);
 
         for (Node<ScopedStatement> node : statementNodes) {
             StaticStatement statement = node.value().getStatement();
             if (statement instanceof Assignment) {
-                builder.put(node, ScopedVariable.getAssigned(
+                builder.put(node, ScopedLocation.getAssigned(
                         (Assignment) node.value().getStatement(), node.value().getScope()));
             }
 
@@ -134,9 +134,9 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     /**
      * Maps variables to expressions that contain them.
      */
-    private static Multimap<ScopedVariable, ScopedExpression> getExpressionsContaining(
+    private static Multimap<ScopedLocation, ScopedExpression> getExpressionsContaining(
             Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<ScopedExpression, ScopedVariable> variablesIn = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<ScopedExpression, ScopedLocation> variablesIn = ImmutableMultimap.builder();
 
         for (Node<ScopedStatement> node : statementNodes) {
             ScopedExpression newSubexpr = new ScopedExpression(node.value().getStatement().getExpression(), node.value().getScope());
@@ -150,11 +150,11 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      * Returns the set of all global variables. Intended for generating kill
      * sets of StatementNode<ScopedStatement>s containing MethodCalls.
      */
-    private static Set<ScopedVariable> getGlobals(Set<Node<ScopedStatement>> nodes) {
-        Set<ScopedVariable> globalVars = new HashSet<ScopedVariable>();
+    private static Set<ScopedLocation> getGlobals(Set<Node<ScopedStatement>> nodes) {
+        Set<ScopedLocation> globalVars = new HashSet<ScopedLocation>();
         for (Node<ScopedStatement> node : nodes){
-            for (ScopedVariable var :
-                ScopedVariable.getVariablesOf(node.value())){
+            for (ScopedLocation var :
+                ScopedLocation.getVariablesOf(node.value())){
                 if (var.isGlobal()){
                     globalVars.add(var);
                 }

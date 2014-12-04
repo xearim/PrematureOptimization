@@ -1,6 +1,7 @@
 package edu.mit.compilers.ast;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import edu.mit.compilers.common.Variable;
 
@@ -64,6 +65,23 @@ public class FieldDescriptor {
             // It's a scalar.
             return 1;
         }
+    }
+
+    public boolean isArray() {
+        return length.isPresent();
+    }
+
+    /** Return all locations covered by this field descriptor. */
+    public Iterable<Location> getLocations() {
+        ImmutableList.Builder<Location> locations = ImmutableList.builder();
+        if (isArray()) {
+            for (long i = 0; i < length.get().get64BitValue(); i++) {
+                locations.add(new ArrayLocation(variable, new IntLiteral(i), locationDescriptor));
+            }
+        } else {
+            locations.add(new ScalarLocation(variable, locationDescriptor));
+        }
+        return locations.build();
     }
 
     public static FieldDescriptor forCompilerVariable(Variable variable) {
