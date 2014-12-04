@@ -1,23 +1,19 @@
 package edu.mit.compilers.optimization;
 
+import static edu.mit.compilers.common.SetOperators.intersection;
+import static edu.mit.compilers.optimization.Util.containsMethodCall;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 import edu.mit.compilers.ast.Assignment;
-import edu.mit.compilers.ast.BinaryOperation;
-import edu.mit.compilers.ast.GeneralExpression;
-import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.StaticStatement;
-import edu.mit.compilers.ast.TernaryOperation;
-import edu.mit.compilers.ast.UnaryOperation;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
 
@@ -31,7 +27,8 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     @Override
     public Multimap<Node<ScopedStatement>, ScopedExpression> getGenSets(
             Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<Node<ScopedStatement>,ScopedExpression> builder = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<Node<ScopedStatement>,ScopedExpression> builder =
+                ImmutableMultimap.builder();
 
         for (Node<ScopedStatement> node : statementNodes) {
             // Design Decision: don't recurse into method calls
@@ -74,12 +71,7 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      */
     @Override
     public Set<ScopedExpression> applyConfluenceOperator(Iterable<Collection<ScopedExpression>> outSets) {
-        Set<ScopedExpression> newInSet = Sets.newHashSet(
-                Iterables.getFirst(outSets, ImmutableSet.<ScopedExpression>of()));
-        for (Collection<ScopedExpression> predecessorOutSet : outSets) {
-            newInSet.retainAll(predecessorOutSet);
-        }
-        return newInSet;
+        return intersection(outSets);
     }
 
     /**
@@ -87,10 +79,10 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      */
     @Override
     public Set<ScopedExpression> applyTransferFunction(Collection<ScopedExpression> gen,
-            Collection<ScopedExpression> in, Collection<ScopedExpression> kill) {
-        Set<ScopedExpression> newOutSet = new HashSet<ScopedExpression>(gen);
+            Collection<ScopedExpression> input, Collection<ScopedExpression> kill) {
+        Set<ScopedExpression> newOutSet = new HashSet<ScopedExpression>(input);
 
-        newOutSet.addAll(in);
+        newOutSet.addAll(gen);
         newOutSet.removeAll(kill);
 
         return newOutSet;
@@ -98,7 +90,8 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
 
     /** Filters all the nodes that do not have an expression. */
     @Override 
-    public Set<Node<ScopedStatement>> filterNodes(Iterable<Node<ScopedStatement>> nodes) {
+    public Set<Node<ScopedStatement>> filterNodes(
+            Iterable<Node<ScopedStatement>> nodes) {
         ImmutableSet.Builder<Node<ScopedStatement>> builder = ImmutableSet.builder();
 
         for (Node<ScopedStatement> node : nodes) {
@@ -112,27 +105,6 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
         }
 
         return builder.build();
-    }
-
-    /**
-     * Returns true is there is a MethodCall in any part of the
-     * GeneralExpression.
-     */
-    private static boolean containsMethodCall(GeneralExpression ge) {
-        if (ge instanceof BinaryOperation) {
-            return containsMethodCall( ((BinaryOperation) ge).getLeftArgument())
-                    || containsMethodCall( ((BinaryOperation) ge).getRightArgument());
-        }  else if (ge instanceof MethodCall) {
-            return true;
-        } else if (ge instanceof TernaryOperation) {
-            return containsMethodCall( ((TernaryOperation) ge).getCondition())
-                    || containsMethodCall( ((TernaryOperation) ge).getTrueResult())
-                    || containsMethodCall( ((TernaryOperation) ge).getFalseResult());
-        } else if (ge instanceof UnaryOperation) {
-            return containsMethodCall( ((UnaryOperation) ge).getArgument());
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -151,7 +123,7 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
                         (Assignment) node.value().getStatement(), node.value().getScope()));
             }
 
-            if (containsMethodCall(statement.getExpression())) {
+            if (Util.containsMethodCall(statement.getExpression())) {
                 builder.putAll(node, globals);
             }
         }
