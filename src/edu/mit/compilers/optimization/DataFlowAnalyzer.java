@@ -20,6 +20,8 @@ import edu.mit.compilers.graph.Node;
  * subexpressions at each block accessible from the input basic block.
  */
 public class DataFlowAnalyzer<T> {
+    public static final DataFlowAnalyzer<ReachingDefinition> REACHING_DEFINITIONS =
+            new DataFlowAnalyzer<ReachingDefinition>(new ReachingDefSpec());
     public static final DataFlowAnalyzer<ScopedExpression> AVAILABLE_EXPRESSIONS =
             new DataFlowAnalyzer<ScopedExpression>(new AvailabilitySpec());
     private AnalysisSpec<T> spec;
