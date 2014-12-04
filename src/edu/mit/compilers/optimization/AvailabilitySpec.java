@@ -10,6 +10,7 @@ import java.util.Set;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.NativeExpression;
@@ -48,22 +49,14 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     }
 
     @Override
-    public Multimap<Node<ScopedStatement>, ScopedExpression> getKillSets(
-            Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<Node<ScopedStatement>, ScopedExpression> builder = ImmutableMultimap.builder();
-
-        Multimap<Node<ScopedStatement>,ScopedLocation> victimVariables = getPotentiallyChangedVariables(statementNodes);
-        Multimap<ScopedLocation,ScopedExpression> expressionsContaining = getExpressionsContaining(statementNodes);
-        for (Node<ScopedStatement> node : statementNodes) {
-            for (ScopedLocation victimVariable : victimVariables.get(node)) {
-                // If a subexpression contains a changed variable, it must be killed.
-                for (ScopedExpression victim : expressionsContaining.get(victimVariable)) {
-                    builder.put(node,victim);
-                }
+    public boolean mustKill(Node<ScopedStatement> curNode, ScopedExpression candidate) {
+        Set<ScopedLocation> victimVariables = getPotentiallyChangedVariables(curNode);
+        for (ScopedLocation victimVariable : victimVariables) {
+            if (candidate.uses(victimVariable)) {
+                return true;
             }
         }
-
-        return builder.build();
+        return false;
     }
 
     /**
@@ -79,12 +72,17 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      */
     @Override
     public Set<ScopedExpression> applyTransferFunction(Collection<ScopedExpression> gen,
-            Collection<ScopedExpression> input, Collection<ScopedExpression> kill) {
+            Collection<ScopedExpression> input, Node<ScopedStatement> curNode) {
         Set<ScopedExpression> newOutSet = new HashSet<ScopedExpression>(input);
-
         newOutSet.addAll(gen);
-        newOutSet.removeAll(kill);
 
+        Set<ScopedExpression> toKill = Sets.newHashSet();
+        for (ScopedExpression candidate : newOutSet) {
+            if (mustKill(curNode, candidate)) {
+                toKill.add(candidate);
+            }
+        }
+        newOutSet.removeAll(toKill);
         return newOutSet;
     }
 
@@ -111,22 +109,20 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      * Maps StatementNode<ScopedStatement>s to variables they may change during
      * execution.
      */
-    private static Multimap<Node<ScopedStatement>, ScopedLocation> getPotentiallyChangedVariables(
-            Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<Node<ScopedStatement>, ScopedLocation> builder = ImmutableMultimap.builder();
-        Set<ScopedLocation> globals = getGlobals(statementNodes);
+    private static Set<ScopedLocation> getPotentiallyChangedVariables(
+            Node<ScopedStatement> node) {
+        ImmutableSet.Builder<ScopedLocation> builder = ImmutableSet.builder();
+        Set<ScopedLocation> globals = null; //getGlobals(node);
 
-        for (Node<ScopedStatement> node : statementNodes) {
             StaticStatement statement = node.value().getStatement();
             if (statement instanceof Assignment) {
-                builder.put(node, ScopedLocation.getAssigned(
+                builder.add(ScopedLocation.getAssigned(
                         (Assignment) node.value().getStatement(), node.value().getScope()));
             }
 
             if (Util.containsMethodCall(statement.getExpression())) {
-                builder.putAll(node, globals);
+                builder.addAll(globals);
             }
-        }
 
         return builder.build();
     }

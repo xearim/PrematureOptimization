@@ -69,6 +69,9 @@ public class ScopedExpression {
         }
         return false;
     }
+    public boolean uses(ScopedLocation scopedLocation) {
+        return this.variables.contains(scopedLocation);
+    }
 
     public Set<ScopedLocation> getVariables() {
         return this.variables;

@@ -43,7 +43,6 @@ public class DataFlowAnalyzer<T> {
         Multimap<Node<ScopedStatement>, T> inSets = HashMultimap.<Node<ScopedStatement>,T>create();
         Multimap<Node<ScopedStatement>, T> outSets = HashMultimap.<Node<ScopedStatement>,T>create();
         Multimap<Node<ScopedStatement>, T> genSets = spec.getGenSets(savableNodes);
-        Multimap<Node<ScopedStatement>, T> killSets = spec.getKillSets(savableNodes);
         Set<Node<ScopedStatement>> changed;
 
         Node<ScopedStatement> entryNode = dataFlowGraph.getStart();
@@ -65,7 +64,7 @@ public class DataFlowAnalyzer<T> {
             }
             inSets.replaceValues(node, spec.applyConfluenceOperator(predecessorOutSets));
 
-            newOut = spec.applyTransferFunction(genSets.get(node), inSets.get(node), killSets.get(node));
+            newOut = spec.applyTransferFunction(genSets.get(node), inSets.get(node), node);
 
             if (!newOut.equals(outSets.get(node))) {
                 outSets.replaceValues(node, newOut);

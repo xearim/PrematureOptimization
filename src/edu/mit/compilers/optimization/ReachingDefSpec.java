@@ -9,6 +9,7 @@ import java.util.Set;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.FieldDescriptor;
@@ -64,9 +65,8 @@ public class ReachingDefSpec implements AnalysisSpec<ReachingDefinition> {
     }
 
     @Override
-    public Multimap<Node<ScopedStatement>, ReachingDefinition> getKillSets(
-            Set<Node<ScopedStatement>> statementNodes) {
-        throw new UnsupportedOperationException("unimplemented");
+    public boolean mustKill(Node<ScopedStatement> curNode, ReachingDefinition reachingDef) {
+        throw new RuntimeException("Not yet implemented!");
     }
 
     @Override
@@ -80,9 +80,14 @@ public class ReachingDefSpec implements AnalysisSpec<ReachingDefinition> {
     @Override
     public Set<ReachingDefinition> applyTransferFunction(
             Collection<ReachingDefinition> gen,
-            Collection<ReachingDefinition> input,
-            Collection<ReachingDefinition> kill) {
-        return union(gen, difference(input, kill));
+            Collection<ReachingDefinition> input, Node<ScopedStatement> curNode) {
+        Set<ReachingDefinition> toKill = Sets.newHashSet();
+        for (ReachingDefinition candidate : input) {
+            if (mustKill(curNode, candidate)) {
+                toKill.add(candidate);
+            }
+        }
+        return union(gen, difference(input, toKill));
     }
 
     @Override
