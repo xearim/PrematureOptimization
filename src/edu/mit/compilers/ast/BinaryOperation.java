@@ -94,6 +94,6 @@ public class BinaryOperation implements NativeExpression {
 
     @Override
     public String toString() {
-        return "[" + leftArgument + " " + operator + " " + rightArgument + "]";
+        return "[" + leftArgument + " " + operator.getSymbol() + " " + rightArgument + "]";
     }
 }

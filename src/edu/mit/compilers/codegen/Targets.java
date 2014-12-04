@@ -12,6 +12,7 @@ import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 import edu.mit.compilers.codegen.dataflow.BlockDataFlowFactory;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
+import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.optimization.CommonExpressionEliminator;
@@ -58,11 +59,18 @@ public class Targets {
         for (String optName : enabledOptimizations) {
             ir = OPTIMIZERS.get(optName).optimized(ir);
         }
-        return ir;
+        // Remove NOPs, for easy printing.
+        BcrFlowGraph<ScopedStatement> dfg = BcrFlowGraph.builderOf(ir.getDataFlowGraph())
+                .removeNops()
+                .build();
+        return new DataFlowIntRep(dfg, ir.getScope());
+
     }
 
     private static FlowGraph<Instruction> asControlFlowGraph(
             DataFlowIntRep ir, String name, boolean isVoid,  long memorySize) {
-        return new MethodGraphFactory(ir.getDataFlowGraph(),name, isVoid, memorySize).getGraph();
+        FlowGraph<Instruction> cfg = new MethodGraphFactory(
+                ir.getDataFlowGraph(),name, isVoid, memorySize).getGraph();
+        return BasicFlowGraph.builderOf(cfg).removeNops().build();
     }
 }

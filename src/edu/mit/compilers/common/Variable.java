@@ -75,7 +75,7 @@ public class Variable {
 
     @Override
     public String toString() {
-        return "Variable [creator=" + creator + ", name=" + name + "]";
+        return asText();
     }
 
     public String generateName() {
