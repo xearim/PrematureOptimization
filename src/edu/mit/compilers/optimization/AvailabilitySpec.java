@@ -6,7 +6,9 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.BinaryOperation;
@@ -67,30 +69,16 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
         return builder.build();
     }
 
-    /** Returns the set of all expressions */
-    @Override
-    public Set<ScopedExpression> getInfinum(Set<Node<ScopedStatement>> nodes) {
-        ImmutableSet.Builder<ScopedExpression> builder = ImmutableSet.builder();
-
-        for (Node<ScopedStatement> node : nodes) {
-            builder.add(new ScopedExpression(node.value().getStatement().getExpression(), node.value().getScope()));
-        }
-
-        return builder.build();
-    }
-
     /**
      * Returns the union of all the sets.
      */
     @Override
-    public Set<ScopedExpression> applyConfluenceOperator(Iterable<Collection<ScopedExpression>> outSets,
-            Collection<ScopedExpression> seed) {
-        Set<ScopedExpression> newInSet = new HashSet<ScopedExpression>(seed);
-
+    public Set<ScopedExpression> applyConfluenceOperator(Iterable<Collection<ScopedExpression>> outSets) {
+        Set<ScopedExpression> newInSet = Sets.newHashSet(
+                Iterables.getFirst(outSets, ImmutableSet.<ScopedExpression>of()));
         for (Collection<ScopedExpression> predecessorOutSet : outSets) {
             newInSet.retainAll(predecessorOutSet);
         }
-
         return newInSet;
     }
 
