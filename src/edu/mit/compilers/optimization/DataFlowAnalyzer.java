@@ -1,6 +1,8 @@
 package edu.mit.compilers.optimization;
 
 import static com.google.common.base.Preconditions.checkState;
+import static edu.mit.compilers.common.SetOperators.difference;
+import static edu.mit.compilers.common.SetOperators.union;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +12,7 @@ import java.util.Set;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.FlowGraph;
@@ -42,8 +45,10 @@ public class DataFlowAnalyzer<T> {
         Set<Node<ScopedStatement>> savableNodes = spec.filterNodes(allNodes);
         Multimap<Node<ScopedStatement>, T> inSets = HashMultimap.<Node<ScopedStatement>,T>create();
         Multimap<Node<ScopedStatement>, T> outSets = HashMultimap.<Node<ScopedStatement>,T>create();
-        Multimap<Node<ScopedStatement>, T> genSets = spec.getGenSets(savableNodes);
-        Multimap<Node<ScopedStatement>, T> killSets = spec.getKillSets(savableNodes);
+        Multimap<Node<ScopedStatement>, T> genSets = HashMultimap.<Node<ScopedStatement>,T>create(); 
+        for (Node<ScopedStatement> node : savableNodes) {
+            genSets.putAll(node, spec.getGenSet(node));
+        }
         Set<Node<ScopedStatement>> changed;
 
         Node<ScopedStatement> entryNode = dataFlowGraph.getStart();
@@ -65,7 +70,25 @@ public class DataFlowAnalyzer<T> {
             }
             inSets.replaceValues(node, spec.applyConfluenceOperator(predecessorOutSets));
 
-            newOut = spec.applyTransferFunction(genSets.get(node), inSets.get(node), killSets.get(node));
+            Collection<T> inSet = inSets.get(node);
+            if (spec.gensImmuneToKills()) {
+                Set<T> toKill = Sets.newHashSet();
+                for (T candidate : inSet) {
+                    if (spec.mustKill(node, candidate)) {
+                        toKill.add(candidate);
+                    }
+                }
+                newOut = union(spec.getGenSet(node), difference(inSet, toKill));
+            } else {
+                Set<T> inAndGen = union(spec.getGenSet(node), inSet);
+                Set<T> toKill = Sets.newHashSet();
+                for (T candidate : inAndGen) {
+                    if (spec.mustKill(node, candidate)) {
+                        toKill.add(candidate);
+                    }
+                }
+                newOut = difference(inAndGen, toKill);
+            }
 
             if (!newOut.equals(outSets.get(node))) {
                 outSets.replaceValues(node, newOut);

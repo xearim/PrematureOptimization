@@ -7,9 +7,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.NativeExpression;
@@ -18,52 +17,37 @@ import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
 
 public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
+
     /**
-     * Map each node to its GEN set of Subexpressions, filtering out Expressions
-     * that contain MethodCalls.
+     * Get the GEN set for a node, filtering out expressions that contains method calls.
      *
-     * <p>Requires that the statements all have an expression.
+     * <p>Requires that the node has a statement, and that that statement has an expression.
      */
-    @Override
-    public Multimap<Node<ScopedStatement>, ScopedExpression> getGenSets(
-            Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<Node<ScopedStatement>,ScopedExpression> builder =
-                ImmutableMultimap.builder();
-
-        for (Node<ScopedStatement> node : statementNodes) {
-            // Design Decision: don't recurse into method calls
-            NativeExpression ne = node.value().getStatement().getExpression();
-            if (containsMethodCall(ne)) {
-                /*
-                 * "b+foo()" can return different values on different calls,
-                 * so we don't want to claim that "b+foo()" is available.
-                 */
-                continue;
-            }
-
-            builder.put(node, new ScopedExpression(ne, node.value().getScope()));
+    public Set<ScopedExpression> getGenSet(Node<ScopedStatement> node) {
+        if (!node.hasValue() || !node.value().getStatement().hasExpression()) {
+            return ImmutableSet.of();
         }
-
-        return builder.build();
+        // Design Decision: don't recurse into method callsf
+        NativeExpression ne = node.value().getStatement().getExpression();
+        if (containsMethodCall(ne)) {
+            /*
+             * "b+foo()" can return different values on different calls,
+             * so we don't want to claim that "b+foo()" is available.
+             */
+            return ImmutableSet.of();
+        }
+        return ImmutableSet.of(new ScopedExpression(ne, node.value().getScope()));
     }
 
     @Override
-    public Multimap<Node<ScopedStatement>, ScopedExpression> getKillSets(
-            Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<Node<ScopedStatement>, ScopedExpression> builder = ImmutableMultimap.builder();
-
-        Multimap<Node<ScopedStatement>,ScopedVariable> victimVariables = getPotentiallyChangedVariables(statementNodes);
-        Multimap<ScopedVariable,ScopedExpression> expressionsContaining = getExpressionsContaining(statementNodes);
-        for (Node<ScopedStatement> node : statementNodes) {
-            for (ScopedVariable victimVariable : victimVariables.get(node)) {
-                // If a subexpression contains a changed variable, it must be killed.
-                for (ScopedExpression victim : expressionsContaining.get(victimVariable)) {
-                    builder.put(node,victim);
-                }
+    public boolean mustKill(Node<ScopedStatement> curNode, ScopedExpression candidate) {
+        Set<ScopedLocation> victimVariables = getPotentiallyChangedVariables(curNode);
+        for (ScopedLocation victimVariable : victimVariables) {
+            if (candidate.uses(victimVariable)) {
+                return true;
             }
         }
-
-        return builder.build();
+        return false;
     }
 
     /**
@@ -72,20 +56,6 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     @Override
     public Set<ScopedExpression> applyConfluenceOperator(Iterable<Collection<ScopedExpression>> outSets) {
         return intersection(outSets);
-    }
-
-    /**
-     * Returns (gen U in) - kill.
-     */
-    @Override
-    public Set<ScopedExpression> applyTransferFunction(Collection<ScopedExpression> gen,
-            Collection<ScopedExpression> input, Collection<ScopedExpression> kill) {
-        Set<ScopedExpression> newOutSet = new HashSet<ScopedExpression>(input);
-
-        newOutSet.addAll(gen);
-        newOutSet.removeAll(kill);
-
-        return newOutSet;
     }
 
     /** Filters all the nodes that do not have an expression. */
@@ -111,56 +81,28 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      * Maps StatementNode<ScopedStatement>s to variables they may change during
      * execution.
      */
-    private static Multimap<Node<ScopedStatement>, ScopedVariable> getPotentiallyChangedVariables(
-            Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<Node<ScopedStatement>, ScopedVariable> builder = ImmutableMultimap.builder();
-        Set<ScopedVariable> globals = getGlobals(statementNodes);
-
-        for (Node<ScopedStatement> node : statementNodes) {
-            StaticStatement statement = node.value().getStatement();
+    private static Set<ScopedLocation> getPotentiallyChangedVariables(
+            Node<ScopedStatement> statementNode) {
+        if (!statementNode.hasValue()) {
+                return ImmutableSet.of();
+        }
+        ImmutableSet.Builder<ScopedLocation> builder = ImmutableSet.builder();
+        Set<ScopedLocation> globals = Util.getGlobalLocations(statementNode.value().getScope());
+            StaticStatement statement = statementNode.value().getStatement();
             if (statement instanceof Assignment) {
-                builder.put(node, ScopedVariable.getAssigned(
-                        (Assignment) node.value().getStatement(), node.value().getScope()));
+                builder.add(ScopedLocation.getAssigned(
+                        (Assignment) statementNode.value().getStatement(), statementNode.value().getScope()));
             }
 
             if (Util.containsMethodCall(statement.getExpression())) {
-                builder.putAll(node, globals);
+                builder.addAll(globals);
             }
-        }
 
         return builder.build();
     }
 
-    /**
-     * Maps variables to expressions that contain them.
-     */
-    private static Multimap<ScopedVariable, ScopedExpression> getExpressionsContaining(
-            Set<Node<ScopedStatement>> statementNodes) {
-        ImmutableMultimap.Builder<ScopedExpression, ScopedVariable> variablesIn = ImmutableMultimap.builder();
-
-        for (Node<ScopedStatement> node : statementNodes) {
-            ScopedExpression newSubexpr = new ScopedExpression(node.value().getStatement().getExpression(), node.value().getScope());
-            variablesIn.putAll(newSubexpr, newSubexpr.getVariables());
-        }
-
-        return variablesIn.build().inverse();
-    }
-
-    /**
-     * Returns the set of all global variables. Intended for generating kill
-     * sets of StatementNode<ScopedStatement>s containing MethodCalls.
-     */
-    private static Set<ScopedVariable> getGlobals(Set<Node<ScopedStatement>> nodes) {
-        Set<ScopedVariable> globalVars = new HashSet<ScopedVariable>();
-        for (Node<ScopedStatement> node : nodes){
-            for (ScopedVariable var :
-                ScopedVariable.getVariablesOf(node.value())){
-                if (var.isGlobal()){
-                    globalVars.add(var);
-                }
-            }
-        }
-
-        return ImmutableSet.copyOf(globalVars);
+    @Override
+    public boolean gensImmuneToKills() {
+        return false;
     }
 }

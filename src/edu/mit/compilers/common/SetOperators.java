@@ -33,6 +33,7 @@ public class SetOperators {
         return ImmutableSet.copyOf(union);
     }
 
+    @SafeVarargs
     public static <T> Set<T> union(Collection<T>... sets) {
         return union(ImmutableList.copyOf(sets));
     }
