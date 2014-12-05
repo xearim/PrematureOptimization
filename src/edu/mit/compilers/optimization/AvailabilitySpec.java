@@ -4,11 +4,9 @@ import static edu.mit.compilers.common.SetOperators.intersection;
 import static edu.mit.compilers.optimization.Util.containsMethodCall;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.NativeExpression;
@@ -16,7 +14,7 @@ import edu.mit.compilers.ast.StaticStatement;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
 
-public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
+public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExpression> {
 
     /**
      * Get the GEN set for a node, filtering out expressions that contains method calls.
