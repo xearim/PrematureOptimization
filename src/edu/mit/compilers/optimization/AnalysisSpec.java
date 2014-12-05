@@ -6,6 +6,7 @@ import java.util.Set;
 import edu.mit.compilers.graph.Node;
 
 public interface AnalysisSpec<N, T> {
+    public boolean isForward();
     public Set<T> getGenSet(Node<N> node);
     public boolean mustKill(Node<N> currentNode, T candidate);
     public Set<T> applyConfluenceOperator(Iterable<Collection<T>> inputs);

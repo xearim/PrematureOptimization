@@ -82,7 +82,7 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExp
     private static Set<ScopedVariable> getPotentiallyChangedVariables(
             Node<ScopedStatement> statementNode) {
         if (!statementNode.hasValue()) {
-                return ImmutableSet.of();
+            return ImmutableSet.of();
         }
         ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
         Set<ScopedVariable> globals = Util.getGlobalVariables(statementNode.value().getScope());
@@ -92,9 +92,9 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExp
                         (Assignment) statementNode.value().getStatement(), statementNode.value().getScope()));
             }
 
-            if (Util.containsMethodCall(statement.getExpression())) {
-                builder.addAll(globals);
-            }
+        if (Util.containsMethodCall(statement.getExpression())) {
+            builder.addAll(globals);
+        }
 
         return builder.build();
     }
@@ -102,5 +102,10 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExp
     @Override
     public boolean gensImmuneToKills() {
         return false;
+    }
+
+    /** Available Subexpressions Algorithm propagates forward. */
+    public boolean isForward() {
+        return true;
     }
 }
