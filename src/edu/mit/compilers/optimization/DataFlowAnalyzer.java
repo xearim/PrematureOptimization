@@ -31,7 +31,6 @@ public class DataFlowAnalyzer<T> {
 
     public DataFlowAnalyzer(AnalysisSpec<T> spec) {
         this.spec = spec;
-        //        calculateAvailability(entryBlock);
     }
 
     /**
@@ -40,7 +39,8 @@ public class DataFlowAnalyzer<T> {
      * basic block.
      */
     public Multimap<Node<ScopedStatement>, T>
-            calculateAvailability(FlowGraph<ScopedStatement> dataFlowGraph) {
+        calculateAvailability(FlowGraph<ScopedStatement> dataFlowGraph) {
+
         Set<Node<ScopedStatement>> allNodes = allNodes(dataFlowGraph);
         Set<Node<ScopedStatement>> savableNodes = spec.filterNodes(allNodes);
         Multimap<Node<ScopedStatement>, T> inSets = HashMultimap.<Node<ScopedStatement>,T>create();
@@ -70,25 +70,7 @@ public class DataFlowAnalyzer<T> {
             }
             inSets.replaceValues(node, spec.applyConfluenceOperator(predecessorOutSets));
 
-            Collection<T> inSet = inSets.get(node);
-            if (spec.gensImmuneToKills()) {
-                Set<T> toKill = Sets.newHashSet();
-                for (T candidate : inSet) {
-                    if (spec.mustKill(node, candidate)) {
-                        toKill.add(candidate);
-                    }
-                }
-                newOut = union(spec.getGenSet(node), difference(inSet, toKill));
-            } else {
-                Set<T> inAndGen = union(spec.getGenSet(node), inSet);
-                Set<T> toKill = Sets.newHashSet();
-                for (T candidate : inAndGen) {
-                    if (spec.mustKill(node, candidate)) {
-                        toKill.add(candidate);
-                    }
-                }
-                newOut = difference(inAndGen, toKill);
-            }
+            newOut = calculateNewOut(node, inSets.get(node));
 
             if (!newOut.equals(outSets.get(node))) {
                 outSets.replaceValues(node, newOut);
@@ -97,6 +79,34 @@ public class DataFlowAnalyzer<T> {
         }
 
         return inSets;
+    }
+
+    /**
+     * Depending on the AnalysisSpec#gensImmuneToKills, applies one of the following:
+     * true) GEN U (IN - KILL)
+     * false) (GEN U IN) - KILL
+     */
+    private Set<T> calculateNewOut(Node<ScopedStatement> node,
+            Collection<T> inSet) {
+
+        if (spec.gensImmuneToKills()) {
+            Set<T> toKill = Sets.newHashSet();
+            for (T candidate : inSet) {
+                if (spec.mustKill(node, candidate)) {
+                    toKill.add(candidate);
+                }
+            }
+            return union(spec.getGenSet(node), difference(inSet, toKill));
+        } else {
+            Set<T> inAndGen = union(spec.getGenSet(node), inSet);
+            Set<T> toKill = Sets.newHashSet();
+            for (T candidate : inAndGen) {
+                if (spec.mustKill(node, candidate)) {
+                    toKill.add(candidate);
+                }
+            }
+            return difference(inAndGen, toKill);
+        }
     }
 
     // TODO(jasonpr): Consider moving this to some FlowGraphs class.
