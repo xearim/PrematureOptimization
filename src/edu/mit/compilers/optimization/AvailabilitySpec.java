@@ -7,13 +7,14 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
+
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.StaticStatement;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
 
-public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
+public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExpression> {
 
     /**
      * Get the GEN set for a node, filtering out expressions that contains method calls.
@@ -38,8 +39,8 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
 
     @Override
     public boolean mustKill(Node<ScopedStatement> curNode, ScopedExpression candidate) {
-        Set<ScopedLocation> victimVariables = getPotentiallyChangedVariables(curNode);
-        for (ScopedLocation victimVariable : victimVariables) {
+        Set<ScopedVariable> victimVariables = getPotentiallyChangedVariables(curNode);
+        for (ScopedVariable victimVariable : victimVariables) {
             if (candidate.uses(victimVariable)) {
                 return true;
             }
@@ -78,18 +79,18 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      * Maps StatementNode<ScopedStatement>s to variables they may change during
      * execution.
      */
-    private static Set<ScopedLocation> getPotentiallyChangedVariables(
+    private static Set<ScopedVariable> getPotentiallyChangedVariables(
             Node<ScopedStatement> statementNode) {
         if (!statementNode.hasValue()) {
             return ImmutableSet.of();
         }
-        ImmutableSet.Builder<ScopedLocation> builder = ImmutableSet.builder();
-        Set<ScopedLocation> globals = Util.getGlobalLocations(statementNode.value().getScope());
-        StaticStatement statement = statementNode.value().getStatement();
-        if (statement instanceof Assignment) {
-            builder.add(ScopedLocation.getAssigned(
-                    (Assignment) statementNode.value().getStatement(), statementNode.value().getScope()));
-        }
+        ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
+        Set<ScopedVariable> globals = Util.getGlobalVariables(statementNode.value().getScope());
+            StaticStatement statement = statementNode.value().getStatement();
+            if (statement instanceof Assignment) {
+                builder.add(ScopedVariable.getAssigned(
+                        (Assignment) statementNode.value().getStatement(), statementNode.value().getScope()));
+            }
 
         if (Util.containsMethodCall(statement.getExpression())) {
             builder.addAll(globals);

@@ -22,14 +22,17 @@ import edu.mit.compilers.graph.Node;
  * Given a basic block, the AvailabilityCalculator computes all available
  * subexpressions at each block accessible from the input basic block.
  */
-public class DataFlowAnalyzer<T> {
-    public static final DataFlowAnalyzer<ReachingDefinition> REACHING_DEFINITIONS =
-            new DataFlowAnalyzer<ReachingDefinition>(new ReachingDefSpec());
-    public static final DataFlowAnalyzer<ScopedExpression> AVAILABLE_EXPRESSIONS =
-            new DataFlowAnalyzer<ScopedExpression>(new AvailabilitySpec());
-    private AnalysisSpec<T> spec;
+public class DataFlowAnalyzer<N, T> {
+    public static final DataFlowAnalyzer<ScopedStatement, ReachingDefinition>
+            REACHING_DEFINITIONS =
+            new DataFlowAnalyzer<ScopedStatement, ReachingDefinition>(
+                    new ReachingDefSpec());
+    public static final DataFlowAnalyzer<ScopedStatement, ScopedExpression>
+            AVAILABLE_EXPRESSIONS =
+            new DataFlowAnalyzer<ScopedStatement, ScopedExpression>(new AvailabilitySpec());
+    private AnalysisSpec<N, T> spec;
 
-    public DataFlowAnalyzer(AnalysisSpec<T> spec) {
+    public DataFlowAnalyzer(AnalysisSpec<N, T> spec) {
         this.spec = spec;
     }
 
@@ -38,34 +41,33 @@ public class DataFlowAnalyzer<T> {
      * Afterwards, can be asked what the available expressions are at each
      * basic block.
      */
-    public Multimap<Node<ScopedStatement>, T>
-        calculateAvailability(FlowGraph<ScopedStatement> dataFlowGraph) {
-
-        Set<Node<ScopedStatement>> allNodes = allNodes(dataFlowGraph);
-        Set<Node<ScopedStatement>> savableNodes = spec.filterNodes(allNodes);
-        Multimap<Node<ScopedStatement>, T> inputSets = HashMultimap.<Node<ScopedStatement>,T>create();
-        Multimap<Node<ScopedStatement>, T> outputSets = HashMultimap.<Node<ScopedStatement>,T>create();
-        Multimap<Node<ScopedStatement>, T> genSets = HashMultimap.<Node<ScopedStatement>,T>create(); 
-        for (Node<ScopedStatement> node : savableNodes) {
+    public Multimap<Node<N>, T>
+            calculateAvailability(FlowGraph<N> dataFlowGraph) {
+        Set<Node<N>> allNodes = allNodes(dataFlowGraph);
+        Set<Node<N>> savableNodes = spec.filterNodes(allNodes);
+        Multimap<Node<N>, T> inputSets = HashMultimap.<Node<N>,T>create();
+        Multimap<Node<N>, T> outputSets = HashMultimap.<Node<N>,T>create();
+        Multimap<Node<N>, T> genSets = HashMultimap.<Node<N>,T>create(); 
+        for (Node<N> node : savableNodes) {
             genSets.putAll(node, spec.getGenSet(node));
         }
-        Set<Node<ScopedStatement>> changed;
+        Set<Node<N>> changed;
 
-        Node<ScopedStatement> entryNode = getEntryNode(dataFlowGraph);
+        Node<N> entryNode = getEntryNode(dataFlowGraph);
         // Run algorithm
         outputSets.replaceValues(entryNode, genSets.get(entryNode));
 
-        changed = new HashSet<Node<ScopedStatement>>(allNodes);
+        changed = new HashSet<Node<N>>(allNodes);
         checkState(changed.remove(entryNode),
                 "entryNode is not in set of all nodes.");
 
         while (!changed.isEmpty()) {
-            Node<ScopedStatement> node = changed.iterator().next();
+            Node<N> node = changed.iterator().next();
             Set<T> newOutput;
             changed.remove(node);
 
             Collection<Collection<T>> sourceOutputSets = new ArrayList<Collection<T>>();
-            for (Node<ScopedStatement> source: getSources(dataFlowGraph, node)) {
+            for (Node<N> source: getSources(dataFlowGraph, node)) {
                 sourceOutputSets.add(outputSets.get(source));
             }
             inputSets.replaceValues(node, spec.applyConfluenceOperator(sourceOutputSets));
@@ -81,8 +83,8 @@ public class DataFlowAnalyzer<T> {
         return inputSets;
     }
 
-    private Node<ScopedStatement> getEntryNode(
-            FlowGraph<ScopedStatement> dataFlowGraph) {
+    private Node<N> getEntryNode(
+            FlowGraph<N> dataFlowGraph) {
 
         if (spec.isForward()) {
             return dataFlowGraph.getStart();
@@ -91,13 +93,13 @@ public class DataFlowAnalyzer<T> {
         }
     }
 
-    private Node<ScopedStatement> getExitNode(
-            FlowGraph<ScopedStatement> dataFlowGraph) {
+    private Node<N> getExitNode(
+            FlowGraph<N> dataFlowGraph) {
         throw new UnsupportedOperationException("unimplemented");
     }
 
-    private Set<Node<ScopedStatement>> getSources(
-            FlowGraph<ScopedStatement> dataFlowGraph, Node<ScopedStatement> node) {
+    private Set<Node<N>> getSources(
+            FlowGraph<N> dataFlowGraph, Node<N> node) {
 
         if (spec.isForward()){
             return dataFlowGraph.getPredecessors(node);
@@ -111,7 +113,7 @@ public class DataFlowAnalyzer<T> {
      * true) GEN U (IN - KILL)
      * false) (GEN U IN) - KILL
      */
-    private Set<T> calculateNewOutput(Node<ScopedStatement> node,
+    private Set<T> calculateNewOutput(Node<N> node,
             Collection<T> inSet) {
 
         if (spec.gensImmuneToKills()) {
