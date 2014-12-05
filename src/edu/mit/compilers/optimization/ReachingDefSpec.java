@@ -83,4 +83,9 @@ public class ReachingDefSpec implements AnalysisSpec<ReachingDefinition> {
     public boolean gensImmuneToKills() {
         return true;
     }
+
+    /** Reaching Definition algorithm propagates forward */
+    public boolean isForward() {
+        return true;
+    }
 }

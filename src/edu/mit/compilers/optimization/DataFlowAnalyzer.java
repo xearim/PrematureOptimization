@@ -43,17 +43,17 @@ public class DataFlowAnalyzer<T> {
 
         Set<Node<ScopedStatement>> allNodes = allNodes(dataFlowGraph);
         Set<Node<ScopedStatement>> savableNodes = spec.filterNodes(allNodes);
-        Multimap<Node<ScopedStatement>, T> inSets = HashMultimap.<Node<ScopedStatement>,T>create();
-        Multimap<Node<ScopedStatement>, T> outSets = HashMultimap.<Node<ScopedStatement>,T>create();
+        Multimap<Node<ScopedStatement>, T> inputSets = HashMultimap.<Node<ScopedStatement>,T>create();
+        Multimap<Node<ScopedStatement>, T> outputSets = HashMultimap.<Node<ScopedStatement>,T>create();
         Multimap<Node<ScopedStatement>, T> genSets = HashMultimap.<Node<ScopedStatement>,T>create(); 
         for (Node<ScopedStatement> node : savableNodes) {
             genSets.putAll(node, spec.getGenSet(node));
         }
         Set<Node<ScopedStatement>> changed;
 
-        Node<ScopedStatement> entryNode = dataFlowGraph.getStart();
+        Node<ScopedStatement> entryNode = getEntryNode(dataFlowGraph);
         // Run algorithm
-        outSets.replaceValues(entryNode, genSets.get(entryNode));
+        outputSets.replaceValues(entryNode, genSets.get(entryNode));
 
         changed = new HashSet<Node<ScopedStatement>>(allNodes);
         checkState(changed.remove(entryNode),
@@ -61,24 +61,49 @@ public class DataFlowAnalyzer<T> {
 
         while (!changed.isEmpty()) {
             Node<ScopedStatement> node = changed.iterator().next();
-            Set<T> newOut;
+            Set<T> newOutput;
             changed.remove(node);
 
-            Collection<Collection<T>> predecessorOutSets = new ArrayList<Collection<T>>();
-            for (Node<ScopedStatement> predecessor: dataFlowGraph.getPredecessors(node)) {
-                predecessorOutSets.add(outSets.get(predecessor));
+            Collection<Collection<T>> sourceOutputSets = new ArrayList<Collection<T>>();
+            for (Node<ScopedStatement> source: getSources(dataFlowGraph, node)) {
+                sourceOutputSets.add(outputSets.get(source));
             }
-            inSets.replaceValues(node, spec.applyConfluenceOperator(predecessorOutSets));
+            inputSets.replaceValues(node, spec.applyConfluenceOperator(sourceOutputSets));
 
-            newOut = calculateNewOut(node, inSets.get(node));
+            newOutput = calculateNewOut(node, inputSets.get(node));
 
-            if (!newOut.equals(outSets.get(node))) {
-                outSets.replaceValues(node, newOut);
+            if (!newOutput.equals(outputSets.get(node))) {
+                outputSets.replaceValues(node, newOutput);
                 changed.addAll(dataFlowGraph.getSuccessors(node));
             }
         }
 
-        return inSets;
+        return inputSets;
+    }
+
+    private Node<ScopedStatement> getEntryNode(
+            FlowGraph<ScopedStatement> dataFlowGraph) {
+
+        if (spec.isForward()) {
+            return dataFlowGraph.getStart();
+        } else {
+            return getExitNode(dataFlowGraph);
+        }
+    }
+
+    private Node<ScopedStatement> getExitNode(
+            FlowGraph<ScopedStatement> dataFlowGraph) {
+        throw new UnsupportedOperationException("unimplemented");
+    }
+
+    private Set<Node<ScopedStatement>> getSources(
+            FlowGraph<ScopedStatement> dataFlowGraph, Node<ScopedStatement> node) {
+
+        if (spec.isForward()){
+            return dataFlowGraph.getPredecessors(node);
+        } else {
+            return dataFlowGraph.getSuccessors(node);
+        }
     }
 
     /**

@@ -102,4 +102,9 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     public boolean gensImmuneToKills() {
         return false;
     }
+
+    /** Available Subexpressions Algorithm propagates forward. */
+    public boolean isForward() {
+        return true;
+    }
 }

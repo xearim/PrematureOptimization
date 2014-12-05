@@ -7,6 +7,7 @@ import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
 
 public interface AnalysisSpec<T> {
+    public boolean isForward();
     public Set<T> getGenSet(Node<ScopedStatement> node);
     public boolean mustKill(Node<ScopedStatement> currentNode, T candidate);
     public Set<T> applyConfluenceOperator(Iterable<Collection<T>> inputs);
