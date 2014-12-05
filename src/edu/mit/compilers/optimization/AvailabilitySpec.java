@@ -41,8 +41,8 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
 
     @Override
     public boolean mustKill(Node<ScopedStatement> curNode, ScopedExpression candidate) {
-        Set<ScopedLocation> victimVariables = getPotentiallyChangedVariables(curNode);
-        for (ScopedLocation victimVariable : victimVariables) {
+        Set<ScopedVariable> victimVariables = getPotentiallyChangedVariables(curNode);
+        for (ScopedVariable victimVariable : victimVariables) {
             if (candidate.uses(victimVariable)) {
                 return true;
             }
@@ -81,16 +81,16 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
      * Maps StatementNode<ScopedStatement>s to variables they may change during
      * execution.
      */
-    private static Set<ScopedLocation> getPotentiallyChangedVariables(
+    private static Set<ScopedVariable> getPotentiallyChangedVariables(
             Node<ScopedStatement> statementNode) {
         if (!statementNode.hasValue()) {
                 return ImmutableSet.of();
         }
-        ImmutableSet.Builder<ScopedLocation> builder = ImmutableSet.builder();
-        Set<ScopedLocation> globals = Util.getGlobalLocations(statementNode.value().getScope());
+        ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
+        Set<ScopedVariable> globals = Util.getGlobalVariables(statementNode.value().getScope());
             StaticStatement statement = statementNode.value().getStatement();
             if (statement instanceof Assignment) {
-                builder.add(ScopedLocation.getAssigned(
+                builder.add(ScopedVariable.getAssigned(
                         (Assignment) statementNode.value().getStatement(), statementNode.value().getScope()));
             }
 

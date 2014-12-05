@@ -23,22 +23,22 @@ import edu.mit.compilers.graph.Node;
 public class ReachingDefSpec implements AnalysisSpec<ReachingDefinition> {
 
     /** Get the set of variables that are potentially redefined at a node. */
-    private Set<ScopedLocation> redefined(Node<ScopedStatement> node) {
-        ImmutableSet.Builder<ScopedLocation> redefinedBuilder = ImmutableSet.builder();
+    private Set<ScopedVariable> redefined(Node<ScopedStatement> node) {
+        ImmutableSet.Builder<ScopedVariable> redefinedBuilder = ImmutableSet.builder();
 
         ScopedStatement scopedStatement = node.value();
         StaticStatement statement = scopedStatement.getStatement();
         Scope scope = scopedStatement.getScope();
         // Add LHS.
         if (statement instanceof Assignment) {
-            ScopedLocation lhs = ScopedLocation.getAssigned((Assignment) statement, scope);
+            ScopedVariable lhs = ScopedVariable.getAssigned((Assignment) statement, scope);
             redefinedBuilder.add(lhs);
         }
 
         if (Util.containsMethodCall(statement.getExpression())) {
             // For now, just assume that functions can redefine every global!
             // TODO(jasonpr): Only add each function's global write set.
-            redefinedBuilder.addAll(Util.getGlobalLocations(scope));
+            redefinedBuilder.addAll(Util.getGlobalVariables(scope));
         }
         return redefinedBuilder.build();
     }
@@ -55,7 +55,7 @@ public class ReachingDefSpec implements AnalysisSpec<ReachingDefinition> {
     @Override
     public Set<ReachingDefinition> getGenSet(Node<ScopedStatement> node) {
         ImmutableSet.Builder<ReachingDefinition> builder = ImmutableSet.builder();
-        for (ScopedLocation redefined : redefined(node)) {
+        for (ScopedVariable redefined : redefined(node)) {
             // Each redefined variable is gets a definition... at this node!
             builder.add(new ReachingDefinition(redefined, node));
         }
