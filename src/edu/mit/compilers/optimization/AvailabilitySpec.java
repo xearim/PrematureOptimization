@@ -4,12 +4,9 @@ import static edu.mit.compilers.common.SetOperators.intersection;
 import static edu.mit.compilers.optimization.Util.containsMethodCall;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.StaticStatement;
@@ -84,19 +81,19 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedExpression> {
     private static Set<ScopedLocation> getPotentiallyChangedVariables(
             Node<ScopedStatement> statementNode) {
         if (!statementNode.hasValue()) {
-                return ImmutableSet.of();
+            return ImmutableSet.of();
         }
         ImmutableSet.Builder<ScopedLocation> builder = ImmutableSet.builder();
         Set<ScopedLocation> globals = Util.getGlobalLocations(statementNode.value().getScope());
-            StaticStatement statement = statementNode.value().getStatement();
-            if (statement instanceof Assignment) {
-                builder.add(ScopedLocation.getAssigned(
-                        (Assignment) statementNode.value().getStatement(), statementNode.value().getScope()));
-            }
+        StaticStatement statement = statementNode.value().getStatement();
+        if (statement instanceof Assignment) {
+            builder.add(ScopedLocation.getAssigned(
+                    (Assignment) statementNode.value().getStatement(), statementNode.value().getScope()));
+        }
 
-            if (Util.containsMethodCall(statement.getExpression())) {
-                builder.addAll(globals);
-            }
+        if (Util.containsMethodCall(statement.getExpression())) {
+            builder.addAll(globals);
+        }
 
         return builder.build();
     }

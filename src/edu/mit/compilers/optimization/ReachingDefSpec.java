@@ -1,19 +1,12 @@
 package edu.mit.compilers.optimization;
 
-import static edu.mit.compilers.common.SetOperators.difference;
 import static edu.mit.compilers.common.SetOperators.union;
 
 import java.util.Collection;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
-
 import edu.mit.compilers.ast.Assignment;
-import edu.mit.compilers.ast.FieldDescriptor;
-import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.StaticStatement;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
@@ -49,7 +42,7 @@ public class ReachingDefSpec implements AnalysisSpec<ReachingDefinition> {
      * */
     @Override
     public boolean mustKill(Node<ScopedStatement> curNode, ReachingDefinition reachingDef) {
-        throw new RuntimeException("Not yet implemented!");
+        return redefined(curNode).contains(reachingDef.getScopedLocation());
     }
 
     @Override
