@@ -70,7 +70,7 @@ public class DataFlowAnalyzer<T> {
             }
             inputSets.replaceValues(node, spec.applyConfluenceOperator(sourceOutputSets));
 
-            newOutput = calculateNewOut(node, inputSets.get(node));
+            newOutput = calculateNewOutput(node, inputSets.get(node));
 
             if (!newOutput.equals(outputSets.get(node))) {
                 outputSets.replaceValues(node, newOutput);
@@ -111,7 +111,7 @@ public class DataFlowAnalyzer<T> {
      * true) GEN U (IN - KILL)
      * false) (GEN U IN) - KILL
      */
-    private Set<T> calculateNewOut(Node<ScopedStatement> node,
+    private Set<T> calculateNewOutput(Node<ScopedStatement> node,
             Collection<T> inSet) {
 
         if (spec.gensImmuneToKills()) {
