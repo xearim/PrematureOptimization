@@ -22,14 +22,17 @@ import edu.mit.compilers.graph.Node;
  * Given a basic block, the AvailabilityCalculator computes all available
  * subexpressions at each block accessible from the input basic block.
  */
-public class DataFlowAnalyzer<T> {
-    public static final DataFlowAnalyzer<ReachingDefinition> REACHING_DEFINITIONS =
-            new DataFlowAnalyzer<ReachingDefinition>(new ReachingDefSpec());
-    public static final DataFlowAnalyzer<ScopedExpression> AVAILABLE_EXPRESSIONS =
-            new DataFlowAnalyzer<ScopedExpression>(new AvailabilitySpec());
-    private AnalysisSpec<T> spec;
+public class DataFlowAnalyzer<N, T> {
+    public static final DataFlowAnalyzer<ScopedStatement, ReachingDefinition>
+            REACHING_DEFINITIONS =
+            new DataFlowAnalyzer<ScopedStatement, ReachingDefinition>(
+                    new ReachingDefSpec());
+    public static final DataFlowAnalyzer<ScopedStatement, ScopedExpression>
+            AVAILABLE_EXPRESSIONS =
+            new DataFlowAnalyzer<ScopedStatement, ScopedExpression>(new AvailabilitySpec());
+    private AnalysisSpec<N, T> spec;
 
-    public DataFlowAnalyzer(AnalysisSpec<T> spec) {
+    public DataFlowAnalyzer(AnalysisSpec<N, T> spec) {
         this.spec = spec;
         //        calculateAvailability(entryBlock);
     }
@@ -39,33 +42,33 @@ public class DataFlowAnalyzer<T> {
      * Afterwards, can be asked what the available expressions are at each
      * basic block.
      */
-    public Multimap<Node<ScopedStatement>, T>
-            calculateAvailability(FlowGraph<ScopedStatement> dataFlowGraph) {
-        Set<Node<ScopedStatement>> allNodes = allNodes(dataFlowGraph);
-        Set<Node<ScopedStatement>> savableNodes = spec.filterNodes(allNodes);
-        Multimap<Node<ScopedStatement>, T> inSets = HashMultimap.<Node<ScopedStatement>,T>create();
-        Multimap<Node<ScopedStatement>, T> outSets = HashMultimap.<Node<ScopedStatement>,T>create();
-        Multimap<Node<ScopedStatement>, T> genSets = HashMultimap.<Node<ScopedStatement>,T>create(); 
-        for (Node<ScopedStatement> node : savableNodes) {
+    public Multimap<Node<N>, T>
+            calculateAvailability(FlowGraph<N> dataFlowGraph) {
+        Set<Node<N>> allNodes = allNodes(dataFlowGraph);
+        Set<Node<N>> savableNodes = spec.filterNodes(allNodes);
+        Multimap<Node<N>, T> inSets = HashMultimap.<Node<N>,T>create();
+        Multimap<Node<N>, T> outSets = HashMultimap.<Node<N>,T>create();
+        Multimap<Node<N>, T> genSets = HashMultimap.<Node<N>,T>create(); 
+        for (Node<N> node : savableNodes) {
             genSets.putAll(node, spec.getGenSet(node));
         }
-        Set<Node<ScopedStatement>> changed;
+        Set<Node<N>> changed;
 
-        Node<ScopedStatement> entryNode = dataFlowGraph.getStart();
+        Node<N> entryNode = dataFlowGraph.getStart();
         // Run algorithm
         outSets.replaceValues(entryNode, genSets.get(entryNode));
 
-        changed = new HashSet<Node<ScopedStatement>>(allNodes);
+        changed = new HashSet<Node<N>>(allNodes);
         checkState(changed.remove(entryNode),
                 "entryNode is not in set of all nodes.");
 
         while (!changed.isEmpty()) {
-            Node<ScopedStatement> node = changed.iterator().next();
+            Node<N> node = changed.iterator().next();
             Set<T> newOut;
             changed.remove(node);
 
             Collection<Collection<T>> predecessorOutSets = new ArrayList<Collection<T>>();
-            for (Node<ScopedStatement> predecessor: dataFlowGraph.getPredecessors(node)) {
+            for (Node<N> predecessor: dataFlowGraph.getPredecessors(node)) {
                 predecessorOutSets.add(outSets.get(predecessor));
             }
             inSets.replaceValues(node, spec.applyConfluenceOperator(predecessorOutSets));
