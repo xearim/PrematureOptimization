@@ -15,14 +15,14 @@ import edu.mit.compilers.ast.Scope;
 public class ScopedExpression {
     private final NativeExpression ne;
     private final Scope scope;
-    private final Set<ScopedLocation> variables;
+    private final Set<ScopedVariable> variables;
 
     /**
      * The Scope is the immediate scope.
      */
     public ScopedExpression(NativeExpression ne, Scope scope) {
         this.ne = ne;
-        this.variables = ScopedLocation.getVariablesOf(ne, scope);
+        this.variables = ScopedVariable.getVariablesOf(ne, scope);
         this.scope = getGeneralScope(scope);
     }
 
@@ -30,7 +30,7 @@ public class ScopedExpression {
      * Finds the first scope that contains a variable from the subexpression
      */
     public Scope getGeneralScope(Scope scope) {
-        Set<ScopedLocation> variables = getVariables();
+        Set<ScopedVariable> variables = getVariables();
 
         if (variables.isEmpty()) {
             return scope.getGlobalScope();
@@ -60,19 +60,19 @@ public class ScopedExpression {
      * Returns true if the Scope contains any of the variables from the
      * global NativeExpression ne.
      */
-    private boolean containsAVariable(Scope s, Set<ScopedLocation> variables) {
-        for(ScopedLocation var : variables){
-        	if(s.isInScopeImmediately(var.getLocation().getVariable())){
+    private boolean containsAVariable(Scope s, Set<ScopedVariable> variables) {
+        for(ScopedVariable var : variables){
+        	if(s.isInScopeImmediately(var.getVariable())){
         		return true;
         	}
         }
         return false;
     }
-    public boolean uses(ScopedLocation scopedLocation) {
+    public boolean uses(ScopedVariable scopedLocation) {
         return this.variables.contains(scopedLocation);
     }
 
-    public Set<ScopedLocation> getVariables() {
+    public Set<ScopedVariable> getVariables() {
         return this.variables;
     }
 

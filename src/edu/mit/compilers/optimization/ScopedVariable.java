@@ -20,17 +20,17 @@ import edu.mit.compilers.common.Variable;
  * that it is from. Will be used to determine the difference between two
  * variables with the same name but different scopes.
  */
-public class ScopedLocation {
-    Location location;
+public class ScopedVariable {
+    Variable variable;
     Scope scope;
 
-    public ScopedLocation(Location loc, Scope scope) {
-        this.location = loc;
+    public ScopedVariable(Variable var, Scope scope) {
+        this.variable = var;
         this.scope = scope;
     }
     
-    public Location getLocation(){
-    	return location;
+    public Variable getVariable(){
+    	return variable;
     }
     
     public Scope getScope(){
@@ -42,10 +42,9 @@ public class ScopedLocation {
     }
 
     /** Returns the variable on the left of the assignment. */
-    public static ScopedLocation getAssigned(Assignment assignment, Scope scope) {
-    	Location loc = assignment.getLocation();
-        Variable var = loc.getVariable();
-        return new ScopedLocation(loc, getScopeOf(var, scope));
+    public static ScopedVariable getAssigned(Assignment assignment, Scope scope) {
+    	Variable var = assignment.getLocation().getVariable();
+        return new ScopedVariable(var, getScopeOf(var, scope));
     }
 
     /** Returns the scope that variable is in. */
@@ -63,24 +62,20 @@ public class ScopedLocation {
     }
 
     /** Returns all the variables in the GeneralExpression */
-    public static Set<ScopedLocation> getVariablesOf(GeneralExpression ge, Scope scope) {
-    	HashSet<ScopedLocation> variables = new HashSet<ScopedLocation>();
+    public static Set<ScopedVariable> getVariablesOf(GeneralExpression ge, Scope scope) {
+    	HashSet<ScopedVariable> variables = new HashSet<ScopedVariable>();
     	for(GeneralExpression geChild : ge.getChildren()){
-    		if(geChild instanceof ArrayLocation){
-    			ArrayLocation loc = ((ArrayLocation) geChild);
-    			variables.add(new ScopedLocation(loc, getScopeOf(loc.getVariable(), scope)));
-    			variables.addAll(getVariablesOf(loc.getIndex(), scope));
-    		} else if (geChild instanceof ScalarLocation){
-    			ScalarLocation loc = ((ScalarLocation) geChild);
-    			variables.add(new ScopedLocation(loc, getScopeOf(loc.getVariable(), scope)));
-    		} else {
+    	    if (geChild instanceof Location) {
+    	        Variable var = ((Location) geChild).getVariable();
+    	        variables.add(new ScopedVariable(var, getScopeOf(var, scope)));
+    	    } else {
     			variables.addAll(getVariablesOf(geChild, scope));
     		}
     	}
     	return variables;
     }
 
-    public static Set<ScopedLocation> getVariablesOf(ScopedStatement statement) {
+    public static Set<ScopedVariable> getVariablesOf(ScopedStatement statement) {
         return getVariablesOf(statement.getStatement().getExpression(), statement.getScope());
     }
 
@@ -89,7 +84,7 @@ public class ScopedLocation {
         final int prime = 31;
         int result = 1;
         result = prime * result
-                + ((location == null) ? 0 : location.hashCode());
+                + ((variable == null) ? 0 : variable.hashCode());
         result = prime * result + ((scope == null) ? 0 : scope.hashCode());
         return result;
     }
@@ -102,11 +97,11 @@ public class ScopedLocation {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        ScopedLocation other = (ScopedLocation) obj;
-        if (location == null) {
-            if (other.location != null)
+        ScopedVariable other = (ScopedVariable) obj;
+        if (variable == null) {
+            if (other.variable != null)
                 return false;
-        } else if (!location.equals(other.location))
+        } else if (!variable.equals(other.variable))
             return false;
         if (scope == null) {
             if (other.scope != null)
