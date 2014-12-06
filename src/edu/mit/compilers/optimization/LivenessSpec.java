@@ -7,10 +7,9 @@ import java.util.Collection;
 import java.util.Set;
 
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
-import edu.mit.compilers.common.Variable;
 import edu.mit.compilers.graph.Node;
 
-public class LivenessSpec implements AnalysisSpec<ScopedStatement, Variable> {
+public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariable> {
 
     /** Liveness algorithm propagates backwards */
     public boolean isForward() {
@@ -18,19 +17,20 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, Variable> {
     }
 
     @Override
-    public Set<Variable> getGenSet(Node<ScopedStatement> node) {
+    public Set<ScopedVariable> getGenSet(Node<ScopedStatement> node) {
         throw new UnsupportedOperationException("unimplemented");
     }
 
+    /** Kills a ScopedVariable if it was used in that node's expression. */
     @Override
     public boolean mustKill(Node<ScopedStatement> currentNode,
-            Variable candidate) {
+            ScopedVariable candidate) {
         throw new UnsupportedOperationException("unimplemented");
     }
 
     @Override
-    public Set<Variable> applyConfluenceOperator(
-            Iterable<Collection<Variable>> inputs) {
+    public Set<ScopedVariable> applyConfluenceOperator(
+            Iterable<Collection<ScopedVariable>> inputs) {
         return union(inputs);
     }
 
