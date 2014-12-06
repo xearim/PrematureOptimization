@@ -2,9 +2,12 @@ package edu.mit.compilers.optimization;
 
 import static edu.mit.compilers.common.SetOperators.union;
 import static edu.mit.compilers.optimization.Util.filterNodesWithoutExpressions;
+import static edu.mit.compilers.optimization.Util.getRedefinedVariables;
 
 import java.util.Collection;
 import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
@@ -16,16 +19,20 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
         return false;
     }
 
+    /** A Variable is generated if it is used by this statement */
     @Override
     public Set<ScopedVariable> getGenSet(Node<ScopedStatement> node) {
-        throw new UnsupportedOperationException("unimplemented");
+        if (!node.hasValue()) {
+            return ImmutableSet.<ScopedVariable>of();
+        }
+        return ScopedVariable.getVariablesOf(node.value());
     }
 
-    /** Kills a ScopedVariable if it was used in that node's expression. */
+    /** Kills a ScopedVariable if it was defined. */
     @Override
     public boolean mustKill(Node<ScopedStatement> currentNode,
             ScopedVariable candidate) {
-        throw new UnsupportedOperationException("unimplemented");
+        return getRedefinedVariables(currentNode).contains(candidate);
     }
 
     @Override

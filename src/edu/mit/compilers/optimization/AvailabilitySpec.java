@@ -10,9 +10,7 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
-import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.NativeExpression;
-import edu.mit.compilers.ast.StaticStatement;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
 
