@@ -30,6 +30,7 @@ public class DeadCodeEliminator implements DataFlowOptimizer {
                 continue;
             }
             if (!isLive(node.value(), liveVars.get(node))) {
+                // Kill the dead code!
                 builder.replace(node, Node.<ScopedStatement>nop());
             }
         }
@@ -41,7 +42,8 @@ public class DeadCodeEliminator implements DataFlowOptimizer {
      *
      * A statement is live if:
      *  * it is not an assignment, or
-     *  * it's an assignment whose assigned variable is live.
+     *  * it's an assignment whose assigned variable is live, or
+     *  * it contains a (potentially side-effect-ful) method call.
      */
     private boolean isLive(ScopedStatement scopedStatment, Collection<ScopedVariable> liveVars) {
         StaticStatement statement = scopedStatment.getStatement();
@@ -52,6 +54,12 @@ public class DeadCodeEliminator implements DataFlowOptimizer {
         Assignment assignment = (Assignment) statement;
         ScopedVariable assignedVar =
                 ScopedVariable.getAssigned(assignment, scopedStatment.getScope());
-        return liveVars.contains(assignedVar);
+        if (liveVars.contains(assignedVar)) {
+            return true;
+        }
+        if (Util.containsMethodCall(scopedStatment.getStatement().getExpression())) {
+            return true;
+        }
+        return false;
     }
 }
