@@ -24,7 +24,7 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
     @Override
     public Set<ScopedVariable> getGenSet(Node<ScopedStatement> node, Collection<ScopedVariable> inputs) {
         if (!node.hasValue()) {
-            return ImmutableSet.<ScopedVariable>of();
+            return ImmutableSet.of();
         }
 
         ScopedStatement scopedStatement = node.value();
