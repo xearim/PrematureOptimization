@@ -81,8 +81,8 @@ public class Util {
        } else if(statement instanceof Condition){
            return new Condition(replacement);
        } else if(statement instanceof MethodCall){
-           throw new AssertionError("Right now we cannot replace methods, as we don't know"
-                   + " if they are idempotent.");
+           // A method call can only be replaced with a method call.
+           return (MethodCall) replacement;
        } else if(statement instanceof ReturnStatement){
            return ReturnStatement.compilerReturn(replacement);
        } else {
