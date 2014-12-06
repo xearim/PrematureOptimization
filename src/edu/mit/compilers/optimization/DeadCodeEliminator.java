@@ -45,19 +45,19 @@ public class DeadCodeEliminator implements DataFlowOptimizer {
      *  * it's an assignment whose assigned variable is live, or
      *  * it contains a (potentially side-effect-ful) method call.
      */
-    private boolean isLive(ScopedStatement scopedStatment, Collection<ScopedVariable> liveVars) {
-        StaticStatement statement = scopedStatment.getStatement();
+    private boolean isLive(ScopedStatement scopedStatement, Collection<ScopedVariable> liveVars) {
+        StaticStatement statement = scopedStatement.getStatement();
         if (!(statement instanceof Assignment)) {
             // Non-assignments are always live.
             return true;
         }
         Assignment assignment = (Assignment) statement;
         ScopedVariable assignedVar =
-                ScopedVariable.getAssigned(assignment, scopedStatment.getScope());
+                ScopedVariable.getAssigned(assignment, scopedStatement.getScope());
         if (liveVars.contains(assignedVar)) {
             return true;
         }
-        if (Util.containsMethodCall(scopedStatment.getStatement().getExpression())) {
+        if (Util.containsMethodCall(scopedStatement.getStatement().getExpression())) {
             return true;
         }
         return false;
