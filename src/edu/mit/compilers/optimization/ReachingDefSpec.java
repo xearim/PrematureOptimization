@@ -25,7 +25,8 @@ public class ReachingDefSpec implements AnalysisSpec<ScopedStatement, ReachingDe
     }
 
     @Override
-    public Set<ReachingDefinition> getGenSet(Node<ScopedStatement> node) {
+    public Set<ReachingDefinition>
+            getGenSet(Node<ScopedStatement> node, Collection<ReachingDefinition> inputs) {
         ImmutableSet.Builder<ReachingDefinition> builder = ImmutableSet.builder();
         for (ScopedVariable redefined : getRedefinedVariables(node)) {
             // Each redefined variable is gets a definition... at this node!

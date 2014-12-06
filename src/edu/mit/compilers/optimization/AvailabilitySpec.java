@@ -20,8 +20,10 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExp
      * Get the GEN set for a node, filtering out expressions that contains method calls.
      *
      * <p>Requires that the node has a statement, and that that statement has an expression.
+     *
+     * <p>Ignores the set of inputs to this node.
      */
-    public Set<ScopedExpression> getGenSet(Node<ScopedStatement> node) {
+    public Set<ScopedExpression> getGenSet(Node<ScopedStatement> node, Collection<ScopedExpression> inputs) {
         if (!node.hasValue() || !node.value().getStatement().hasExpression()) {
             return ImmutableSet.of();
         }

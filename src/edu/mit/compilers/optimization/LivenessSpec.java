@@ -23,7 +23,7 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
 
     /** A Variable is generated if it is used by this statement */
     @Override
-    public Set<ScopedVariable> getGenSet(Node<ScopedStatement> node) {
+    public Set<ScopedVariable> getGenSet(Node<ScopedStatement> node, Collection<ScopedVariable> inputs) {
         if (!node.hasValue()) {
             return ImmutableSet.<ScopedVariable>of();
         }
