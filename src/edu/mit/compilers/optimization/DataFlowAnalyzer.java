@@ -44,18 +44,13 @@ public class DataFlowAnalyzer<N, T> {
     public Multimap<Node<N>, T>
             calculate(FlowGraph<N> dataFlowGraph) {
         Set<Node<N>> allNodes = allNodes(dataFlowGraph);
-        Set<Node<N>> savableNodes = spec.filterNodes(allNodes);
         Multimap<Node<N>, T> inputSets = HashMultimap.<Node<N>,T>create();
         Multimap<Node<N>, T> outputSets = HashMultimap.<Node<N>,T>create();
-        Multimap<Node<N>, T> genSets = HashMultimap.<Node<N>,T>create(); 
-        for (Node<N> node : savableNodes) {
-            genSets.putAll(node, spec.getGenSet(node));
-        }
         Set<Node<N>> changed;
 
         Node<N> entryNode = getEntryNode(dataFlowGraph);
         // Run algorithm
-        outputSets.replaceValues(entryNode, genSets.get(entryNode));
+        outputSets.replaceValues(entryNode, spec.getGenSet(entryNode, ImmutableSet.<T>of()));
 
         changed = new HashSet<Node<N>>(allNodes);
         checkState(changed.remove(entryNode),
@@ -123,9 +118,9 @@ public class DataFlowAnalyzer<N, T> {
                     toKill.add(candidate);
                 }
             }
-            return union(spec.getGenSet(node), difference(inSet, toKill));
+            return union(spec.getGenSet(node, inSet), difference(inSet, toKill));
         } else {
-            Set<T> inAndGen = union(spec.getGenSet(node), inSet);
+            Set<T> inAndGen = union(spec.getGenSet(node, inSet), inSet);
             Set<T> toKill = Sets.newHashSet();
             for (T candidate : inAndGen) {
                 if (spec.mustKill(node, candidate)) {

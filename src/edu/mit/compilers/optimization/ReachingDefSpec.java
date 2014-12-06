@@ -1,43 +1,18 @@
 package edu.mit.compilers.optimization;
 
 import static edu.mit.compilers.common.SetOperators.union;
+import static edu.mit.compilers.optimization.Util.getRedefinedVariables;
 
 import java.util.Collection;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
-import edu.mit.compilers.ast.Assignment;
-import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.ast.StaticStatement;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
 
 // Map<Node,Multimap<ScopedVariable,Node>>
 public class ReachingDefSpec implements AnalysisSpec<ScopedStatement, ReachingDefinition> {
-
-    /** Get the set of variables that are potentially redefined at a node. */
-    private Set<ScopedVariable> redefined(Node<ScopedStatement> node) {
-        ImmutableSet.Builder<ScopedVariable> redefinedBuilder = ImmutableSet.builder();
-        if (!node.hasValue()) {
-            return ImmutableSet.of();
-        }
-        ScopedStatement scopedStatement = node.value();
-        StaticStatement statement = scopedStatement.getStatement();
-        Scope scope = scopedStatement.getScope();
-        // Add LHS.
-        if (statement instanceof Assignment) {
-            ScopedVariable lhs = ScopedVariable.getAssigned((Assignment) statement, scope);
-            redefinedBuilder.add(lhs);
-        }
-
-        if (Util.containsMethodCall(statement.getExpression())) {
-            // For now, just assume that functions can redefine every global!
-            // TODO(jasonpr): Only add each function's global write set.
-            redefinedBuilder.addAll(Util.getGlobalVariables(scope));
-        }
-        return redefinedBuilder.build();
-    }
 
     /**
      * Returns whether the reaching definition's variable is redefined at this node.
@@ -45,13 +20,14 @@ public class ReachingDefSpec implements AnalysisSpec<ScopedStatement, ReachingDe
      * */
     @Override
     public boolean mustKill(Node<ScopedStatement> curNode, ReachingDefinition reachingDef) {
-        return redefined(curNode).contains(reachingDef.getScopedLocation());
+        return getRedefinedVariables(curNode).contains(reachingDef.getScopedLocation());
     }
 
     @Override
-    public Set<ReachingDefinition> getGenSet(Node<ScopedStatement> node) {
+    public Set<ReachingDefinition>
+            getGenSet(Node<ScopedStatement> node, Collection<ReachingDefinition> inputs) {
         ImmutableSet.Builder<ReachingDefinition> builder = ImmutableSet.builder();
-        for (ScopedVariable redefined : redefined(node)) {
+        for (ScopedVariable redefined : getRedefinedVariables(node)) {
             // Each redefined variable is gets a definition... at this node!
             builder.add(new ReachingDefinition(redefined, node));
         }
@@ -62,24 +38,6 @@ public class ReachingDefSpec implements AnalysisSpec<ScopedStatement, ReachingDe
     public Set<ReachingDefinition> applyConfluenceOperator(
             Iterable<Collection<ReachingDefinition>> inputs) {
         return union(inputs);
-    }
-
-    @Override
-    public Set<Node<ScopedStatement>> filterNodes(
-            Iterable<Node<ScopedStatement>> nodes) {
-        ImmutableSet.Builder<Node<ScopedStatement>> builder = ImmutableSet.builder();
-
-        for (Node<ScopedStatement> node : nodes) {
-            if (!node.hasValue()) {
-                continue;
-            }
-            if (!node.value().getStatement().hasExpression()) {
-                continue;
-            }
-            builder.add(node);
-        }
-
-        return builder.build();
     }
 
     @Override

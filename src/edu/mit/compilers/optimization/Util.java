@@ -26,42 +26,66 @@ public class Util {
     private Util() {}
 
     /**
-    * Returns true is there is a MethodCall in any part of the
-    * GeneralExpression.
-    */
-   public static boolean containsMethodCall(GeneralExpression ge) {
-       if (ge instanceof BinaryOperation) {
-           return containsMethodCall( ((BinaryOperation) ge).getLeftArgument())
-                   || containsMethodCall( ((BinaryOperation) ge).getRightArgument());
-       }  else if (ge instanceof MethodCall) {
-           return true;
-       } else if (ge instanceof TernaryOperation) {
-           return containsMethodCall( ((TernaryOperation) ge).getCondition())
-                   || containsMethodCall( ((TernaryOperation) ge).getTrueResult())
-                   || containsMethodCall( ((TernaryOperation) ge).getFalseResult());
-       } else if (ge instanceof UnaryOperation) {
-           return containsMethodCall( ((UnaryOperation) ge).getArgument());
-       } else {
-           return false;
-       }
-   }
+     * Returns true is there is a MethodCall in any part of the
+     * GeneralExpression.
+     */
+    public static boolean containsMethodCall(GeneralExpression ge) {
+        if (ge instanceof BinaryOperation) {
+            return containsMethodCall( ((BinaryOperation) ge).getLeftArgument())
+                    || containsMethodCall( ((BinaryOperation) ge).getRightArgument());
+        }  else if (ge instanceof MethodCall) {
+            return true;
+        } else if (ge instanceof TernaryOperation) {
+            return containsMethodCall( ((TernaryOperation) ge).getCondition())
+                    || containsMethodCall( ((TernaryOperation) ge).getTrueResult())
+                    || containsMethodCall( ((TernaryOperation) ge).getFalseResult());
+        } else if (ge instanceof UnaryOperation) {
+            return containsMethodCall( ((UnaryOperation) ge).getArgument());
+        } else {
+            return false;
+        }
+    }
 
-   /**
-    * Get all the global variables.
-    *
-    * @param scope Any scope in the program.  (We find the global scope by climbing
-    * this scopes lineage.)
-    */
-   public static Set<ScopedVariable> getGlobalVariables(Scope scope) {
-       ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
-       Scope globalScope = scope.getGlobalScope();
-       for (FieldDescriptor descriptor : globalScope.getVariables()) {
-           for (Location location : descriptor.getLocations()) {
-               builder.add(new ScopedVariable(location.getVariable(), globalScope));
-           }
-       }
-       return builder.build();
-   }
+    /**
+     * Get all the global variables.
+     *
+     * @param scope Any scope in the program.  (We find the global scope by climbing
+     * this scopes lineage.)
+     */
+    public static Set<ScopedVariable> getGlobalVariables(Scope scope) {
+        ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
+        Scope globalScope = scope.getGlobalScope();
+        for (FieldDescriptor descriptor : globalScope.getVariables()) {
+            for (Location location : descriptor.getLocations()) {
+                builder.add(new ScopedVariable(location.getVariable(), globalScope));
+            }
+        }
+        return builder.build();
+    }
+
+    /** Get the set of variables that are potentially redefined at a node. */
+    public static Set<ScopedVariable> getRedefinedVariables(Node<ScopedStatement> node) {
+        if (!node.hasValue()) {
+            return ImmutableSet.of();
+        }
+
+        ImmutableSet.Builder<ScopedVariable> redefinedBuilder = ImmutableSet.builder();
+        ScopedStatement scopedStatement = node.value();
+        StaticStatement statement = scopedStatement.getStatement();
+        Scope scope = scopedStatement.getScope();
+        // Add LHS.
+        if (statement instanceof Assignment) {
+            ScopedVariable lhs = ScopedVariable.getAssigned((Assignment) statement, scope);
+            redefinedBuilder.add(lhs);
+        }
+
+        if (Util.containsMethodCall(statement.getExpression())) {
+            // For now, just assume that functions can redefine every global!
+            // TODO(jasonpr): Only add each function's global write set.
+            redefinedBuilder.addAll(Util.getGlobalVariables(scope));
+        }
+        return redefinedBuilder.build();
+    }
 
    public static Multimap<ScopedVariable, Node<ScopedStatement>>
            reachingDefsMultimap(Iterable<ReachingDefinition> reachingDefs) {
