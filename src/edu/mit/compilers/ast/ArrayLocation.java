@@ -87,4 +87,15 @@ public class ArrayLocation implements Location {
     public String toString() {
         return variable.asText() + "[" + index + "]";
     }
+
+    @Override
+    public NativeExpression withReplacements(NativeExpression toReplace,
+            NativeExpression replacement) {
+        if (this.equals(toReplace)) {
+            return replacement;
+        }
+        return new ArrayLocation(variable,
+                index.withReplacements(toReplace, replacement),
+                locationDescriptor);
+    }
 }

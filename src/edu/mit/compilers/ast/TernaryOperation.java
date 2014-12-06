@@ -94,4 +94,17 @@ public class TernaryOperation implements NativeExpression {
         }
         return true;
     }
+
+    @Override
+    public NativeExpression withReplacements(NativeExpression toReplace,
+            NativeExpression replacement) {
+        if (this.equals(toReplace)) {
+            return replacement;
+        }
+        return new TernaryOperation(
+                condition.withReplacements(toReplace, replacement),
+                trueResult.withReplacements(toReplace, replacement),
+                falseResult.withReplacements(toReplace, replacement),
+                locationDescriptor);
+    }
 }

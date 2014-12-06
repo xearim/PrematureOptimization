@@ -96,4 +96,16 @@ public class BinaryOperation implements NativeExpression {
     public String toString() {
         return "[" + leftArgument + " " + operator.getSymbol() + " " + rightArgument + "]";
     }
+
+    @Override
+    public NativeExpression withReplacements(NativeExpression toReplace,
+            NativeExpression replacement) {
+        if (this.equals(toReplace)) {
+            return replacement;
+        }
+        return new BinaryOperation(operator,
+                leftArgument.withReplacements(toReplace, replacement),
+                rightArgument.withReplacements(toReplace, replacement),
+                locationDescriptor);
+    }
 }

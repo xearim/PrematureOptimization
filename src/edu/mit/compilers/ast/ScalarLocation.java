@@ -13,7 +13,11 @@ public class ScalarLocation implements Location {
         this.variable = variable;
 	this.locationDescriptor = locationDescriptor;
     }
-    
+
+    public ScalarLocation(Variable variable) {
+        this(variable, LocationDescriptor.machineCode());
+    }
+
     @Override
     public Iterable<? extends GeneralExpression> getChildren() {
         return ImmutableList.of();
@@ -71,5 +75,11 @@ public class ScalarLocation implements Location {
     @Override
     public String toString() {
         return variable.asText();
+    }
+
+    @Override
+    public NativeExpression withReplacements(NativeExpression toReplace,
+            NativeExpression replacement) {
+        return this.equals(toReplace) ? replacement : this;
     }
 }
