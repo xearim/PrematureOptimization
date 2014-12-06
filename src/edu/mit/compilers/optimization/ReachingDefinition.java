@@ -4,12 +4,20 @@ import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
 
 public class ReachingDefinition {
-    ScopedVariable sc;
-    Node<ScopedStatement> node;
+    private final ScopedVariable sc;
+    private final Node<ScopedStatement> node;
     
     public ReachingDefinition(ScopedVariable sc, Node<ScopedStatement> node) {
         this.sc = sc;
         this.node = node;
+    }
+
+    public ScopedVariable getScopedLocation() {
+        return sc;
+    }
+
+    public Node<ScopedStatement> getNode() {
+        return node;
     }
 
     @Override

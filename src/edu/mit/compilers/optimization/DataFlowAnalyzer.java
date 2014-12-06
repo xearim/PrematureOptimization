@@ -34,7 +34,6 @@ public class DataFlowAnalyzer<N, T> {
 
     public DataFlowAnalyzer(AnalysisSpec<N, T> spec) {
         this.spec = spec;
-        //        calculateAvailability(entryBlock);
     }
 
     /**
@@ -46,17 +45,17 @@ public class DataFlowAnalyzer<N, T> {
             calculate(FlowGraph<N> dataFlowGraph) {
         Set<Node<N>> allNodes = allNodes(dataFlowGraph);
         Set<Node<N>> savableNodes = spec.filterNodes(allNodes);
-        Multimap<Node<N>, T> inSets = HashMultimap.<Node<N>,T>create();
-        Multimap<Node<N>, T> outSets = HashMultimap.<Node<N>,T>create();
+        Multimap<Node<N>, T> inputSets = HashMultimap.<Node<N>,T>create();
+        Multimap<Node<N>, T> outputSets = HashMultimap.<Node<N>,T>create();
         Multimap<Node<N>, T> genSets = HashMultimap.<Node<N>,T>create(); 
         for (Node<N> node : savableNodes) {
             genSets.putAll(node, spec.getGenSet(node));
         }
         Set<Node<N>> changed;
 
-        Node<N> entryNode = dataFlowGraph.getStart();
+        Node<N> entryNode = getEntryNode(dataFlowGraph);
         // Run algorithm
-        outSets.replaceValues(entryNode, genSets.get(entryNode));
+        outputSets.replaceValues(entryNode, genSets.get(entryNode));
 
         changed = new HashSet<Node<N>>(allNodes);
         checkState(changed.remove(entryNode),
@@ -64,42 +63,77 @@ public class DataFlowAnalyzer<N, T> {
 
         while (!changed.isEmpty()) {
             Node<N> node = changed.iterator().next();
-            Set<T> newOut;
+            Set<T> newOutput;
             changed.remove(node);
 
-            Collection<Collection<T>> predecessorOutSets = new ArrayList<Collection<T>>();
-            for (Node<N> predecessor: dataFlowGraph.getPredecessors(node)) {
-                predecessorOutSets.add(outSets.get(predecessor));
+            Collection<Collection<T>> sourceOutputSets = new ArrayList<Collection<T>>();
+            for (Node<N> source: getSources(dataFlowGraph, node)) {
+                sourceOutputSets.add(outputSets.get(source));
             }
-            inSets.replaceValues(node, spec.applyConfluenceOperator(predecessorOutSets));
+            inputSets.replaceValues(node, spec.applyConfluenceOperator(sourceOutputSets));
 
-            Collection<T> inSet = inSets.get(node);
-            if (spec.gensImmuneToKills()) {
-                Set<T> toKill = Sets.newHashSet();
-                for (T candidate : inSet) {
-                    if (spec.mustKill(node, candidate)) {
-                        toKill.add(candidate);
-                    }
-                }
-                newOut = union(spec.getGenSet(node), difference(inSet, toKill));
-            } else {
-                Set<T> inAndGen = union(spec.getGenSet(node), inSet);
-                Set<T> toKill = Sets.newHashSet();
-                for (T candidate : inAndGen) {
-                    if (spec.mustKill(node, candidate)) {
-                        toKill.add(candidate);
-                    }
-                }
-                newOut = difference(inAndGen, toKill);
-            }
+            newOutput = calculateNewOutput(node, inputSets.get(node));
 
-            if (!newOut.equals(outSets.get(node))) {
-                outSets.replaceValues(node, newOut);
+            if (!newOutput.equals(outputSets.get(node))) {
+                outputSets.replaceValues(node, newOutput);
                 changed.addAll(dataFlowGraph.getSuccessors(node));
             }
         }
 
-        return inSets;
+        return inputSets;
+    }
+
+    private Node<N> getEntryNode(
+            FlowGraph<N> dataFlowGraph) {
+
+        if (spec.isForward()) {
+            return dataFlowGraph.getStart();
+        } else {
+            return getExitNode(dataFlowGraph);
+        }
+    }
+
+    private Node<N> getExitNode(
+            FlowGraph<N> dataFlowGraph) {
+        throw new UnsupportedOperationException("unimplemented");
+    }
+
+    private Set<Node<N>> getSources(
+            FlowGraph<N> dataFlowGraph, Node<N> node) {
+
+        if (spec.isForward()){
+            return dataFlowGraph.getPredecessors(node);
+        } else {
+            return dataFlowGraph.getSuccessors(node);
+        }
+    }
+
+    /**
+     * Depending on the AnalysisSpec#gensImmuneToKills, applies one of the following:
+     * true) GEN U (IN - KILL)
+     * false) (GEN U IN) - KILL
+     */
+    private Set<T> calculateNewOutput(Node<N> node,
+            Collection<T> inSet) {
+
+        if (spec.gensImmuneToKills()) {
+            Set<T> toKill = Sets.newHashSet();
+            for (T candidate : inSet) {
+                if (spec.mustKill(node, candidate)) {
+                    toKill.add(candidate);
+                }
+            }
+            return union(spec.getGenSet(node), difference(inSet, toKill));
+        } else {
+            Set<T> inAndGen = union(spec.getGenSet(node), inSet);
+            Set<T> toKill = Sets.newHashSet();
+            for (T candidate : inAndGen) {
+                if (spec.mustKill(node, candidate)) {
+                    toKill.add(candidate);
+                }
+            }
+            return difference(inAndGen, toKill);
+        }
     }
 
     // TODO(jasonpr): Consider moving this to some FlowGraphs class.

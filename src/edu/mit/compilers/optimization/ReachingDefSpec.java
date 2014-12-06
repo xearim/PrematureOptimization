@@ -45,7 +45,7 @@ public class ReachingDefSpec implements AnalysisSpec<ScopedStatement, ReachingDe
      * */
     @Override
     public boolean mustKill(Node<ScopedStatement> curNode, ReachingDefinition reachingDef) {
-        throw new RuntimeException("Not yet implemented!");
+        return redefined(curNode).contains(reachingDef.getScopedLocation());
     }
 
     @Override
@@ -84,6 +84,11 @@ public class ReachingDefSpec implements AnalysisSpec<ScopedStatement, ReachingDe
 
     @Override
     public boolean gensImmuneToKills() {
+        return true;
+    }
+
+    /** Reaching Definition algorithm propagates forward */
+    public boolean isForward() {
         return true;
     }
 }
