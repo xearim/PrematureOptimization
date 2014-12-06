@@ -3,6 +3,7 @@ package edu.mit.compilers.ast;
 import java.util.List;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 
 public class MethodCall extends StaticStatement implements NativeExpression {
 
@@ -101,5 +102,21 @@ public class MethodCall extends StaticStatement implements NativeExpression {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public NativeExpression withReplacements(NativeExpression toReplace,
+            NativeExpression replacement) {
+        if (this.equals(toReplace)) {
+            return replacement;
+        }
+        List<GeneralExpression> paramsWithReplacements = Lists.newArrayList();
+        for (GeneralExpression param : parameterValues) {
+            GeneralExpression newParam = (param instanceof NativeExpression)
+                    ? ((NativeExpression) param).withReplacements(toReplace, replacement)
+                    : param;
+            paramsWithReplacements.add(newParam);
+        }
+        return new MethodCall(methodName, paramsWithReplacements, locationDescriptor);
     }
 }

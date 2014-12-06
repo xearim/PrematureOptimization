@@ -76,4 +76,15 @@ public class UnaryOperation implements NativeExpression {
         }
         return true;
     }
+
+    @Override
+    public NativeExpression withReplacements(NativeExpression toReplace,
+            NativeExpression replacement) {
+        if (this.equals(toReplace)) {
+            return replacement;
+        }
+        return new UnaryOperation(operator,
+                argument.withReplacements(toReplace, replacement),
+                locationDescriptor);
+    }
 }

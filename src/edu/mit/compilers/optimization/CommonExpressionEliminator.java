@@ -79,7 +79,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             this.ir = ir;
             this.dataFlowGraph = ir.getDataFlowGraph();
             this.tempVars = tempVars(expressions(dataFlowGraph));
-            inSets = DataFlowAnalyzer.AVAILABLE_EXPRESSIONS.calculateAvailability(
+            inSets = DataFlowAnalyzer.AVAILABLE_EXPRESSIONS.calculate(
                     ir.getDataFlowGraph());
         }
 
@@ -180,7 +180,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             Preconditions.checkState(node.getStatement().hasExpression());
 
             Location temp = new ScalarLocation(tempVars.get(expr), LocationDescriptor.machineCode());
-            StaticStatement newStatement = getReplacement(node.getStatement(), temp);
+            StaticStatement newStatement = Util.getReplacement(node.getStatement(), temp);
 
             return BasicFlowGraph.<ScopedStatement>builder()
                     .append(new ScopedStatement(newStatement, newScope))
@@ -202,7 +202,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                     tempVars.get(expr), LocationDescriptor.machineCode());
 
             Assignment newTemp = Assignment.compilerAssignment(temp, expr);
-            StaticStatement newStatement = getReplacement(node.getStatement(), temp);
+            StaticStatement newStatement = Util.getReplacement(node.getStatement(), temp);
 
             return BasicFlowGraph.<ScopedStatement>builder()
                     .append(new ScopedStatement(newTemp, newScope))
@@ -210,22 +210,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                     .build();
         }
 
-        private StaticStatement getReplacement(
-                StaticStatement statement, NativeExpression replacement) {
-            if(statement instanceof Assignment){
-                return Assignment.assignmentWithReplacementExpr(
-                        (Assignment) statement, replacement);
-            } else if(statement instanceof Condition){
-                return new Condition(replacement);
-            } else if(statement instanceof MethodCall){
-                throw new AssertionError("Right now we cannot replace methods, as we don't know"
-                        + " if they are idempotent.");
-            } else if(statement instanceof ReturnStatement){
-                return ReturnStatement.compilerReturn(replacement);
-            } else {
-                throw new AssertionError("Unexpected StaticStatement type for " + statement);
-            }
-        }
+
     }
 
     /** Reject nodes that can never have their (sub)expressions replaced. */

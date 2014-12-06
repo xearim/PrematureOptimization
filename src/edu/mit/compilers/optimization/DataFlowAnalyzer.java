@@ -42,7 +42,7 @@ public class DataFlowAnalyzer<N, T> {
      * basic block.
      */
     public Multimap<Node<N>, T>
-            calculateAvailability(FlowGraph<N> dataFlowGraph) {
+            calculate(FlowGraph<N> dataFlowGraph) {
         Set<Node<N>> allNodes = allNodes(dataFlowGraph);
         Set<Node<N>> savableNodes = spec.filterNodes(allNodes);
         Multimap<Node<N>, T> inputSets = HashMultimap.<Node<N>,T>create();

@@ -16,6 +16,7 @@ import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.optimization.CommonExpressionEliminator;
+import edu.mit.compilers.optimization.ConstantPropagator;
 import edu.mit.compilers.optimization.DataFlowOptimizer;
 
 /** Executes major, high-level compilation steps. */
@@ -23,7 +24,8 @@ public class Targets {
 
     private static final Map<String, DataFlowOptimizer> OPTIMIZERS =
             ImmutableMap.<String, DataFlowOptimizer>of(
-                    "cse", new CommonExpressionEliminator());
+                    "cse", new CommonExpressionEliminator(),
+                    "conprop", new ConstantPropagator());
 
     public static DataFlowIntRep unoptimizedDataFlowIntRep(Method method) {
         return asDataFlowIntRep(method);

@@ -42,7 +42,7 @@ class Main {
     private static final String MAIN_METHOD_NAME = "main";
 
     // TODO(jasonpr): Modify interface of CLI so we don't have to do this weird dance.
-    private static final String[] OPTIMIZATION_NAMES = {"cse"};
+    private static final String[] OPTIMIZATION_NAMES = {"cse", "conprop"};
 
     public static void main(String[] args) {
         try {
@@ -68,6 +68,8 @@ class Main {
                 genCode(inputStream, outputStream, getOptimizations());
             } else if (CLI.target == Action.DFG) {
                 dataFlowGraph(inputStream, outputStream, getOptimizations());
+            } else if (CLI.target == Action.PRINT_OPTS) {
+                printOpts(outputStream, getOptimizations());
             }
         } catch(Exception e) {
             // An unrecoverable error occurred.
@@ -257,5 +259,11 @@ class Main {
         return isSemanticallyValid(program, outputStream)
                 ? Optional.of(program)
                         : Optional.<Program>absent();
+    }
+
+    private static void printOpts(PrintStream outputStream, Set<String> optimizations) {
+        for (String optimization : optimizations) {
+            outputStream.println(optimization);
+        }
     }
 }

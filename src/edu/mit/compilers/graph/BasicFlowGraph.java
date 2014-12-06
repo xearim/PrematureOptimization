@@ -3,6 +3,7 @@ package edu.mit.compilers.graph;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -269,18 +270,25 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
          */
         private void replaceEdge(Node<T> originalStart, Node<T> newStart,
                 Node<T> originalEnd, Node<T> newEnd) {
+            checkState(!originalStart.equals(newEnd), "Original start cannot equal new end.");
+            checkState(!originalEnd.equals(newStart), "Original end cannot equal new start.");
+            if (originalStart.equals(newStart) && originalEnd.equals(newEnd)) {
+                // Do nothing!
+                return;
+            }
             // This method is only meant to replace the edge's start OR its end.
             // Trying to replace both would be strange, and probably would not be
             // done on purpose.
-            checkState(originalStart.equals(newStart) || originalEnd.equals(newEnd));
-
+            checkState(originalStart.equals(newStart) != originalEnd.equals(newEnd),
+                    "Exactly one of the start and the edge must change.");
             checkState(edges.get(originalStart).contains(originalEnd));
             edges.remove(originalStart, originalEnd);
             backwardEdges.remove(originalEnd, originalStart);
             if (haveNonJumpBranch.contains(originalStart)
                     || jumpDestinations.containsKey(originalStart)) {
                 // It's a branch node.
-                if (originalEnd.equals(jumpDestinations.get(originalStart).destination)) {
+                JumpDestination<T> originalJumpDest = jumpDestinations.get(originalStart);
+                if (originalJumpDest != null && originalEnd.equals(originalJumpDest.destination)) {
                     JumpDestination<T> destination = jumpDestinations.remove(originalStart);
                     linkJumpBranch(newStart, destination.jumpType, newEnd);
                 } else {
@@ -323,7 +331,8 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             if (node.equals(end)) {
                 end = replacement.getEnd();
             } else {
-                for (Node<T> successor : edges.get(node)) {
+                Collection<Node<T>> successors = ImmutableList.copyOf(edges.get(node));
+                for (Node<T> successor : successors) {
                     replaceEdgeStart(successor, node, replacement.getEnd());
                 }
             }
@@ -342,6 +351,7 @@ public class BasicFlowGraph<T> implements FlowGraph<T> {
             FlowGraph<T> currentGraph = build();
             for (Node<T> node : currentGraph.getNodes()) {
                 if (node.hasValue()
+                        || edges.get(node).isEmpty()
                         || currentGraph.isBranch(node)
                         || specialNodes.contains(node)) {
                     continue;
