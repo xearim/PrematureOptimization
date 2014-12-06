@@ -31,8 +31,10 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
         ScopedStatement scopedStatement = node.value();
         StaticStatement statement = scopedStatement.getStatement();
 
-        // Do not gen anything if this is an assignment with a dead Left Hand Side.
-        if (statement instanceof Assignment) {
+        // Do not gen anything if this is an assignment with a dead Left Hand Side...
+        // unless the Right Hand Side has a (possibly side-effect-ful) method call.
+        if (statement instanceof Assignment
+                && !Util.containsMethodCall(statement.getExpression())) {
             Assignment assignment = (Assignment) statement;
             ScopedVariable assignedVariable =
                     ScopedVariable.getAssigned(assignment, scopedStatement.getScope());
