@@ -26,7 +26,20 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
         if (!node.hasValue()) {
             return ImmutableSet.<ScopedVariable>of();
         }
-        // DO NOT SUBMIT: Do not gen the LHS if the RHS is not live!
+
+        ScopedStatement scopedStatement = node.value();
+        StaticStatement statement = scopedStatement.getStatement();
+
+        // Do not gen anything if this is an assignment with a dead Left Hand Side.
+        if (statement instanceof Assignment) {
+            Assignment assignment = (Assignment) statement;
+            ScopedVariable assignedVariable =
+                    ScopedVariable.getAssigned(assignment, scopedStatement.getScope());
+            if (!inputs.contains(assignedVariable)) {
+                return ImmutableSet.of();
+            }
+        }
+
         return dependencies(node.value());
     }
 
