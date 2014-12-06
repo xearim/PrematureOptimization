@@ -31,7 +31,7 @@ public class ConstantPropagator implements DataFlowOptimizer {
     private BcrFlowGraph<ScopedStatement> constantsPropagated(
             BcrFlowGraph<ScopedStatement> original,
             Multimap<Node<ScopedStatement>, ReachingDefinition> reachingDefs) {
-        BcrFlowGraph.Builder<ScopedStatement> builder = BcrFlowGraph.builder();
+        BcrFlowGraph.Builder<ScopedStatement> builder = BcrFlowGraph.builderOf(original);
         for (Node<ScopedStatement> node : original.getNodes()) {
             builder.replace(node, constantsPropagated(node, reachingDefs.get(node)));
         }
