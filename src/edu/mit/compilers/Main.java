@@ -61,10 +61,10 @@ class Main {
                 semanticCheck(inputStream, outputStream);
             } else if (CLI.target == Action.CFG) {
                 controlFlowGraph(inputStream, outputStream, getOptimizations());
-            } else if (CLI.target == Action.PARSE ||
-                    CLI.target == Action.DEFAULT) {
+            } else if (CLI.target == Action.PARSE) {
                 parse(inputStream, outputStream);
-            } else if (CLI.target == Action.ASSEMBLY) {
+            } else if (CLI.target == Action.ASSEMBLY ||
+                    CLI.target == Action.DEFAULT) {
                 genCode(inputStream, outputStream, getOptimizations());
             } else if (CLI.target == Action.DFG) {
                 dataFlowGraph(inputStream, outputStream, getOptimizations());
