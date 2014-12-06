@@ -68,6 +68,8 @@ class Main {
                 genCode(inputStream, outputStream, getOptimizations());
             } else if (CLI.target == Action.DFG) {
                 dataFlowGraph(inputStream, outputStream, getOptimizations());
+            } else if (CLI.target == Action.PRINT_OPTS) {
+                printOpts(outputStream, getOptimizations());
             }
         } catch(Exception e) {
             // An unrecoverable error occurred.
@@ -257,5 +259,11 @@ class Main {
         return isSemanticallyValid(program, outputStream)
                 ? Optional.of(program)
                         : Optional.<Program>absent();
+    }
+
+    private static void printOpts(PrintStream outputStream, Set<String> optimizations) {
+        for (String optimization : optimizations) {
+            outputStream.println(optimization);
+        }
     }
 }
