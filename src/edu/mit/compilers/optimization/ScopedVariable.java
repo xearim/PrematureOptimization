@@ -7,6 +7,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.Scope;
@@ -75,6 +76,10 @@ public class ScopedVariable {
 
     public static Set<ScopedVariable> getVariablesOf(ScopedStatement statement) {
         return getVariablesOf(statement.getStatement().getExpression(), statement.getScope());
+    }
+
+    public boolean isArray() {
+        return scope.getDescriptor(variable).isArray();
     }
 
     @Override
