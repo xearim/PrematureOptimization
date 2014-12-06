@@ -4,12 +4,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
 
-import edu.mit.compilers.ast.ArrayLocation;
 import edu.mit.compilers.ast.Assignment;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.Location;
-import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.ScopeType;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
@@ -63,16 +62,15 @@ public class ScopedVariable {
 
     /** Returns all the variables in the GeneralExpression */
     public static Set<ScopedVariable> getVariablesOf(GeneralExpression ge, Scope scope) {
-    	HashSet<ScopedVariable> variables = new HashSet<ScopedVariable>();
-    	for(GeneralExpression geChild : ge.getChildren()){
-    	    if (geChild instanceof Location) {
-    	        Variable var = ((Location) geChild).getVariable();
-    	        variables.add(new ScopedVariable(var, getScopeOf(var, scope)));
-    	    } else {
-    			variables.addAll(getVariablesOf(geChild, scope));
-    		}
-    	}
-    	return variables;
+        if (ge instanceof Location) {
+            Variable var = ((Location) ge).getVariable();
+            return ImmutableSet.of(new ScopedVariable(var, getScopeOf(var, scope)));
+        }
+        ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
+        for(GeneralExpression geChild : ge.getChildren()){
+            builder.addAll(getVariablesOf(geChild, scope));
+        }
+        return builder.build();
     }
 
     public static Set<ScopedVariable> getVariablesOf(ScopedStatement statement) {
