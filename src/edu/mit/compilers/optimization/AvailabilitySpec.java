@@ -2,6 +2,7 @@ package edu.mit.compilers.optimization;
 
 import static edu.mit.compilers.common.SetOperators.intersection;
 import static edu.mit.compilers.optimization.Util.containsMethodCall;
+import static edu.mit.compilers.optimization.Util.filterNodesWithoutExpressions;
 
 import java.util.Collection;
 import java.util.Set;
@@ -60,19 +61,7 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExp
     @Override 
     public Set<Node<ScopedStatement>> filterNodes(
             Iterable<Node<ScopedStatement>> nodes) {
-        ImmutableSet.Builder<Node<ScopedStatement>> builder = ImmutableSet.builder();
-
-        for (Node<ScopedStatement> node : nodes) {
-            if (!node.hasValue()) {
-                continue;
-            }
-            if (!node.value().getStatement().hasExpression()) {
-                continue;
-            }
-            builder.add(node);
-        }
-
-        return builder.build();
+        return filterNodesWithoutExpressions(nodes);
     }
 
     /**

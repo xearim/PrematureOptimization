@@ -1,6 +1,7 @@
 package edu.mit.compilers.optimization;
 
 import static edu.mit.compilers.common.SetOperators.union;
+import static edu.mit.compilers.optimization.Util.filterNodesWithoutExpressions;
 
 import java.util.Collection;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, Variable> {
     @Override
     public Set<Node<ScopedStatement>> filterNodes(
             Iterable<Node<ScopedStatement>> nodes) {
-        throw new UnsupportedOperationException("unimplemented");
+        return filterNodesWithoutExpressions(nodes);
     }
 
 }
