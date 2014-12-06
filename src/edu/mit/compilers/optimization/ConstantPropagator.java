@@ -1,13 +1,12 @@
 package edu.mit.compilers.optimization;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Collection;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Multimap;
 
 import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.AssignmentOperation;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.NativeLiteral;
 import edu.mit.compilers.ast.ScalarLocation;
@@ -73,7 +72,7 @@ public class ConstantPropagator implements DataFlowOptimizer {
         NativeLiteral sameConstant = null;
         for (Node<ScopedStatement> scopedStatement : definitions) {
             StaticStatement statement = scopedStatement.value().getStatement();
-            if (!isConstantScalarAssignment(statement)) {
+            if (!isConstantScalarAbsoluteAssignment(statement)) {
                 return Optional.absent();
             }
             NativeLiteral constant = getConstantScalarAssignment((Assignment) statement);
@@ -87,10 +86,25 @@ public class ConstantPropagator implements DataFlowOptimizer {
         return Optional.of(sameConstant);
     }
 
-    private static boolean isConstantScalarAssignment(StaticStatement statement) {
-        return (statement instanceof Assignment)
-                && (((Assignment) statement).getExpression() instanceof NativeLiteral)
-                && (((Assignment) statement).getLocation() instanceof ScalarLocation);
+    /**
+     * Checks whether this statement is a candidate for constant propagation.
+     *
+     * <p>More specifically, checks that:
+     *    * it is an assignment.
+     *    * The LHS is a scalar location.
+     *    * The operator is = (rather than += or -=).
+     *    * the RHS is a native literal
+     * @param statement
+     * @return
+     */
+    private static boolean isConstantScalarAbsoluteAssignment(StaticStatement statement) {
+        if (!(statement instanceof Assignment)) {
+            return false;
+        }
+        Assignment assignment = (Assignment) statement;
+        return assignment.getLocation() instanceof ScalarLocation
+                && assignment.getOperation().equals(AssignmentOperation.SET_EQUALS)
+                && assignment.getExpression() instanceof NativeLiteral;
     }
 
     /**
