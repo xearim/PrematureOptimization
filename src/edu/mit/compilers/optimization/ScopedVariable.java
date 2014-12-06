@@ -62,11 +62,11 @@ public class ScopedVariable {
 
     /** Returns all the variables in the GeneralExpression */
     public static Set<ScopedVariable> getVariablesOf(GeneralExpression ge, Scope scope) {
+        ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
         if (ge instanceof Location) {
             Variable var = ((Location) ge).getVariable();
-            return ImmutableSet.of(new ScopedVariable(var, getScopeOf(var, scope)));
+            builder.add(new ScopedVariable(var, getScopeOf(var, scope)));
         }
-        ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
         for(GeneralExpression geChild : ge.getChildren()){
             builder.addAll(getVariablesOf(geChild, scope));
         }
