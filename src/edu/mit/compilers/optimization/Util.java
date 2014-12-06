@@ -79,9 +79,12 @@ public class Util {
     }
 
     /** Get the set of variables that are potentially redefined at a node. */
-    public static Set<ScopedVariable> redefined(Node<ScopedStatement> node) {
-        ImmutableSet.Builder<ScopedVariable> redefinedBuilder = ImmutableSet.builder();
+    public static Set<ScopedVariable> getRedefinedVariables(Node<ScopedStatement> node) {
+        if (!node.hasValue()) {
+            return ImmutableSet.of();
+        }
 
+        ImmutableSet.Builder<ScopedVariable> redefinedBuilder = ImmutableSet.builder();
         ScopedStatement scopedStatement = node.value();
         StaticStatement statement = scopedStatement.getStatement();
         Scope scope = scopedStatement.getScope();

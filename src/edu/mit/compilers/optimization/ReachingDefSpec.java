@@ -2,7 +2,7 @@ package edu.mit.compilers.optimization;
 
 import static edu.mit.compilers.common.SetOperators.union;
 import static edu.mit.compilers.optimization.Util.filterNodesWithoutExpressions;
-import static edu.mit.compilers.optimization.Util.redefined;
+import static edu.mit.compilers.optimization.Util.getRedefinedVariables;
 
 import java.util.Collection;
 import java.util.Set;
@@ -21,13 +21,13 @@ public class ReachingDefSpec implements AnalysisSpec<ScopedStatement, ReachingDe
      * */
     @Override
     public boolean mustKill(Node<ScopedStatement> curNode, ReachingDefinition reachingDef) {
-        return redefined(curNode).contains(reachingDef.getScopedLocation());
+        return getRedefinedVariables(curNode).contains(reachingDef.getScopedLocation());
     }
 
     @Override
     public Set<ReachingDefinition> getGenSet(Node<ScopedStatement> node) {
         ImmutableSet.Builder<ReachingDefinition> builder = ImmutableSet.builder();
-        for (ScopedVariable redefined : redefined(node)) {
+        for (ScopedVariable redefined : getRedefinedVariables(node)) {
             // Each redefined variable is gets a definition... at this node!
             builder.add(new ReachingDefinition(redefined, node));
         }

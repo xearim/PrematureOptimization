@@ -3,6 +3,7 @@ package edu.mit.compilers.optimization;
 import static edu.mit.compilers.common.SetOperators.intersection;
 import static edu.mit.compilers.optimization.Util.containsMethodCall;
 import static edu.mit.compilers.optimization.Util.filterNodesWithoutExpressions;
+import static edu.mit.compilers.optimization.Util.getRedefinedVariables;
 
 import java.util.Collection;
 import java.util.Set;
@@ -40,7 +41,7 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExp
 
     @Override
     public boolean mustKill(Node<ScopedStatement> curNode, ScopedExpression candidate) {
-        Set<ScopedVariable> victimVariables = getPotentiallyChangedVariables(curNode);
+        Set<ScopedVariable> victimVariables = getRedefinedVariables(curNode);
         for (ScopedVariable victimVariable : victimVariables) {
             if (candidate.uses(victimVariable)) {
                 return true;
@@ -62,30 +63,6 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExp
     public Set<Node<ScopedStatement>> filterNodes(
             Iterable<Node<ScopedStatement>> nodes) {
         return filterNodesWithoutExpressions(nodes);
-    }
-
-    /**
-     * Maps StatementNode<ScopedStatement>s to variables they may change during
-     * execution.
-     */
-    private static Set<ScopedVariable> getPotentiallyChangedVariables(
-            Node<ScopedStatement> statementNode) {
-        if (!statementNode.hasValue()) {
-            return ImmutableSet.of();
-        }
-        ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
-        Set<ScopedVariable> globals = Util.getGlobalVariables(statementNode.value().getScope());
-            StaticStatement statement = statementNode.value().getStatement();
-            if (statement instanceof Assignment) {
-                builder.add(ScopedVariable.getAssigned(
-                        (Assignment) statementNode.value().getStatement(), statementNode.value().getScope()));
-            }
-
-        if (Util.containsMethodCall(statement.getExpression())) {
-            builder.addAll(globals);
-        }
-
-        return builder.build();
     }
 
     @Override
