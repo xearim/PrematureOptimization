@@ -15,6 +15,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
+import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.graph.Node;
 
@@ -45,19 +46,18 @@ public class DataFlowAnalyzer<N, T> {
      * basic block.
      */
     public Multimap<Node<N>, T>
-            calculate(FlowGraph<N> dataFlowGraph) {
+            calculate(BcrFlowGraph<N> dataFlowGraph) {
         Set<Node<N>> allNodes = allNodes(dataFlowGraph);
         Multimap<Node<N>, T> inputSets = HashMultimap.<Node<N>,T>create();
         Multimap<Node<N>, T> outputSets = HashMultimap.<Node<N>,T>create();
         Set<Node<N>> changed;
 
-        Node<N> entryNode = getEntryNode(dataFlowGraph);
-        // Run algorithm
-        outputSets.replaceValues(entryNode, spec.getGenSet(entryNode, ImmutableSet.<T>of()));
-
         changed = new HashSet<Node<N>>(allNodes);
+        for (Node<N> entryNode : getEntryNodes(dataFlowGraph)) {
+            outputSets.replaceValues(entryNode, spec.getGenSet(entryNode, ImmutableSet.<T>of()));
         checkState(changed.remove(entryNode),
-                "entryNode is not in set of all nodes.");
+                "Entry node %s is not in set of all nodes.", entryNode);
+        }
 
         while (!changed.isEmpty()) {
             Node<N> node = changed.iterator().next();
@@ -81,19 +81,19 @@ public class DataFlowAnalyzer<N, T> {
         return inputSets;
     }
 
-    private Node<N> getEntryNode(
-            FlowGraph<N> dataFlowGraph) {
-
+    private Collection<Node<N>> getEntryNodes(
+            BcrFlowGraph<N> dataFlowGraph) {
         if (spec.isForward()) {
-            return dataFlowGraph.getStart();
+            return ImmutableSet.of(dataFlowGraph.getStart());
         } else {
-            return getExitNode(dataFlowGraph);
+            return getExitNodes(dataFlowGraph);
         }
     }
 
-    private Node<N> getExitNode(
-            FlowGraph<N> dataFlowGraph) {
-        throw new UnsupportedOperationException("unimplemented");
+    private Collection<Node<N>> getExitNodes(BcrFlowGraph<N> dataFlowGraph) {
+        return ImmutableSet.of(
+                dataFlowGraph.getReturnTerminal(),
+                dataFlowGraph.getEnd());
     }
 
     private Set<Node<N>> getSources(
