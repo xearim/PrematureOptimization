@@ -9,6 +9,8 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.StaticStatement;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
 
@@ -25,7 +27,8 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
         if (!node.hasValue()) {
             return ImmutableSet.<ScopedVariable>of();
         }
-        return ScopedVariable.getVariablesOf(node.value());
+        // DO NOT SUBMIT: Do not gen the LHS if the RHS is not live!
+        return dependencies(node.value());
     }
 
     /** Kills a ScopedVariable if it was defined. */
@@ -52,4 +55,16 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
         return filterNodesWithoutExpressions(nodes);
     }
 
+    private Set<ScopedVariable> dependencies(ScopedStatement scopedStatement) {
+        StaticStatement statement = scopedStatement.getStatement();
+        ImmutableSet.Builder<ScopedVariable> dependencies = ImmutableSet.builder();
+        if (statement instanceof Assignment) {
+            Assignment assignment = (Assignment) statement;
+            if (!assignment.getOperation().isAbsolute()) {
+                dependencies.add(ScopedVariable.getAssigned(assignment, scopedStatement.getScope()));
+            }
+        }
+        dependencies.addAll(ScopedVariable.getVariablesOf(scopedStatement));
+        return dependencies.build();
+    }
 }
