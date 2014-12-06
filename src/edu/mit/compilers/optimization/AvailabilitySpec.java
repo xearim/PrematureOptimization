@@ -2,7 +2,6 @@ package edu.mit.compilers.optimization;
 
 import static edu.mit.compilers.common.SetOperators.intersection;
 import static edu.mit.compilers.optimization.Util.containsMethodCall;
-import static edu.mit.compilers.optimization.Util.filterNodesWithoutExpressions;
 import static edu.mit.compilers.optimization.Util.getRedefinedVariables;
 
 import java.util.Collection;
@@ -56,13 +55,6 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExp
     @Override
     public Set<ScopedExpression> applyConfluenceOperator(Iterable<Collection<ScopedExpression>> outSets) {
         return intersection(outSets);
-    }
-
-    /** Filters all the nodes that do not have an expression. */
-    @Override 
-    public Set<Node<ScopedStatement>> filterNodes(
-            Iterable<Node<ScopedStatement>> nodes) {
-        return filterNodesWithoutExpressions(nodes);
     }
 
     @Override

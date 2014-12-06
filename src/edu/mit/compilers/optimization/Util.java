@@ -63,26 +63,6 @@ public class Util {
         return builder.build();
     }
 
-    /**
-     * Filters out nodes that don't have an expression.
-     */
-    public static Set<Node<ScopedStatement>> filterNodesWithoutExpressions(
-            Iterable<Node<ScopedStatement>> nodes) {
-        ImmutableSet.Builder<Node<ScopedStatement>> builder = ImmutableSet.builder();
-
-        for (Node<ScopedStatement> node : nodes) {
-            if (!node.hasValue()) {
-                continue;
-            }
-            if (!node.value().getStatement().hasExpression()) {
-                continue;
-            }
-            builder.add(node);
-        }
-
-        return builder.build();
-    }
-
     /** Get the set of variables that are potentially redefined at a node. */
     public static Set<ScopedVariable> getRedefinedVariables(Node<ScopedStatement> node) {
         if (!node.hasValue()) {

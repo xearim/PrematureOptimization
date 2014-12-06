@@ -1,7 +1,6 @@
 package edu.mit.compilers.optimization;
 
 import static edu.mit.compilers.common.SetOperators.union;
-import static edu.mit.compilers.optimization.Util.filterNodesWithoutExpressions;
 import static edu.mit.compilers.optimization.Util.getRedefinedVariables;
 
 import java.util.Collection;
@@ -39,12 +38,6 @@ public class ReachingDefSpec implements AnalysisSpec<ScopedStatement, ReachingDe
     public Set<ReachingDefinition> applyConfluenceOperator(
             Iterable<Collection<ReachingDefinition>> inputs) {
         return union(inputs);
-    }
-
-    @Override
-    public Set<Node<ScopedStatement>> filterNodes(
-            Iterable<Node<ScopedStatement>> nodes) {
-        return filterNodesWithoutExpressions(nodes);
     }
 
     @Override

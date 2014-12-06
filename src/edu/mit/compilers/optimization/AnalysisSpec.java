@@ -11,5 +11,4 @@ public interface AnalysisSpec<N, T> {
     public boolean mustKill(Node<N> currentNode, T candidate);
     public Set<T> applyConfluenceOperator(Iterable<Collection<T>> inputs);
     public boolean gensImmuneToKills();
-    public Set<Node<N>> filterNodes(Iterable<Node<N>> nodes);
 }
