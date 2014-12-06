@@ -109,4 +109,10 @@ public class ScopedVariable {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "ScopedVariable [variable=" + variable + ", scope=" + scope
+                + "]";
+    }
+
 }

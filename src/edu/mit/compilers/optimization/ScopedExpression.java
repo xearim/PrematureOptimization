@@ -114,4 +114,9 @@ public class ScopedExpression {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "ScopedExpression [ne=" + ne + ", scope=" + scope + "]";
+    }
 }
