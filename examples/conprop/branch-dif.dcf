@@ -1,0 +1,9 @@
+int main() {
+  int x;
+  x = 0;
+  if (true) {
+    x = 5;
+  }
+  // shouldn't be replaced.
+  return x;
+}

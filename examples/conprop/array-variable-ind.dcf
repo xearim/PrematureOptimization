@@ -1,0 +1,8 @@
+int main() {
+  int i;
+  int A[5];
+  A[i] = 4;
+  A[i+1] = 5;
+  // ideally would be replaced, but not yet.
+  return A[i];
+}
