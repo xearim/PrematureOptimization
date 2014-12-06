@@ -77,7 +77,7 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
             }
         }
 
-        // All the variables that are a part of the expression are dependenices.
+        // All the variables that are a part of the expression are dependencies.
         dependencies.addAll(ScopedVariable.getVariablesOf(scopedStatement));
 
         // A global method call depends on all the globals that that function reads.
