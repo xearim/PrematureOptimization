@@ -74,7 +74,7 @@ public class DataFlowAnalyzer<N, T> {
 
             if (!newOutput.equals(outputSets.get(node))) {
                 outputSets.replaceValues(node, newOutput);
-                changed.addAll(dataFlowGraph.getSuccessors(node));
+                changed.addAll(getSinks(dataFlowGraph, node));
             }
         }
 
@@ -98,12 +98,16 @@ public class DataFlowAnalyzer<N, T> {
 
     private Set<Node<N>> getSources(
             FlowGraph<N> dataFlowGraph, Node<N> node) {
+        return spec.isForward()
+                ? dataFlowGraph.getPredecessors(node)
+                : dataFlowGraph.getSuccessors(node);
+    }
 
-        if (spec.isForward()){
-            return dataFlowGraph.getPredecessors(node);
-        } else {
-            return dataFlowGraph.getSuccessors(node);
-        }
+    private Set<Node<N>> getSinks(
+            FlowGraph<N> dataFlowGraph, Node<N> node) {
+        return spec.isForward()
+                ? dataFlowGraph.getSuccessors(node)
+                : dataFlowGraph.getPredecessors(node);
     }
 
     /**
