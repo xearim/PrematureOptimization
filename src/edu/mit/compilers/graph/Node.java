@@ -23,6 +23,10 @@ public class Node<T> {
         return new Node<T>(Optional.<T>absent());
     }
 
+    public static <T> Node<T> copyOf(Node<T> node) {
+        return new Node<T>(node.value);
+    }
+
     public boolean hasValue() {
         return value.isPresent();
     }
