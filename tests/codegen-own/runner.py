@@ -13,8 +13,6 @@ PROGRAMS_DIRECTORY = 'programs/'
 COLORED_PASS = '\033[92m' 'PASS' '\033[0m'
 COLORED_FAIL = '\033[91m' 'FAIL' '\033[0m'
 
-OPTIMIZATIONS = ['cse']
-
 def runner_path():
     """Get the path of the compiler's run.sh script."""
     git_base = os.popen('git rev-parse --show-toplevel').read().strip()
@@ -62,8 +60,8 @@ def check_return_value(decaf_program):
     """
     exp_ret_val = expected_return_value(decaf_program)
 
-    compile_command = ('%s -t assembly --opt=%s %s' %
-                       (runner_path(), ','.join(OPTIMIZATIONS), decaf_program))
+    compile_command = ('%s -t assembly --opt=all %s' %
+                       (runner_path(), decaf_program))
     compiler = subprocess.Popen([compile_command], shell=True,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)

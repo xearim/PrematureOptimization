@@ -1,0 +1,10 @@
+int x;
+void def_x() {
+  x = 5;
+}
+int main() {
+  x = 3;
+  def_x();
+  // should not be replaced
+  return x;
+}

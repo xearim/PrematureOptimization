@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 
 import edu.mit.compilers.semantics.Utils;
 
-public class IntLiteral implements NativeLiteral {
+public class IntLiteral extends NativeLiteral {
     // Yes, a string.  We want the value that the user typed in.  We don't even care how Java
     // would represent it.
     private final String value;

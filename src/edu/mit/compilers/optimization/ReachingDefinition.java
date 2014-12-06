@@ -50,4 +50,9 @@ public class ReachingDefinition {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "ReachingDefinition [sc=" + sc + ", node=" + node + "]";
+    }
 }

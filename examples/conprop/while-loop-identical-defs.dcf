@@ -1,0 +1,11 @@
+int main() {
+  int increment;
+  int x;
+  increment = 1;
+  while (x < 5) {
+    // should be replaced
+    x += increment;
+    increment = 1;
+  }
+  return x;
+}

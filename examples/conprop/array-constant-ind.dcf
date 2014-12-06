@@ -1,0 +1,7 @@
+int main() {
+  int A[5];
+  A[3] = 5;
+  A[4] = 6;
+  // ideally is replaced, but not yet.
+  return A[3];
+}

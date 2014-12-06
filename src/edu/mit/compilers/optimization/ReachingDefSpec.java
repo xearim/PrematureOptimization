@@ -19,7 +19,9 @@ public class ReachingDefSpec implements AnalysisSpec<ScopedStatement, ReachingDe
     /** Get the set of variables that are potentially redefined at a node. */
     private Set<ScopedVariable> redefined(Node<ScopedStatement> node) {
         ImmutableSet.Builder<ScopedVariable> redefinedBuilder = ImmutableSet.builder();
-
+        if (!node.hasValue()) {
+            return ImmutableSet.of();
+        }
         ScopedStatement scopedStatement = node.value();
         StaticStatement statement = scopedStatement.getStatement();
         Scope scope = scopedStatement.getScope();
