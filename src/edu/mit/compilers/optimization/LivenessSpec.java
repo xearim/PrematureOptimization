@@ -62,22 +62,31 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
         return true;
     }
 
+    /** Gets all the variables that this statement can read. */
     private Set<ScopedVariable> dependencies(ScopedStatement scopedStatement) {
         StaticStatement statement = scopedStatement.getStatement();
         Scope scope = scopedStatement.getScope();
+
         ImmutableSet.Builder<ScopedVariable> dependencies = ImmutableSet.builder();
+
+        // The LHS is a dependency for statements like x += 1.
         if (statement instanceof Assignment) {
             Assignment assignment = (Assignment) statement;
             if (!assignment.getOperation().isAbsolute()) {
                 dependencies.add(ScopedVariable.getAssigned(assignment, scope));
             }
         }
+
+        // All the variables that are a part of the expression are dependenices.
         dependencies.addAll(ScopedVariable.getVariablesOf(scopedStatement));
+
+        // A global method call depends on all the globals that that function reads.
         if (Util.containsMethodCall(statement.getExpression())) {
             // For now, just assume that functions can read every global!
             // TODO(jasonpr): Only add each function's global read set.
             dependencies.addAll(Util.getGlobalVariables(scope));
         }
+
         return dependencies.build();
     }
 }
