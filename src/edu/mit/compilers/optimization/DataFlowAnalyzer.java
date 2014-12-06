@@ -25,11 +25,14 @@ import edu.mit.compilers.graph.Node;
 public class DataFlowAnalyzer<N, T> {
     public static final DataFlowAnalyzer<ScopedStatement, ReachingDefinition>
             REACHING_DEFINITIONS =
-            new DataFlowAnalyzer<ScopedStatement, ReachingDefinition>(
-                    new ReachingDefSpec());
+            new DataFlowAnalyzer<ScopedStatement, ReachingDefinition>(new ReachingDefSpec());
     public static final DataFlowAnalyzer<ScopedStatement, ScopedExpression>
             AVAILABLE_EXPRESSIONS =
             new DataFlowAnalyzer<ScopedStatement, ScopedExpression>(new AvailabilitySpec());
+    public static final DataFlowAnalyzer<ScopedStatement, ScopedVariable>
+            LIVE_VARIABLES =
+            new DataFlowAnalyzer<ScopedStatement, ScopedVariable>(new LivenessSpec());
+
     private AnalysisSpec<N, T> spec;
 
     public DataFlowAnalyzer(AnalysisSpec<N, T> spec) {
