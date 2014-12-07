@@ -7,6 +7,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.Scope;
@@ -62,11 +63,11 @@ public class ScopedVariable {
 
     /** Returns all the variables in the GeneralExpression */
     public static Set<ScopedVariable> getVariablesOf(GeneralExpression ge, Scope scope) {
+        ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
         if (ge instanceof Location) {
             Variable var = ((Location) ge).getVariable();
-            return ImmutableSet.of(new ScopedVariable(var, getScopeOf(var, scope)));
+            builder.add(new ScopedVariable(var, getScopeOf(var, scope)));
         }
-        ImmutableSet.Builder<ScopedVariable> builder = ImmutableSet.builder();
         for(GeneralExpression geChild : ge.getChildren()){
             builder.addAll(getVariablesOf(geChild, scope));
         }
@@ -75,6 +76,10 @@ public class ScopedVariable {
 
     public static Set<ScopedVariable> getVariablesOf(ScopedStatement statement) {
         return getVariablesOf(statement.getStatement().getExpression(), statement.getScope());
+    }
+
+    public boolean isArray() {
+        return scope.getDescriptor(variable).isArray();
     }
 
     @Override

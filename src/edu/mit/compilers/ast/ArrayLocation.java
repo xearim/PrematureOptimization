@@ -19,7 +19,7 @@ public class ArrayLocation implements Location {
     
     @Override
     public Iterable<? extends GeneralExpression> getChildren() {
-        return ImmutableList.of();
+        return ImmutableList.of(index);
     }
 
     @Override

@@ -50,7 +50,8 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
     @Override
     public boolean mustKill(Node<ScopedStatement> currentNode,
             ScopedVariable candidate) {
-        return getRedefinedVariables(currentNode).contains(candidate);
+        // Do not kill arrays.  (We don't want A[5] to kill A[4].)
+        return getRedefinedVariables(currentNode).contains(candidate) && !candidate.isArray();
     }
 
     @Override

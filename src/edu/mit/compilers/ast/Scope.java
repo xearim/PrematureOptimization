@@ -260,6 +260,17 @@ public class Scope {
 	    return this;
 	}
 
+    public FieldDescriptor getDescriptor(Variable var) {
+        for (FieldDescriptor fd : entries) {
+            if (fd.getVariable().equals(var)) {
+                return fd;
+            }
+        }
+
+        // Throws an exception if we got through the global scope and didn't find 'var'.
+        return parent.get().getDescriptor(var);
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
