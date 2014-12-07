@@ -15,6 +15,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
+import edu.mit.compilers.common.SetOperators;
 import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.graph.Node;
@@ -66,15 +67,29 @@ public class DataFlowAnalyzer<N, T> {
 
         while (!changed.isEmpty()) {
             Node<N> node = changed.iterator().next();
+            Collection<T> oldInput;
             Set<T> newOutput;
             changed.remove(node);
 
+            oldInput = inputSets.get(node);
             Collection<Collection<T>> sourceOutputSets = new ArrayList<Collection<T>>();
-            Set<Node<N>> sources = getSources(dataFlowGraph, node);
+            Set<Node<N>> sources = getSources(dataFlowGraph, node, inputSets);
+
             for (Node<N> source: sources) {
                 sourceOutputSets.add(outputSets.get(source));
             }
             inputSets.replaceValues(node, spec.applyConfluenceOperator(sourceOutputSets));
+
+            if (spec instanceof DominatorSpec) {
+                for (T newInputNode : SetOperators.difference(inputSets.get(node), oldInput)) {
+                    // In the case of DominatorSpec, it is true that Node<N> and T are equivalent.
+                    @SuppressWarnings("unchecked")
+                    Node<N> recastNewInputNode = (Node<N>) newInputNode;
+                    if (dataFlowGraph.getSuccessors(node).contains(recastNewInputNode)) {
+                        changed.add(recastNewInputNode);
+                    }
+                }
+            }
 
             newOutput = calculateNewOutput(node, inputSets.get(node));
 
@@ -102,11 +117,32 @@ public class DataFlowAnalyzer<N, T> {
                 dataFlowGraph.getEnd());
     }
 
+    /**
+     * Returns the successors or predecessors depending on whether the
+     * DataFlowAnalyzer is forward or backward propagating.
+     *
+     * There is a special case for calculating dominators. The sources need to
+     * be nodes that aren't dominated.
+     */
     private Set<Node<N>> getSources(
-            FlowGraph<N> dataFlowGraph, Node<N> node) {
-        return spec.isForward()
+            FlowGraph<N> dataFlowGraph, Node<N> node, Multimap<Node<N>, T> inputSets) {
+        Set<Node<N>> sources =
+                spec.isForward()
                 ? dataFlowGraph.getPredecessors(node)
                 : dataFlowGraph.getSuccessors(node);
+
+        if (spec instanceof DominatorSpec) {
+            // Filter out all back edges
+            ImmutableSet.Builder<Node<N>> sourcesBuilder = ImmutableSet.builder();
+            for (Node<N> candidate : sources) {
+                if (!inputSets.get(candidate).contains(node)) {
+                    sourcesBuilder.add(candidate);
+                }
+            }
+            sources = sourcesBuilder.build();
+        }
+
+        return sources;
     }
 
     private Set<Node<N>> getSinks(

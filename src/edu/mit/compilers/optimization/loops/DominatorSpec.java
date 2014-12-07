@@ -85,11 +85,23 @@ public class DominatorSpec <N> implements AnalysisSpec<N, Node<N>> {
             Node<T> dominator,
             Node<T> conquered) {
 
+        /*
+         * If any of the children of the dominator also dominate the conquered,
+         * or only one of the parents of the conquered is also dominated by the dominator,
+         * do not show the edge.
+         */
         for (Node<T> child : graph.getSuccessors(dominator)) {
             if (dominatorsMap.get(conquered).contains(child)) {
                 return false;
             }
         }
-        return true;
+
+        int dominatedParents = 0;
+        for (Node<T> parent: graph.getPredecessors(conquered)) {
+            if (!parent.equals(dominator)  && dominatorsMap.get(parent).contains(dominator)) {
+                dominatedParents++;
+            }
+        }
+        return dominatedParents != 1;
     }
 }
