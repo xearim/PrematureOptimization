@@ -90,4 +90,13 @@ public class Graphs {
         }
         return builder.build();
     }
+
+    /**
+     * Computes the convex hull around 'start' and 'end'.
+     *
+     * <p>That is, a node 'N' is in the return set if there is any path, 'start'...'N'...'end'.
+     */
+    public static <T> Set<Node<T>> convexHull(Graph<T> graph, Node<T> start, Node<T> end) {
+        return Sets.union(reachable(graph, start), reachable(inverse(graph), end));
+    }
 }
