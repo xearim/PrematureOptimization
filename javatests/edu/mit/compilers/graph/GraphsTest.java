@@ -16,22 +16,24 @@ import com.google.common.collect.ImmutableSet;
 
 @RunWith(JUnit4.class)
 public class GraphsTest {
+
+    // Some re-usable nodes for creating test graphs.
+    private static final Node<String> N0 = Node.of("Node 0");
+    private static final Node<String> N1 = Node.of("Node 1");
+    private static final Node<String> N2 = Node.of("Node 2");
+    private static final Node<String> N3 = Node.of("Node 3");
+    private static final Node<String> N4 = Node.of("Node 4");
+
     @Test
     public void testColoringSucceeds() throws Exception {
-        Node<String> s0 = Node.of("s0");
-        Node<String> s1 = Node.of("s1");
-        Node<String> s2 = Node.of("s2");
-        Node<String> s3 = Node.of("s3");
-        Node<String> s4 = Node.of("s4");
-
         Graph<String> graph = Graph.<String>builder()
-                .link(s0, s1)
-                .link(s0, s2)
-                .link(s0, s3)
-                .link(s1, s2)
-                .link(s1, s3)
-                .link(s2, s4)
-                .link(s3, s4)
+                .link(N0, N1)
+                .link(N0, N2)
+                .link(N0, N3)
+                .link(N1, N2)
+                .link(N1, N3)
+                .link(N2, N4)
+                .link(N3, N4)
                 .build();
         Set<Integer> colors = ImmutableSet.of(1, 2, 3);
 
