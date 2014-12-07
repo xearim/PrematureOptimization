@@ -41,4 +41,26 @@ public class Graphs {
 
         return visited;
     }
+
+    /**
+     * Returns a new graph such that every edge (a, b) of the original graph
+     * becomese (b, a) in the new graph. */
+    public static <T> Graph<T> inverse(final Graph<T> graph) {
+        return new Graph<T>() {
+            @Override
+            public Iterable<Node<T>> getNodes() {
+                return graph.getNodes();
+            }
+
+            @Override
+            public Iterable<Node<T>> getPredecessors(Node<T> node) {
+                return graph.getSuccessors(node);
+            }
+
+            @Override
+            public Iterable<Node<T>> getSuccessors(Node<T> node) {
+                return graph.getPredecessors(node);
+            }
+        };
+    }
 }
