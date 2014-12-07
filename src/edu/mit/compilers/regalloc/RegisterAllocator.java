@@ -11,6 +11,7 @@ import static edu.mit.compilers.codegen.asm.Register.RDX;
 import static edu.mit.compilers.codegen.asm.Register.RSI;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableMultimap;
@@ -21,6 +22,7 @@ import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.Graph;
+import edu.mit.compilers.graph.Graphs;
 import edu.mit.compilers.graph.Node;
 import edu.mit.compilers.optimization.DataFlowAnalyzer;
 import edu.mit.compilers.optimization.ReachingDefinition;
@@ -54,11 +56,31 @@ public class RegisterAllocator {
         return websBuilder.build();
     }
 
+    /** Gets the live ranges represented by some webs. */
     private static Set<LiveRange> getLiveRanges(
             Multimap<ScopedVariable, Web> webs,
             BcrFlowGraph<ScopedStatement> dfg) {
-        // TODO Auto-generated method stub
-        return null;
+        ImmutableSet.Builder<LiveRange> liveRangesBuilder = ImmutableSet.builder();
+        for (Entry<ScopedVariable, Web> entry: webs.entries()) {
+            liveRangesBuilder.add(getLiveRange(entry.getKey(), entry.getValue(), dfg));
+        }
+        return liveRangesBuilder.build();
+    }
+
+    /**
+     * Gets the LiveRange of a web.
+     *
+     * @param variable The variable whose liveness this web represents.
+     * @param web A web of def-use chains for this variable.
+     * @param dfg The Data Flow Graph, for determining which nodes are part of the live range.
+     */
+    private static LiveRange
+            getLiveRange(ScopedVariable variable, Web web, BcrFlowGraph<ScopedStatement> dfg) {
+        ImmutableSet.Builder<Node<ScopedStatement>> nodes = ImmutableSet.builder();
+        for (DefUseChain duChain : web) {
+            nodes.addAll(Graphs.semiOpenRange(dfg, duChain.getDef(), duChain.getUse()));
+        }
+        return new LiveRange(variable, nodes.build());
     }
 
     private static Graph<LiveRange> getConflictGraph(Set<LiveRange> liveRanges) {
