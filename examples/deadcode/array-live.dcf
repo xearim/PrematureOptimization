@@ -1,0 +1,6 @@
+int main() {
+  int A[5];
+  // shouldn't eliminate
+  A[4] = 3;
+  return A[4];
+}
