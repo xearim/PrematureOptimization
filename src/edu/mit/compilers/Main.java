@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import antlr.ASTFactory;
@@ -21,14 +22,17 @@ import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.NodeMaker;
 import edu.mit.compilers.ast.Program;
 import edu.mit.compilers.codegen.AssemblyWriter;
-import edu.mit.compilers.codegen.Targets;
 import edu.mit.compilers.codegen.DataFlowIntRep;
+import edu.mit.compilers.codegen.Targets;
+import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.grammar.DecafParser;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.grammar.DecafScanner;
 import edu.mit.compilers.grammar.DecafScannerTokenTypes;
 import edu.mit.compilers.graph.FlowGraph;
+import edu.mit.compilers.regalloc.LiveRange;
+import edu.mit.compilers.regalloc.RegisterAllocator;
 import edu.mit.compilers.semantics.ErrorPrinter;
 import edu.mit.compilers.semantics.SemanticChecker;
 import edu.mit.compilers.semantics.errors.SemanticError;
@@ -70,6 +74,8 @@ class Main {
                 dataFlowGraph(inputStream, outputStream, getOptimizations());
             } else if (CLI.target == Action.PRINT_OPTS) {
                 printOpts(outputStream, getOptimizations());
+            } else if (CLI.target == Action.REG_DEBUG) {
+                regDebug(inputStream, outputStream, getOptimizations());
             }
         } catch(Exception e) {
             // An unrecoverable error occurred.
@@ -197,6 +203,24 @@ class Main {
             System.exit(1);
         }
         AssemblyWriter.writeAttAssembly(programAST.get(), outputStream, optimizationNames);
+    }
+
+    private static void regDebug(InputStream inputStream, PrintStream outputStream,
+            Set<String> optimizationNames) throws RecognitionException, TokenStreamException {
+        Program validProgram = semanticallyValidProgram(inputStream, outputStream).get();
+
+        // Print out all allocations, over all methods.
+        for (Method method : validProgram.getMethods()) {
+            DataFlowIntRep ir =
+                    Targets.optimizedDataFlowIntRep(method, optimizationNames);
+            for (Entry<LiveRange, Register> entry :
+                    RegisterAllocator.allocations(ir.getDataFlowGraph()).entrySet()) {
+                outputStream.printf("%s: (%s : %s)\n",
+                        method.getName(),
+                        entry.getKey().getScopedVariable(),
+                        entry.getValue());
+            }
+        }
     }
 
     /**
