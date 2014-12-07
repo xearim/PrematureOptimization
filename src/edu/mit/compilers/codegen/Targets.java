@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
+
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
@@ -19,7 +20,7 @@ import edu.mit.compilers.optimization.CommonExpressionEliminator;
 import edu.mit.compilers.optimization.ConstantPropagator;
 import edu.mit.compilers.optimization.DataFlowOptimizer;
 import edu.mit.compilers.optimization.DeadCodeEliminator;
-import edu.mit.compilers.optimization.loops.DominatorSpec;
+import edu.mit.compilers.optimization.DominatorTreeGenerator;
 
 /** Executes major, high-level compilation steps. */
 public class Targets {
@@ -83,7 +84,7 @@ public class Targets {
     public static DiGraph<ScopedStatement> dominatorTree(Method method,
             Set<String> optimizationNames) {
         BcrFlowGraph<ScopedStatement> graph = optimizedDataFlowIntRep(method, optimizationNames).getDataFlowGraph();
-        return DominatorSpec.<ScopedStatement>getDominatorTree(graph);
+        return DominatorTreeGenerator.<ScopedStatement>getDominatorTree(graph);
     }
 
 }
