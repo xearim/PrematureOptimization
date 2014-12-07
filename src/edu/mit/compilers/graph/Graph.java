@@ -27,6 +27,10 @@ public class Graph<T> implements DiGraph<T> {
         return delegate.getSuccessors(node);
     }
 
+    public static <T> Builder<T> builder() {
+        return new Builder<T>();
+    }
+
     public static class Builder<T> {
         private final BasicDiGraph.Builder<T> delegate;
         private Builder() {

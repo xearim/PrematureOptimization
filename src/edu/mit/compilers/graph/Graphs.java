@@ -12,7 +12,7 @@ public class Graphs {
     private Graphs() {}
 
     /** Return all nodes in 'graph' reachable from 'start', in DFS order. */
-    public static <T> Iterable<Node<T>> dfs(DiGraph<T> graph, Node<T> start) {
+    public static <T> Set<Node<T>> dfs(DiGraph<T> graph, Node<T> start) {
         return dfs(graph, ImmutableList.of(start));
     }
 
@@ -62,5 +62,25 @@ public class Graphs {
                 return graph.getPredecessors(node);
             }
         };
+    }
+
+    /** Gets all nodes reachable from the seed node. */
+    public static <T> Set<Node<T>> connectedComponent(Graph<T> graph, Node<T> seed) {
+        return dfs(graph, seed);
+    }
+
+    /** Gets the connected components of the graph. */
+    public static <T> Collection<Set<Node<T>>> connectedComponents(Graph<T> graph) {
+        ImmutableList.Builder<Set<Node<T>>> builder = ImmutableList.builder();
+        Set<Node<T>> seen = Sets.newHashSet();
+        for (Node<T> seed : graph.getNodes()) {
+            if (seen.contains(seed)) {
+                continue;
+            }
+            Set<Node<T>> connectedComponent = connectedComponent(graph, seed);
+            seen.addAll(connectedComponent);
+            builder.add(connectedComponent);
+        }
+        return builder.build();
     }
 }
