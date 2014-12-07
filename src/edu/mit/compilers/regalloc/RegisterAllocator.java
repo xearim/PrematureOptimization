@@ -42,7 +42,7 @@ public class RegisterAllocator {
         Multimap<ScopedVariable, DefUseChain> defUseChains = DefUseChain.getDefUseChains(reachingDefs);
         Multimap<ScopedVariable, Web> webs = getWebs(defUseChains);
         Set<LiveRange> liveRanges = getLiveRanges(webs, dfg);
-        Graph<LiveRange> conflictGraph = getConflictGraph(liveRanges);
+        Graph<LiveRange> conflictGraph = LiveRange.conflictGraph(liveRanges);
         return getAllocations(conflictGraph);
     }
 
@@ -81,11 +81,6 @@ public class RegisterAllocator {
             nodes.addAll(Graphs.semiOpenRange(dfg, duChain.getDef(), duChain.getUse()));
         }
         return new LiveRange(variable, nodes.build());
-    }
-
-    private static Graph<LiveRange> getConflictGraph(Set<LiveRange> liveRanges) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     private static Map<LiveRange, Register> getAllocations(
