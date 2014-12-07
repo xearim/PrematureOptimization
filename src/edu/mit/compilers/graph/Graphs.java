@@ -99,12 +99,15 @@ public class Graphs {
     }
 
     /**
-     * Computes the convex hull around 'start' and 'end'.
+     * Computes the convex hull around 'start' and 'end', excluding 'end'.
      *
-     * <p>That is, a node 'N' is in the return set if there is any path, 'start'...'N'...'end'.
+     * <p>That is, a node 'N' is in the return set if there is any path, 'start'...'N'...'end',
+     * including 'start' but excluding 'end'.
      */
-    public static <T> Set<Node<T>> convexHull(Graph<T> graph, Node<T> start, Node<T> end) {
-        return Sets.intersection(reachable(graph, start), reachable(inverse(graph), end));
+    public static <T> Set<Node<T>> semiOpenRange(DiGraph<T> graph, Node<T> start, Node<T> end) {
+        return Sets.difference(
+                Sets.intersection(reachable(graph, start), reachable(inverse(graph), end)),
+                ImmutableSet.of(end));
     }
 
     public static class UncolorableGraphException extends Exception {

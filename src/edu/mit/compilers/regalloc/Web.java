@@ -1,5 +1,6 @@
 package edu.mit.compilers.regalloc;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -36,7 +37,7 @@ public class Web implements Iterable<DefUseChain> {
      * @param defUseChains
      * @return
      */
-    public Set<Web> webs(Set<DefUseChain> defUseChains) {
+    public static Set<Web> webs(Collection<DefUseChain> defUseChains) {
         // We build up a "same-web" graph, where two def-use chains are connected
         // if they belong to the same web.
         Graph.Builder<DefUseChain> sameWebGraphBuilder = Graph.builder();
