@@ -13,6 +13,7 @@ import static edu.mit.compilers.codegen.asm.Register.RSI;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
@@ -46,8 +47,11 @@ public class RegisterAllocator {
     /** For each key, map the set of def-use chains to a (probably smaller) set of webs. */
     private static Multimap<ScopedVariable, Web> getWebs(
             Multimap<ScopedVariable, DefUseChain> defUseChains) {
-        // TODO Auto-generated method stub
-        return null;
+        ImmutableMultimap.Builder<ScopedVariable, Web> websBuilder = ImmutableMultimap.builder();
+        for (ScopedVariable variable : defUseChains.keySet()) {
+            websBuilder.putAll(variable, Web.webs(defUseChains.get(variable)));
+        }
+        return websBuilder.build();
     }
 
     private static Set<LiveRange> getLiveRanges(
