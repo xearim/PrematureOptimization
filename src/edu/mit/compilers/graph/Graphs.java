@@ -128,7 +128,9 @@ public class Graphs {
             // If we don't remove anything by the end of the iteration, then either we've
             // removed everything, or we cannot remove any more.
             stillRemoving = false;
-            for (Node<T> candidate : workingGraph.getNodes()) {
+            // Copy the nodes of the current working graph's state
+            // to avoid concurrent modifications.
+            for (Node<T> candidate : ImmutableSet.copyOf(workingGraph.getNodes())) {
                 if (workingGraph.degree(candidate) < numColors) {
                     workingGraph.remove(candidate);
                     removedNodes.push(candidate);
