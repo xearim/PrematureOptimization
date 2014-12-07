@@ -1,11 +1,18 @@
 package edu.mit.compilers.graph;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class Graphs {
@@ -98,5 +105,62 @@ public class Graphs {
      */
     public static <T> Set<Node<T>> convexHull(Graph<T> graph, Node<T> start, Node<T> end) {
         return Sets.intersection(reachable(graph, start), reachable(inverse(graph), end));
+    }
+
+    public static class UncolorableGraphException extends Exception {
+        private static final long serialVersionUID = 1L;
+        public UncolorableGraphException(String message) {
+            super(message);
+        }
+    }
+
+    /** Return a coloring of 'graph', using the specified colors. */
+    public static <T, C> Map<Node<T>, C> colored(Graph<T> graph, Set<C> colors)
+            throws UncolorableGraphException {
+        int numColors = colors.size();
+
+        MutableGraph<T> workingGraph = new MutableGraph<T>(graph);
+        Deque<Node<T>> removedNodes = new ArrayDeque<Node<T>>();
+
+        // Remove all the nodes.
+        boolean stillRemoving = true;
+        while (stillRemoving) {
+            // If we don't remove anything by the end of the iteration, then either we've
+            // removed everything, or we cannot remove any more.
+            stillRemoving = false;
+            for (Node<T> candidate : workingGraph.getNodes()) {
+                if (workingGraph.degree(candidate) < numColors) {
+                    workingGraph.remove(candidate);
+                    removedNodes.push(candidate);
+                    stillRemoving = true;
+                }
+            }
+        }
+        if (workingGraph.getNodes().size() > 0) {
+            throw new UncolorableGraphException("Could not color graph with " + numColors + " colors.");
+        }
+
+        // Color them all!
+        Map<Node<T>, C> nodeColors = Maps.newHashMap();
+        for (Node<T> node : removedNodes) {
+            ImmutableSet.Builder<C> neighborColorsBuilder = ImmutableSet.builder();
+            for (Node<T> neighbor : graph.getSuccessors(node)) {
+                if (nodeColors.containsKey(neighbor)) {
+                    // The neighbor has already been colored.
+                    neighborColorsBuilder.add(nodeColors.get(neighbor));
+                }
+            }
+            Set<C> neighborColors = neighborColorsBuilder.build();
+            C unusedColor = unusedElement(colors, neighborColors);
+            nodeColors.put(node, unusedColor);
+        }
+
+        return ImmutableMap.copyOf(nodeColors);
+    }
+
+    private static <E> E unusedElement(Set<E> allItems, Set<E> usedItems) {
+        Set<E> unusedItems = Sets.difference(allItems, usedItems);
+        checkState(!unusedItems.isEmpty());
+        return Iterables.get(unusedItems, 0);
     }
 }

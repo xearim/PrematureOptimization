@@ -1,5 +1,7 @@
 package edu.mit.compilers.graph;
 
+import java.util.Set;
+
 /**
  * An undirected graph.  That is, a digraph with the constraint that for every
  * edge (a->b), there is an edge (b->a), too.
@@ -13,7 +15,7 @@ public class Graph<T> implements DiGraph<T> {
     }
 
     @Override
-    public Iterable<Node<T>> getNodes() {
+    public Set<Node<T>> getNodes() {
         return delegate.getNodes();
     }
 

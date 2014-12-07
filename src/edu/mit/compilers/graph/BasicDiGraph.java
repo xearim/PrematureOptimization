@@ -1,5 +1,7 @@
 package edu.mit.compilers.graph;
 
+import java.util.Set;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -16,7 +18,7 @@ public class BasicDiGraph<T> implements DiGraph<T> {
     }
 
     @Override
-    public Iterable<Node<T>> getNodes() {
+    public Set<Node<T>> getNodes() {
         return Sets.union(
                 forwardEdges.keySet(),
                 backwardEdges.keySet());
