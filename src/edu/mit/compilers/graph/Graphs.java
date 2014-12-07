@@ -160,6 +160,23 @@ public class Graphs {
         return ImmutableMap.copyOf(nodeColors);
     }
 
+    /**
+     * Returns a graph where every node is adjacent to every other node.
+     *
+     * <p>Does not produce self loops.
+     */
+    public static <T> Graph<T> totalGraph(Iterable<Node<T>> nodes) {
+        Graph.Builder<T> graphBuilder = Graph.builder();
+        for (Node<T> node1 : nodes) {
+            for (Node<T> node2 : nodes) {
+                if (!node1.equals(node2)) {
+                    graphBuilder.link(node1, node2);
+                }
+            }
+        }
+        return graphBuilder.build();
+    }
+
     private static <E> E unusedElement(Set<E> allItems, Set<E> usedItems) {
         Set<E> unusedItems = Sets.difference(allItems, usedItems);
         checkState(!unusedItems.isEmpty());
