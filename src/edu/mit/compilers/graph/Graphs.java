@@ -55,7 +55,7 @@ public class Graphs {
     public static <T> DiGraph<T> inverse(final DiGraph<T> graph) {
         return new DiGraph<T>() {
             @Override
-            public Iterable<Node<T>> getNodes() {
+            public Set<Node<T>> getNodes() {
                 return graph.getNodes();
             }
 

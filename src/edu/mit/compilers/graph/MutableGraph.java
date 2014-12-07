@@ -2,6 +2,8 @@ package edu.mit.compilers.graph;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Set;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -49,8 +51,12 @@ public class MutableGraph<T> implements DiGraph<T> {
         return this;
     }
 
+    public int degree(Node<T> node) {
+        return edges.get(node).size();
+    }
+
     @Override
-    public Iterable<Node<T>> getNodes() {
+    public Set<Node<T>> getNodes() {
         return edges.keySet();
     }
 
