@@ -33,6 +33,49 @@ public class DefUseChain<T> {
         return use;
     }
 
+    @Override
+    public String toString() {
+        return "DefUseChain [def=" + def + ", use=" + use + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((def == null) ? 0 : def.hashCode());
+        result = prime * result + ((use == null) ? 0 : use.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof DefUseChain)) {
+            return false;
+        }
+        DefUseChain other = (DefUseChain) obj;
+        if (def == null) {
+            if (other.def != null) {
+                return false;
+            }
+        } else if (!def.equals(other.def)) {
+            return false;
+        }
+        if (use == null) {
+            if (other.use != null) {
+                return false;
+            }
+        } else if (!use.equals(other.use)) {
+            return false;
+        }
+        return true;
+    }
+
     /** Converts some reaching definitions to def-use chains, grouped by variable. */
     public static Multimap<ScopedVariable, DefUseChain<ScopedStatement>>
             getDefUseChains(Multimap<Node<ScopedStatement>, ReachingDefinition> reachingDefs) {
