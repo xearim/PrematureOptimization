@@ -20,7 +20,7 @@ public class ReachingDefSpec implements AnalysisSpec<ScopedStatement, ReachingDe
      * */
     @Override
     public boolean mustKill(Node<ScopedStatement> curNode, ReachingDefinition reachingDef) {
-        return getRedefinedVariables(curNode).contains(reachingDef.getScopedLocation());
+        return getRedefinedVariables(curNode).contains(reachingDef.getScopedVariable());
     }
 
     @Override
