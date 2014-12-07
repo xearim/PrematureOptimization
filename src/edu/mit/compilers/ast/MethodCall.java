@@ -3,19 +3,24 @@ package edu.mit.compilers.ast;
 import java.util.List;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class MethodCall extends StaticStatement implements NativeExpression {
-
-    private final String methodName;
+	private final String methodName;
     private final NodeSequence<GeneralExpression> parameterValues;
     private final LocationDescriptor locationDescriptor;
+    private final ExpressionType type = ExpressionType.METHOD_CALL;
 
     public MethodCall(String methodName, List<GeneralExpression> parameterValues,
             LocationDescriptor locationDescriptor) {
         this.methodName = methodName;
         this.parameterValues = new NodeSequence<GeneralExpression>(parameterValues, "parameters");
         this.locationDescriptor = locationDescriptor;
+    }
+    
+    public MethodCall(String methodName, List<GeneralExpression> parameterValues) {
+        this(methodName, parameterValues, LocationDescriptor.machineCode());
     }
 
     @Override
@@ -62,6 +67,15 @@ public class MethodCall extends StaticStatement implements NativeExpression {
     		out += " " + param.asText();
     	}
     	return out;
+    }
+    
+    public ExpressionType getType(){
+    	return type;
+    }
+    
+    public int compareTo(NativeExpression other){
+    	Preconditions.checkState(other != null);
+    	return this.getType().getPrecedence() - other.getType().getPrecedence();
     }
 
     @Override

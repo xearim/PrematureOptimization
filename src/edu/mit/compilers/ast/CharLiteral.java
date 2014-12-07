@@ -2,6 +2,7 @@ package edu.mit.compilers.ast;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class CharLiteral extends NativeLiteral {
@@ -10,6 +11,7 @@ public class CharLiteral extends NativeLiteral {
     private final String value;
     private final long longValue;
     private final LocationDescriptor locationDescriptor;
+    private final ExpressionType type = ExpressionType.CHAR_LITERAL;
 
     public CharLiteral(String value, LocationDescriptor locationDescriptor) {
         checkArgument(isChar(value));
@@ -57,6 +59,20 @@ public class CharLiteral extends NativeLiteral {
         return this.getName().equals(cl.getName())
                 && this.get64BitValue() == cl.get64BitValue()
                 && this.getLocationDescriptor().equals(cl.getLocationDescriptor());
+    }
+    
+    public ExpressionType getType(){
+    	return type;
+    }
+    
+    public int compareTo(NativeExpression other){
+    	Preconditions.checkState(other != null);
+    	if(this.getType() != other.getType()){
+    		return this.getType().getPrecedence() - other.getType().getPrecedence();
+    	} else {
+    		CharLiteral otherChar = (CharLiteral) other;
+    		return (int) (this.get64BitValue() - otherChar.get64BitValue());
+    	}
     }
 
     @Override

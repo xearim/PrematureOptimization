@@ -3,6 +3,8 @@ package edu.mit.compilers.ast;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
+import edu.mit.compilers.codegen.asm.Architecture;
+
 public class ReturnStatement extends StaticStatement {
 
     private final Optional<NativeExpression> value;
@@ -10,7 +12,7 @@ public class ReturnStatement extends StaticStatement {
 
     private ReturnStatement(Optional<NativeExpression> value, LocationDescriptor locationDescriptor) {
         this.value = value;
-	this.locationDescriptor = locationDescriptor;
+        this.locationDescriptor = locationDescriptor;
     }
 
     public static ReturnStatement ofVoid(LocationDescriptor locationDescriptor) {
@@ -23,7 +25,7 @@ public class ReturnStatement extends StaticStatement {
     }
 
     public static ReturnStatement compilerReturn(NativeExpression value) {
-    	return new ReturnStatement(Optional.of(value), LocationDescriptor.machineCode());
+    	return new ReturnStatement(Optional.of(Architecture.EXPRESSION_ORDERING.order(value)), LocationDescriptor.machineCode());
     }
 
     @Override

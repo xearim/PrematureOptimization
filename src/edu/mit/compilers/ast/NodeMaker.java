@@ -98,6 +98,7 @@ public class NodeMaker {
 
         List<Callout> callouts = callouts(children.get(0));
         Scope globals = rootScope(children.get(1));
+
         List<Method> methods = methods(children.get(2), globals);
 
         return new Program(callouts, globals, methods, sourceLoc(program));

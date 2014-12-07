@@ -1,5 +1,6 @@
 package edu.mit.compilers.ast;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import edu.mit.compilers.common.Variable;
@@ -8,10 +9,11 @@ public class ScalarLocation implements Location {
 
     private final Variable variable;
     private final LocationDescriptor locationDescriptor;
+    private final ExpressionType type = ExpressionType.SCALAR_LOCATION;
 
     public ScalarLocation(Variable variable, LocationDescriptor locationDescriptor) {
         this.variable = variable;
-	this.locationDescriptor = locationDescriptor;
+	    this.locationDescriptor = locationDescriptor;
     }
 
     public ScalarLocation(Variable variable) {
@@ -39,6 +41,20 @@ public class ScalarLocation implements Location {
     
     public String asText() {
     	return variable.asText();
+    }
+    
+    public ExpressionType getType(){
+    	return type;
+    }
+    
+    public int compareTo(NativeExpression other){
+    	Preconditions.checkState(other != null);
+    	if(this.getType() != other.getType()){
+    		return this.getType().getPrecedence() - other.getType().getPrecedence();
+    	} else {
+    		ScalarLocation otherScalar = (ScalarLocation) other;
+    		return this.variable.compareTo(otherScalar.getVariable());
+    	}
     }
 
     @Override
