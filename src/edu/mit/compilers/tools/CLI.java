@@ -55,7 +55,7 @@ public class CLI {
    * CFG: Produce the unoptimized control-flow graph.
    */
     public enum Action {DEFAULT, ABOUT, SCAN, PARSE, INTER, ASSEMBLY, AST, CFG, DFG, PRINT_OPTS,
-        REG_DEBUG};
+        REG_DEBUG, DOMINATE};
 
   /**
    * Array indicating which optimizations should be performed.  If
@@ -199,6 +199,7 @@ public class CLI {
       else if (targetStr.equals("dfg")) target = Action.DFG;
       else if (targetStr.equals("po")) target = Action.PRINT_OPTS;
       else if (targetStr.equals("regdebug")) target = Action.REG_DEBUG;
+      else if (targetStr.equals("dom")) target = Action.DOMINATE;
       else if (targetStr.equals("about")) {
 	  printUsage("Test run successful. Command line parameters: ");
 	  System.exit(0);
