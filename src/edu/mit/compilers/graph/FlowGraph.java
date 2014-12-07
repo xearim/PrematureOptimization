@@ -20,7 +20,7 @@ import edu.mit.compilers.codegen.asm.instructions.JumpType;
  *
  * @param <T> The type of element at this graph's nodes.
  */
-public interface FlowGraph<T> extends Graph<T> {
+public interface FlowGraph<T> extends DiGraph<T> {
     /** Gets the node at which execution starts. */
     public Node<T> getStart();
 

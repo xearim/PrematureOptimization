@@ -12,7 +12,7 @@ public class Graphs {
     private Graphs() {}
 
     /** Return all nodes in 'graph' reachable from 'start', in DFS order. */
-    public static <T> Iterable<Node<T>> dfs(Graph<T> graph, Node<T> start) {
+    public static <T> Iterable<Node<T>> dfs(DiGraph<T> graph, Node<T> start) {
         return dfs(graph, ImmutableList.of(start));
     }
 
@@ -23,7 +23,7 @@ public class Graphs {
      * <p>The search from the first node in 'starts' is completed before the search
      * from the second node starts, and so on. 
      */
-    public static <T> Set<Node<T>> dfs(Graph<T> graph, Collection<Node<T>> starts) {
+    public static <T> Set<Node<T>> dfs(DiGraph<T> graph, Collection<Node<T>> starts) {
         Set<Node<T>> visited = Sets.newHashSet();
         Deque<Node<T>> agenda = new ArrayDeque<Node<T>>(starts);
 
@@ -45,8 +45,8 @@ public class Graphs {
     /**
      * Returns a new graph such that every edge (a, b) of the original graph
      * becomese (b, a) in the new graph. */
-    public static <T> Graph<T> inverse(final Graph<T> graph) {
-        return new Graph<T>() {
+    public static <T> DiGraph<T> inverse(final DiGraph<T> graph) {
+        return new DiGraph<T>() {
             @Override
             public Iterable<Node<T>> getNodes() {
                 return graph.getNodes();
