@@ -12,7 +12,7 @@ public class Graphs {
     private Graphs() {}
 
     /** Return all nodes in 'graph' reachable from 'start', in DFS order. */
-    public static <T> Iterable<Node<T>> dfs(DiGraph<T> graph, Node<T> start) {
+    public static <T> Set<Node<T>> dfs(DiGraph<T> graph, Node<T> start) {
         return dfs(graph, ImmutableList.of(start));
     }
 
