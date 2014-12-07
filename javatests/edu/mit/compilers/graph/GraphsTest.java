@@ -12,7 +12,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import edu.mit.compilers.graph.Graphs.UncolorableGraphException;
 
 @RunWith(JUnit4.class)
 public class GraphsTest {
@@ -38,6 +41,14 @@ public class GraphsTest {
         Set<Integer> colors = ImmutableSet.of(1, 2, 3);
 
         assertGoodColoring(Graphs.colored(graph, colors), graph, colors);
+    }
+
+    @Test(expected=UncolorableGraphException.class)
+    public void testColoringFails() throws Exception {
+        // It's impossible to color a total graph with fewer colors than there are nodes.
+        Graphs.colored(
+                Graphs.totalGraph(ImmutableList.of(N0, N1, N2, N3, N4)),
+                ImmutableSet.of(0, 1, 2, 3));
     }
 
     private static <T, C> void
