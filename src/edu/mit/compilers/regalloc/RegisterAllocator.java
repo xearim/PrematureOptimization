@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -23,6 +24,7 @@ import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.Graph;
 import edu.mit.compilers.graph.Graphs;
+import edu.mit.compilers.graph.Graphs.UncolorableGraphException;
 import edu.mit.compilers.graph.Node;
 import edu.mit.compilers.optimization.DataFlowAnalyzer;
 import edu.mit.compilers.optimization.ReachingDefinition;
@@ -83,11 +85,22 @@ public class RegisterAllocator {
         return new LiveRange(variable, nodes.build());
     }
 
+    /** Map each live range to a register that can hold its variable's values. */
     private static Map<LiveRange, Register> getAllocations(
             Graph<LiveRange> conflictGraph) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
-    
+        Map<Node<LiveRange>, Register> coloredGraph;
+        try {
+            coloredGraph = Graphs.colored(conflictGraph, REGISTERS);
+        } catch (UncolorableGraphException e) {
+            // TODO(jasonpr): Handle uncolorable graphs.
+            throw new RuntimeException("Not yet implemented!");
+        }
+
+        ImmutableMap.Builder<LiveRange, Register> allocations = ImmutableMap.builder();
+        for (Node<LiveRange> node : coloredGraph.keySet()) {
+            allocations.put(node.value(), coloredGraph.get(node));
+        }
+        return allocations.build();
+    }
 }
