@@ -97,6 +97,6 @@ public class Graphs {
      * <p>That is, a node 'N' is in the return set if there is any path, 'start'...'N'...'end'.
      */
     public static <T> Set<Node<T>> convexHull(Graph<T> graph, Node<T> start, Node<T> end) {
-        return Sets.union(reachable(graph, start), reachable(inverse(graph), end));
+        return Sets.intersection(reachable(graph, start), reachable(inverse(graph), end));
     }
 }
