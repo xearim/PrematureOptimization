@@ -18,6 +18,7 @@ import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.graph.Node;
+import edu.mit.compilers.optimization.loops.DominatorSpec;
 
 /**
  * Given a basic block, the AvailabilityCalculator computes all available
@@ -33,6 +34,10 @@ public class DataFlowAnalyzer<N, T> {
     public static final DataFlowAnalyzer<ScopedStatement, ScopedVariable>
             LIVE_VARIABLES =
             new DataFlowAnalyzer<ScopedStatement, ScopedVariable>(new LivenessSpec());
+    public static final DataFlowAnalyzer<ScopedStatement, Node<ScopedStatement>>
+            DOMINATORS =
+            new DataFlowAnalyzer<ScopedStatement, Node<ScopedStatement>>(
+                    new DominatorSpec<ScopedStatement>());
 
     private AnalysisSpec<N, T> spec;
 

@@ -24,16 +24,19 @@ import edu.mit.compilers.codegen.AssemblyWriter;
 import edu.mit.compilers.codegen.Targets;
 import edu.mit.compilers.codegen.DataFlowIntRep;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.grammar.DecafParser;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.grammar.DecafScanner;
 import edu.mit.compilers.grammar.DecafScannerTokenTypes;
+import edu.mit.compilers.graph.DiGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.semantics.ErrorPrinter;
 import edu.mit.compilers.semantics.SemanticChecker;
 import edu.mit.compilers.semantics.errors.SemanticError;
 import edu.mit.compilers.tools.AstPrinter;
 import edu.mit.compilers.tools.CLI;
+import edu.mit.compilers.tools.DiGraphPrinter;
 import edu.mit.compilers.tools.CLI.Action;
 import edu.mit.compilers.tools.FlowGraphPrinter;
 
@@ -70,6 +73,8 @@ class Main {
                 dataFlowGraph(inputStream, outputStream, getOptimizations());
             } else if (CLI.target == Action.PRINT_OPTS) {
                 printOpts(outputStream, getOptimizations());
+            } else if (CLI.target == Action.DOMINATE) {
+                printDominatorTree(inputStream,outputStream,getOptimizations());
             }
         } catch(Exception e) {
             // An unrecoverable error occurred.
@@ -162,7 +167,7 @@ class Main {
     /** Print the optimized Control Flow Graph to outputStream in DOT format. */
     private static void controlFlowGraph(InputStream inputStream, PrintStream outputStream,
             Set<String> optimizationNames)
-            throws RecognitionException, TokenStreamException {
+                    throws RecognitionException, TokenStreamException {
         Program validProgram = semanticallyValidProgram(inputStream, outputStream).get();
         ImmutableMap.Builder<String, Method> methodsBuilder = ImmutableMap.builder();
         for (Method method : validProgram.getMethods()) {
@@ -265,5 +270,23 @@ class Main {
         for (String optimization : optimizations) {
             outputStream.println(optimization);
         }
+    }
+
+    private static void printDominatorTree(InputStream inputStream,
+            PrintStream outputStream,
+            Set<String> optimizationNames) throws RecognitionException, TokenStreamException {
+
+        Program validProgram = semanticallyValidProgram(inputStream, outputStream).get();
+        ImmutableMap.Builder<String, Method> methodsBuilder = ImmutableMap.builder();
+        for (Method method : validProgram.getMethods()) {
+            methodsBuilder.put(method.getName(), method);
+        }
+        ImmutableMap<String, Method> methods = methodsBuilder.build();
+
+        // TODO(jasonpr): Do it for everything, not just main.
+        Method main = methods.get(MAIN_METHOD_NAME);
+        DiGraph<ScopedStatement> tree = Targets.dominatorTree(main, optimizationNames);
+
+        DiGraphPrinter.<ScopedStatement>print(outputStream,tree);
     }
 }
