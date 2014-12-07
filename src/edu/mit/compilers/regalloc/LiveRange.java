@@ -46,6 +46,7 @@ public class LiveRange {
         Graph.Builder<LiveRange> conflictGraphBuilder = Graph.builder();
         // Loop over all pairs of live ranges. (We'll consider each pair twice.  It's easier.)
         for (Node<LiveRange> firstRange : conflictGraphNodes) {
+            conflictGraphBuilder.addNode(firstRange);
             for (Node<LiveRange> secondRange : conflictGraphNodes) {
                 if (conflict(firstRange.value(), secondRange.value())) {
                     conflictGraphBuilder.link(firstRange, secondRange);

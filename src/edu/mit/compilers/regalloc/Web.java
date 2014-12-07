@@ -57,6 +57,7 @@ public class Web implements Iterable<DefUseChain> {
                         sameWebGraphBuilder.link(duNode, sameEndNode);
                     }
                 }
+                sameWebGraphBuilder.addNode(duNode);
                 duNodes.put(end, duNode);
             }
         }
