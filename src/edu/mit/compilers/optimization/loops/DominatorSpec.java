@@ -1,8 +1,6 @@
 package edu.mit.compilers.optimization.loops;
 
 import static edu.mit.compilers.common.SetOperators.intersection;
-import static edu.mit.compilers.optimization.DataFlowAnalyzer.DOMINATORS;
-
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -10,12 +8,12 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
-import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.BasicDiGraph;
 import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.DiGraph;
 import edu.mit.compilers.graph.Node;
 import edu.mit.compilers.optimization.AnalysisSpec;
+import edu.mit.compilers.optimization.DataFlowAnalyzer;
 
 public class DominatorSpec <N> implements AnalysisSpec<N, Node<N>> {
 
@@ -57,22 +55,17 @@ public class DominatorSpec <N> implements AnalysisSpec<N, Node<N>> {
      * means that the source dominates the sink, but none of the
      * source node's children dominate the sink node.
      */
-    /*
-     * TODO(Manny): consider switching ScopedStatement to generic
-     * Problem: When instantiating DataFlowAnalyzer, need to specify type.
-     * Cannot keep type as a generic afterward.
-     */
-    public static DiGraph<ScopedStatement> getDominatorTree(
-            BcrFlowGraph<ScopedStatement> graph) {
+    public static <T> DiGraph<T> getDominatorTree(
+            BcrFlowGraph<T> graph) {
 
-        Multimap<Node<ScopedStatement>,Node<ScopedStatement>> dominatorsMap =
-                DOMINATORS.calculate(graph);
+        Multimap<Node<T>, Node<T>> dominatorsMap =
+                new DataFlowAnalyzer<T,Node<T>>(new DominatorSpec<T>()).calculate(graph);
 
-        BasicDiGraph.Builder<ScopedStatement> builder =
-                BasicDiGraph.<ScopedStatement>builder();
-        for (Entry<Node<ScopedStatement>, Node<ScopedStatement>>  entry : dominatorsMap.entries()) {
-            Node<ScopedStatement> conquered = entry.getKey();
-            Node<ScopedStatement> dominator = entry.getValue();
+        BasicDiGraph.Builder<T> builder =
+                BasicDiGraph.<T>builder();
+        for (Entry<Node<T>, Node<T>>  entry : dominatorsMap.entries()) {
+            Node<T> conquered = entry.getKey();
+            Node<T> dominator = entry.getValue();
 
             if (shouldShowDominationEdge(graph,dominatorsMap,dominator,conquered)) {
                 builder.link(dominator,conquered);
@@ -86,14 +79,14 @@ public class DominatorSpec <N> implements AnalysisSpec<N, Node<N>> {
      * Returns true if none of the children of the dominator also dominate
      * the conquered node.
      */
-    private static boolean shouldShowDominationEdge(
-            BcrFlowGraph<ScopedStatement> graph,
-            Multimap<Node<ScopedStatement>,Node<ScopedStatement>> dominatorMap,
-            Node<ScopedStatement> dominator,
-            Node<ScopedStatement> conquered) {
+    private static <T> boolean shouldShowDominationEdge(
+            BcrFlowGraph<T> graph,
+            Multimap<Node<T>, Node<T>> dominatorsMap,
+            Node<T> dominator,
+            Node<T> conquered) {
 
-        for (Node<ScopedStatement> child : graph.getSuccessors(dominator)) {
-            if (dominatorMap.get(conquered).contains(child)) {
+        for (Node<T> child : graph.getSuccessors(dominator)) {
+            if (dominatorsMap.get(conquered).contains(child)) {
                 return false;
             }
         }

@@ -70,7 +70,8 @@ public class DataFlowAnalyzer<N, T> {
             changed.remove(node);
 
             Collection<Collection<T>> sourceOutputSets = new ArrayList<Collection<T>>();
-            for (Node<N> source: getSources(dataFlowGraph, node)) {
+            Set<Node<N>> sources = getSources(dataFlowGraph, node);
+            for (Node<N> source: sources) {
                 sourceOutputSets.add(outputSets.get(source));
             }
             inputSets.replaceValues(node, spec.applyConfluenceOperator(sourceOutputSets));

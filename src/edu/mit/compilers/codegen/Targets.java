@@ -83,7 +83,7 @@ public class Targets {
     public static DiGraph<ScopedStatement> dominatorTree(Method method,
             Set<String> optimizationNames) {
         BcrFlowGraph<ScopedStatement> graph = optimizedDataFlowIntRep(method, optimizationNames).getDataFlowGraph();
-        return DominatorSpec.getDominatorTree(graph);
+        return DominatorSpec.<ScopedStatement>getDominatorTree(graph);
     }
 
 }
