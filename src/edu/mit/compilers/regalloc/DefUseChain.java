@@ -15,21 +15,21 @@ import edu.mit.compilers.optimization.ScopedVariable;
 import edu.mit.compilers.optimization.Util;
 
 
-public class DefUseChain<T> {
+public class DefUseChain {
 
-    private final Node<T> def;
-    private final Node<T> use;
+    private final Node<ScopedStatement> def;
+    private final Node<ScopedStatement> use;
 
-    public DefUseChain(Node<T> def, Node<T> use) {
+    public DefUseChain(Node<ScopedStatement> def, Node<ScopedStatement> use) {
         this.def = def;
         this.use = use;
     }
 
-    public Node<T> getDef() {
+    public Node<ScopedStatement> getDef() {
         return def;
     }
 
-    public Node<T> getUse() {
+    public Node<ScopedStatement> getUse() {
         return use;
     }
 
@@ -77,16 +77,16 @@ public class DefUseChain<T> {
     }
 
     /** Converts some reaching definitions to def-use chains, grouped by variable. */
-    public static Multimap<ScopedVariable, DefUseChain<ScopedStatement>>
+    public static Multimap<ScopedVariable, DefUseChain>
             getDefUseChains(Multimap<Node<ScopedStatement>, ReachingDefinition> reachingDefs) {
-        ImmutableMultimap.Builder<ScopedVariable, DefUseChain<ScopedStatement>> builder =
+        ImmutableMultimap.Builder<ScopedVariable, DefUseChain> builder =
                 ImmutableMultimap.builder();
         for (Node<ScopedStatement> user : reachingDefs.keySet()) {
             for (ScopedVariable usedVar : localScalarDependencies(user.value())) {
                 // Get all the defs for this node's use of this variable.
                 // For each def, emit a def-use chain, using this 'user' node as the 'use'.
                 for (Node<ScopedStatement> definer : usedReachingDefs(usedVar, reachingDefs.get(user))) {
-                    builder.put(usedVar, new DefUseChain<ScopedStatement>(definer, user));
+                    builder.put(usedVar, new DefUseChain(definer, user));
                 }
             }
         }
