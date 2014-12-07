@@ -1,0 +1,9 @@
+// shouldn't replace anything
+int main() {
+  int A[5];
+  int x;
+  int y;
+  x = A[2] + 4;
+  y = A[3] + 4;
+  return 0;
+}

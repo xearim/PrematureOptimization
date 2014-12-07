@@ -1,0 +1,6 @@
+int main() {
+  int x;
+  // eliminate
+  x = 3;
+  return 5;
+}
