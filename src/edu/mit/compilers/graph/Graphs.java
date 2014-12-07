@@ -11,6 +11,13 @@ import com.google.common.collect.Sets;
 public class Graphs {
     private Graphs() {}
 
+    // TODO(jasonpr): Decide whether it's bad for us to expose a synonym of dfs. Consider
+    // Deque#pop and Deque#addFirst.
+    /** Returns all nodes in 'graph' reachable from 'start'. */
+    public static <T> Set<Node<T>> reachable(DiGraph<T> graph, Node<T> start) {
+        return dfs(graph, start);
+    }
+
     /** Return all nodes in 'graph' reachable from 'start', in DFS order. */
     public static <T> Set<Node<T>> dfs(DiGraph<T> graph, Node<T> start) {
         return dfs(graph, ImmutableList.of(start));
@@ -82,5 +89,14 @@ public class Graphs {
             builder.add(connectedComponent);
         }
         return builder.build();
+    }
+
+    /**
+     * Computes the convex hull around 'start' and 'end'.
+     *
+     * <p>That is, a node 'N' is in the return set if there is any path, 'start'...'N'...'end'.
+     */
+    public static <T> Set<Node<T>> convexHull(Graph<T> graph, Node<T> start, Node<T> end) {
+        return Sets.union(reachable(graph, start), reachable(inverse(graph), end));
     }
 }
