@@ -92,7 +92,7 @@ public class Util {
        ImmutableMultimap.Builder<ScopedVariable, Node<ScopedStatement>> builder =
                ImmutableMultimap.builder();
        for (ReachingDefinition def : reachingDefs) {
-           builder.put(def.getScopedLocation(), def.getNode());
+           builder.put(def.getScopedVariable(), def.getNode());
        }
        return builder.build();
    }

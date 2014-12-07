@@ -12,7 +12,7 @@ public class ReachingDefinition {
         this.node = node;
     }
 
-    public ScopedVariable getScopedLocation() {
+    public ScopedVariable getScopedVariable() {
         return sc;
     }
 
