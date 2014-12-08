@@ -82,6 +82,10 @@ public class DefUseChain {
         ImmutableMultimap.Builder<ScopedVariable, DefUseChain> builder =
                 ImmutableMultimap.builder();
         for (Node<ScopedStatement> user : reachingDefs.keySet()) {
+            if (!user.hasValue()) {
+                // NOPs are never the user of a def-use chain.
+                continue;
+            }
             for (ScopedVariable usedVar : localScalarDependencies(user.value())) {
                 // Get all the defs for this node's use of this variable.
                 // For each def, emit a def-use chain, using this 'user' node as the 'use'.

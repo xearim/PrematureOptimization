@@ -116,8 +116,7 @@ public class ScopedVariable {
 
     @Override
     public String toString() {
-        return "ScopedVariable [variable=" + variable + ", scope=" + scope
-                + "]";
+        return "ScpVar[" + variable + "]";
     }
 
 }
