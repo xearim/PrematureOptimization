@@ -95,6 +95,11 @@ public class UnaryOperation implements NativeExpression {
         }
         return true;
     }
+    
+    @Override
+    public String toString() {
+        return "[" + asText() + "]";
+    }
 
     @Override
     public NativeExpression withReplacements(NativeExpression toReplace,

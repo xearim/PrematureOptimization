@@ -1,5 +1,6 @@
 package edu.mit.compilers.ast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.base.Optional;
@@ -116,6 +117,11 @@ public class MethodCall extends StaticStatement implements NativeExpression {
             return false;
         }
         return true;
+    }
+    
+    @Override
+    public String toString() {
+        return "[" + asText() + "]";
     }
 
     @Override

@@ -17,7 +17,7 @@ public class Architecture {
     public static final int WORD_SIZE = 8;
     public static final long BYTES_PER_ENTRY = 8;
     
-    private static final Variable MAIN_BASE_POINTER_ERROR_VAR = Variable.forCompiler("$mainbaseptr");   		
+    private static final Variable MAIN_BASE_POINTER_ERROR_VAR = Variable.forCompiler("mainbaseptr");   		
     
     public static final Scope ERROR_VARIABLES = constructErrors();
     public static final VariableReference MAIN_BASE_POINTER_ERROR_VARIABLE =
@@ -33,7 +33,7 @@ public class Architecture {
     
     private static Scope constructErrors() {
         return new Scope(ImmutableList.of(new FieldDescriptor(
-                Variable.forCompiler("$mainbaseptr"),
+                Variable.forCompiler("mainbaseptr"),
                 BaseType.INTEGER,
                 new LocationDescriptor("unknown", -1, -1))));
     }

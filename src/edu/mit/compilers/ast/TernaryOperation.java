@@ -22,7 +22,7 @@ public class TernaryOperation implements NativeExpression {
             NativeExpression falseResult) {
     	this(condition, trueResult, falseResult, LocationDescriptor.machineCode());
     }
-
+    
     @Override
     public Iterable<? extends NativeExpression> getChildren() {
         return ImmutableList.of(condition, trueResult, falseResult);
