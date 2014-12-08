@@ -1,0 +1,17 @@
+// Returns: 3
+int a;
+
+int sidefx ( ) {
+     a = a + 1;
+     return a;
+}
+
+void threeargs ( int one, int two, int three ) {
+     
+}
+
+int main ( ) {
+     a = 0;
+     threeargs(sidefx(), sidefx(), sidefx());
+     return a;
+}

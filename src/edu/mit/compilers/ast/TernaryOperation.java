@@ -1,5 +1,6 @@
 package edu.mit.compilers.ast;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class TernaryOperation implements NativeExpression {
@@ -7,6 +8,7 @@ public class TernaryOperation implements NativeExpression {
     private final NativeExpression trueResult;
     private final NativeExpression falseResult;
     private final LocationDescriptor locationDescriptor;
+    private final ExpressionType type = ExpressionType.TERNARY_OPERATION;
 
     public TernaryOperation(NativeExpression condition, NativeExpression trueResult,
             NativeExpression falseResult, LocationDescriptor locationDescriptor) {
@@ -15,7 +17,12 @@ public class TernaryOperation implements NativeExpression {
         this.falseResult = falseResult;
         this.locationDescriptor = locationDescriptor;
     }
-
+    
+    public TernaryOperation(NativeExpression condition, NativeExpression trueResult,
+            NativeExpression falseResult) {
+    	this(condition, trueResult, falseResult, LocationDescriptor.machineCode());
+    }
+    
     @Override
     public Iterable<? extends NativeExpression> getChildren() {
         return ImmutableList.of(condition, trueResult, falseResult);
@@ -45,7 +52,16 @@ public class TernaryOperation implements NativeExpression {
     public String asText() {
     	return condition.asText() + " " + "?" + " " + trueResult.asText() + " " + ":" + " " + falseResult.asText();
     }
-
+    
+    public ExpressionType getType(){
+    	return type;
+    }
+    
+    public int compareTo(NativeExpression other){
+    	Preconditions.checkState(other != null);
+    	return this.getType().getPrecedence() - other.getType().getPrecedence();
+    }
+    
     @Override
     public int hashCode() {
         final int prime = 31;

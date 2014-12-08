@@ -1,5 +1,6 @@
 package edu.mit.compilers.ast;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class BinaryOperation implements NativeExpression {
@@ -8,6 +9,7 @@ public class BinaryOperation implements NativeExpression {
     private final NativeExpression leftArgument;
     private final NativeExpression rightArgument;
     private final LocationDescriptor locationDescriptor;
+    private final ExpressionType type = ExpressionType.BINARY_OPERATION;
 
     public BinaryOperation(BinaryOperator operator, NativeExpression leftArgument,
             NativeExpression rightArgument, LocationDescriptor locationDescriptor) {
@@ -15,6 +17,11 @@ public class BinaryOperation implements NativeExpression {
         this.leftArgument = leftArgument;
         this.rightArgument = rightArgument;
         this.locationDescriptor = locationDescriptor;
+    }
+    
+    public BinaryOperation(BinaryOperator operator, NativeExpression leftArgument,
+            NativeExpression rightArgument){
+    	this(operator, leftArgument, rightArgument, LocationDescriptor.machineCode());
     }
     
     @Override
@@ -45,6 +52,17 @@ public class BinaryOperation implements NativeExpression {
     
     public String asText() {
     	return leftArgument.asText() + " " + operator.getSymbol() + " " + rightArgument.asText();
+    }
+    
+    public ExpressionType getType(){
+    	return type;
+    }
+    
+    /** Binary Operations will be re-ordered internally by the expressionOrder class if possible, thus we
+     * Do not want to impose an ordering on them here except with respect to other NativeExpressions*/
+    public int compareTo(NativeExpression other){
+    	Preconditions.checkState(other != null);
+    	return this.getType().getPrecedence() - other.getType().getPrecedence();
     }
 
     @Override

@@ -1,0 +1,8 @@
+// Returns: 5
+int foo() {
+
+}
+
+void main() {
+    foo();
+}

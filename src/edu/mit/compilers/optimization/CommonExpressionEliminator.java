@@ -87,8 +87,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             // When we make an optimized DFG, we produce modified copies of some original scopes.
             // When we make those copies, we need modify the children of those scopes, etc.
             Set<Node<ScopedStatement>> replaceable = replacable(dataFlowGraph.getNodes());
-            Set<Scope> allScopes = reachableScopes(replaceable);
-            Multimap<Scope, Scope> scopeTree = scopeTree(allScopes);
+            Set<Scope> allScopes = Util.reachableScopes(replaceable);
+            Multimap<Scope, Scope> scopeTree = Util.scopeTree(allScopes);
             Multimap<Scope, Variable> scopeAugmentations =
                     scopeAugmentations(tempVars.values(), ir.getScope());
             // Maps each scope to the "new" version of itself.  The new version may have
@@ -102,7 +102,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             for (Node<ScopedStatement> node : replaceable) {
                 Set<NativeExpression> toUseTemp = new HashSet<NativeExpression>();
                 Set<NativeExpression> toFillAndUseTemp = new HashSet<NativeExpression>();
-                for (NativeExpression expr : nodeExprs(node.value())) {
+                for (NativeExpression expr : Util.nodeExprs(node.value())) {
                     if (!isComplexEnough(expr)) {
                         continue;
                     }
@@ -227,38 +227,6 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
     }
 
     /**
-     * Get all scopes that are reachable from some node.
-     *
-     * <p> A scope is reachable if it is the scope some node, or if it is
-     * the ancestor of a reachable node.
-     */
-    private static Set<Scope> reachableScopes(Iterable<Node<ScopedStatement>> scopedStatements) {
-        ImmutableSet.Builder<Scope> reachable = ImmutableSet.builder();
-        for (Node<ScopedStatement> node : scopedStatements) {
-            Scope scope = node.value().getScope();
-            reachable.addAll(scope.lineage());
-        }
-        return reachable.build();
-    }
-
-    /**
-     * Get a tree representing all the scopes.
-     *
-     * Requires that, if a scope is in 'scopes', then its ancestors are also in 'scopes'.
-     *
-     * @returns The edges of the tree.
-     */
-    private static Multimap<Scope, Scope> scopeTree(Iterable<Scope> scopes) {
-        ImmutableMultimap.Builder<Scope, Scope> tree = ImmutableMultimap.builder();
-        for (Scope scope : scopes) {
-            if (scope.hasParent()) {
-                tree.put(scope.getParent().get(), scope);
-            }
-        }
-        return tree.build();
-    }
-
-    /**
      * Generate a map from expression to temporary variable, for some expressions.
      *
      * <p>Non-native expressions are ignored-- we can't store them in variables!
@@ -311,7 +279,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
     private static void addScopeTree(Multimap<Scope, Scope> oldScopeTree,
             Map<Scope, Scope> newScopes, Multimap<Scope, Variable> scopeAugmentations,
             Scope current) {
-        newScopes.put(current, augmented(
+        newScopes.put(current, Util.augmented(
                 current,
                 scopeAugmentations.get(current),
                 newScopes.get(current.getParent().get())));
@@ -320,37 +288,15 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         }
     }
 
-    /** Gets a copy of a scope, but with some variables added, and with a new parent pointer. */
-    private static Scope augmented(Scope original, Collection<Variable> augmentations, Scope newParent) {
-        ImmutableList.Builder<FieldDescriptor> fieldDescs =
-                ImmutableList.<FieldDescriptor>builder().addAll(original.getVariables());
-        for (Variable newVar : augmentations) {
-            fieldDescs.add(new FieldDescriptor(newVar, BaseType.WILDCARD));
-        }
-        return new Scope(fieldDescs.build(), newParent, original.isLoop());
-    }
-
     /** Get all the optimizable expressions from some nodes. */
     private static Iterable<NativeExpression> expressions(FlowGraph<ScopedStatement> dataFlowGraph) {
         ImmutableSet.Builder<NativeExpression> builder = ImmutableSet.builder();
         for (Node<ScopedStatement> node : dataFlowGraph.getNodes()) {
             if (node.hasValue()) {
-                builder.addAll(nodeExprs(node.value()));
+                builder.addAll(Util.nodeExprs(node.value()));
             }
         }
         return builder.build();
-    }
-
-    /**
-     * Get all the expressions in the node to try to optimize.
-     *
-     * <p>For now, we ONLY optimize the top-level expressions-- no subexpressions!
-     */
-    private static Collection<NativeExpression> nodeExprs(ScopedStatement scopedStatement) {
-        StaticStatement statement = scopedStatement.getStatement();
-        return statement.hasExpression()
-                ? ImmutableList.of(statement.getExpression())
-                : ImmutableList.<NativeExpression>of();
     }
 
     /**

@@ -1,0 +1,22 @@
+// Returns: 0
+int x;
+
+boolean foo(){
+    x = x + 100;
+    return true;
+}
+
+int main() {
+    x = 2;
+    if( false ){
+      x = x + 10;
+    } else {
+      x -= 1;
+    }
+    if( true ){
+      x = x - 1;
+    } else {
+      x = x + 10;
+    }
+    return x;
+}

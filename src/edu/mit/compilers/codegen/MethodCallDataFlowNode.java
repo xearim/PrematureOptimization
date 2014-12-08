@@ -9,6 +9,7 @@ import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.codegen.asm.Architecture;
 
 public class MethodCallDataFlowNode extends StatementDataFlowNode{
 	
@@ -18,7 +19,8 @@ public class MethodCallDataFlowNode extends StatementDataFlowNode{
 	public MethodCallDataFlowNode(MethodCall methodCall, Scope scope){
 		super("methodCall");
 		this.scope = scope;
-		this.methodCall = methodCall;
+		//this.methodCall = methodCall;
+		this.methodCall = (MethodCall) Architecture.EXPRESSION_ORDERING.order(methodCall);
 	}
 
 	@Override

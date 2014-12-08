@@ -78,7 +78,7 @@ public class AssemblyWriter {
     
     private static void errorVarPrinter(FieldDescriptor fd, PrintStream outputStream) {
         outputStream.println(String.format("\t%s: .quad %d",
-                new Label(LabelType.ERROR, fd.getVariable()).inAttSyntax(),
+                new Label(LabelType.GLOBAL, fd.getVariable()).inAttSyntax(),
                 (fd.getLength().isPresent())
                 ? fd.getLength().get().get64BitValue()
                         : GLOBAL_INITIAL_VALUE));

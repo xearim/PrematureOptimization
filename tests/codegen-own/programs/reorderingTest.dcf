@@ -1,0 +1,25 @@
+// Returns: 0
+int foo( int c, int d ){
+  return d + c + d;
+}
+
+int main() {
+  int x;
+  int y;
+  int a;
+  int b;
+  boolean d;
+  x = (b + a) * (x + y);
+  y = (x + y) * (a + b);
+  x = a + b + x + y;
+  y = y + x + b + a;
+  x = a * b * x * y;
+  y = y * b * a * x;
+  x = y * ( x * a );
+  d = a == b;
+  d = b == a;
+  x = a * b / 1;
+  a = x * y / 1;
+  y = foo( x + y, y + x );
+  return x;
+}

@@ -1,0 +1,14 @@
+// Returns: 0
+int main() {
+    int a[100];
+    int i;
+    int p;
+    for( i = 0,99 ){
+        if( a[i] == 0 ){
+            p += a[i];
+        } else {
+            p += 1000;
+        }
+    }
+    return p;
+}

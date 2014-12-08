@@ -1,5 +1,6 @@
 package edu.mit.compilers.ast;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class UnaryOperation implements NativeExpression {
@@ -7,12 +8,17 @@ public class UnaryOperation implements NativeExpression {
     private final UnaryOperator operator;
     private final NativeExpression argument;
     private final LocationDescriptor locationDescriptor;
+    private final ExpressionType type = ExpressionType.UNARY_OPERATION;
 
     public UnaryOperation(UnaryOperator operator, NativeExpression argument,
             LocationDescriptor locationDescriptor) {
         this.operator = operator;
         this.argument = argument;
         this.locationDescriptor = locationDescriptor;
+    }
+    
+    public UnaryOperation(UnaryOperator operator, NativeExpression argument) {
+        this(operator, argument, LocationDescriptor.machineCode());
     }
     
     @Override
@@ -39,6 +45,19 @@ public class UnaryOperation implements NativeExpression {
     
     public String asText() {
     	return operator.getSymbol() + " " + argument.asText();
+    }
+    
+    public ExpressionType getType(){
+    	return type;
+    }
+    
+    public int compareTo(NativeExpression other){
+    	Preconditions.checkState(other != null);
+    	if(this.getType() != other.getType()){
+    		return this.getType().getPrecedence() - other.getType().getPrecedence();
+    	} else {
+    		return this.argument.compareTo(((UnaryOperation) other).getArgument());
+    	}
     }
 
     @Override
@@ -75,6 +94,11 @@ public class UnaryOperation implements NativeExpression {
             return false;
         }
         return true;
+    }
+    
+    @Override
+    public String toString() {
+        return "[" + asText() + "]";
     }
 
     @Override

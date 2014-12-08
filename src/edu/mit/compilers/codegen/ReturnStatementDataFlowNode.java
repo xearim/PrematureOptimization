@@ -18,7 +18,12 @@ public class ReturnStatementDataFlowNode extends StatementDataFlowNode{
 	public ReturnStatementDataFlowNode(ReturnStatement returnStatement, Scope scope){
 		super("Return");
 		this.scope = scope;
-		this.returnStatement = returnStatement;
+		//this.returnStatement = returnStatement;
+		if(returnStatement.getValue().isPresent()){
+			this.returnStatement = ReturnStatement.compilerReturn(returnStatement.getValue().get());
+		} else {
+			this.returnStatement = returnStatement;
+		}
 	}
 
 	@Override
