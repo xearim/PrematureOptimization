@@ -80,7 +80,7 @@ public class RegisterAllocator {
             getLiveRange(ScopedVariable variable, Web web, BcrFlowGraph<ScopedStatement> dfg) {
         ImmutableSet.Builder<Node<ScopedStatement>> nodes = ImmutableSet.builder();
         for (DefUseChain duChain : web) {
-            nodes.addAll(Graphs.semiOpenRange(dfg, duChain.getDef(), duChain.getUse()));
+            nodes.addAll(Graphs.closedRange(dfg, duChain.getDef(), duChain.getUse()));
         }
         return new LiveRange(variable, nodes.build());
     }
