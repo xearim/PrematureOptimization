@@ -4,6 +4,9 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.enter;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.leave;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.move;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
+
+import java.util.Map;
+
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
@@ -13,6 +16,8 @@ import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
+import edu.mit.compilers.regalloc.LiveRange;
+import edu.mit.compilers.regalloc.RegisterAllocator;
 
 /**
  * Produce a BiTerminalGraph that represents the entire execution of a method.
@@ -54,8 +59,9 @@ public class MethodGraphFactory {
         }
         
         // Block graph.
+        Map<LiveRange, Register> allocations = RegisterAllocator.allocations(methodDataFlowGraph);
         BcrFlowGraph<Instruction> blockGraph =
-                DataFlowToControlFlowConverter.convert(methodDataFlowGraph);
+                DataFlowToControlFlowConverter.convert(methodDataFlowGraph, allocations);
         builder.append(blockGraph);
 
         // Fall Through Checking.
