@@ -86,6 +86,32 @@ public class SubexpressionExpander implements DataFlowOptimizer {
         		newScopesHelper(oldScopeTree, oldToNewScopes, child);
         	}
         }
+        
+        private Map<Scope, Scope> fixScopes(
+        		Multimap<Scope, Scope> oldScopeTree, Map<Scope, Scope> scopeSet, Scope root) {
+        	Map<Scope, Scope> oldToNewScopes = new HashMap<Scope, Scope>();
+        	Scope parameterScope = root.getParent().get();
+            checkState(parameterScope.getScopeType() == ScopeType.PARAMETER);
+            Scope globalScope = parameterScope.getParent().get();
+            checkState(globalScope.getScopeType() == ScopeType.GLOBAL);
+
+            // We don't duplicate these higher-than-method scopes.  Map them to themselves.
+            oldToNewScopes.put(parameterScope, parameterScope);
+            oldToNewScopes.put(globalScope, globalScope);
+
+            fixScopesHelper(oldScopeTree, oldToNewScopes, scopeSet, root);
+            return oldToNewScopes;
+        }
+        
+        private void fixScopesHelper(
+        		Multimap<Scope, Scope> oldScopeTree, Map<Scope, Scope> oldToNewScopes, 
+        		Map<Scope, Scope> scopeSet, Scope current) {
+        	oldToNewScopes.put(current, 
+        			new Scope(scopeSet.get(current).getVariables(), oldToNewScopes.get(current.getParent().get()), scopeSet.get(current).isLoop()));
+        	for(Scope child: oldScopeTree.get(current)){
+        		fixScopesHelper(oldScopeTree, oldToNewScopes, scopeSet, child);
+        	}
+        }
 
         public DataFlowIntRep optimized() {
         	Queue<Node<ScopedStatement>> expandable = expandable(dataFlowGraph.getNodes());
@@ -112,6 +138,8 @@ public class SubexpressionExpander implements DataFlowOptimizer {
                 	}
                 }
             }
+            
+            oldToNewScopes = fixScopes(scopeTree, oldToNewScopes, ir.getScope());
             BcrFlowGraph<ScopedStatement> expandedGraph = statementBuilder.build();
             BcrFlowGraph.Builder<ScopedStatement> statementFinalizer =
             		BcrFlowGraph.builderOf(expandedGraph);
@@ -119,7 +147,8 @@ public class SubexpressionExpander implements DataFlowOptimizer {
             	if(node.hasValue()){
             		statementFinalizer.replace(node, 
                 			BasicFlowGraph.<ScopedStatement>builder()
-                            .append(new ScopedStatement(node.value().getStatement(), oldToNewScopes.get(node.value().getScope())))
+                            .append(
+                            		new ScopedStatement(node.value().getStatement(), oldToNewScopes.get(node.value().getScope())))
                             .build());
             	}
             }

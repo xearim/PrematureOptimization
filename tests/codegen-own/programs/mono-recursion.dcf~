@@ -1,0 +1,14 @@
+// Returns: 5
+int id(int x) {
+  int y;
+  if (x == 0) {
+    return 0;
+  } else {
+    y = x - 1;
+    return id(y) + 1;
+  }
+}
+
+int main() {
+  return id(5);
+}
