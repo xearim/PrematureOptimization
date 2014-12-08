@@ -49,7 +49,7 @@ class Main {
     private static final String MAIN_METHOD_NAME = "main";
 
     // TODO(jasonpr): Modify interface of CLI so we don't have to do this weird dance.
-    private static final String[] OPTIMIZATION_NAMES = {"cse", "conprop", "dce"};
+    private static final String[] OPTIMIZATION_NAMES = {"cse", "conprop", "dce", "regalloc"};
 
     public static void main(String[] args) {
         try {

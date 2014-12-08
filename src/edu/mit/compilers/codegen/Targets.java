@@ -50,8 +50,11 @@ public class Targets {
 
     public static FlowGraph<Instruction>
     controlFlowGraph(Method method, Set<String> dataflowOptimizations) {
+        // TODO(jasonpr): Rename dataflowOptimizations.  Not all optimizations
+        // are dataflow optimizations!
+        boolean doRegAlloc = dataflowOptimizations.contains("regalloc");
         return asControlFlowGraph(optimizedDataFlowIntRep(method, dataflowOptimizations),
-                method.getName(), method.isVoid());
+                method.getName(), method.isVoid(), doRegAlloc);
     }
 
     private static DataFlowIntRep asDataFlowIntRep(Method method) {
@@ -64,10 +67,6 @@ public class Targets {
     // (It's an artifact of the strange interface that tools.CLI provides...
     // but we could easily do a better job of isolating that strangeness.
     private static DataFlowIntRep optimized(DataFlowIntRep unoptimized, Set<String> enabledOptimizations) {
-        for (String optimization : enabledOptimizations) {
-            checkArgument(OPTIMIZERS.containsKey(optimization));
-        }
-
         DataFlowIntRep ir = unoptimized;
         
         // Do dataflow preprocessing
@@ -76,17 +75,19 @@ public class Targets {
         }
         
         // Do dataflow optimizations.
-        for (String optName : enabledOptimizations) {
-            ir = OPTIMIZERS.get(optName).optimized(ir);
+        for (String optName : OPTIMIZERS.keySet()) {
+            if (enabledOptimizations.contains(optName)) {
+                ir = OPTIMIZERS.get(optName).optimized(ir);
+            }
         }
         return ir;
 
     }
 
     private static FlowGraph<Instruction> asControlFlowGraph(
-            DataFlowIntRep ir, String name, boolean isVoid) {
+            DataFlowIntRep ir, String name, boolean isVoid, boolean doRegAlloc) {
         FlowGraph<Instruction> cfg = new MethodGraphFactory(
-                ir.getDataFlowGraph(),name, isVoid, getMemorySize(ir)).getGraph();
+                ir.getDataFlowGraph(),name, isVoid, getMemorySize(ir), doRegAlloc).getGraph();
         return BasicFlowGraph.builderOf(cfg).removeNops().build();
     }
     
