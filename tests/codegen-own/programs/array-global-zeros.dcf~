@@ -1,0 +1,10 @@
+// Returns: 0
+int a[1000];
+int main() {
+    int i;
+    int p;
+    for( i = 0,999 ){
+        p += a[i];
+    }
+    return p;
+}

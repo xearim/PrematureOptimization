@@ -18,7 +18,8 @@ int main() {
   x = y * ( x * a );
   d = a == b;
   d = b == a;
-  x = a * b / x * y;
+  x = a * b / 1;
+  a = x * y / 1;
   y = foo( x + y, y + x );
   return x;
 }

@@ -1,8 +1,9 @@
 // Returns: 254
+
 boolean bar() {
   int a;
   boolean b;
-  a = 4;
+  int a = 4;
   a += 5;
   b = true;
   return false;

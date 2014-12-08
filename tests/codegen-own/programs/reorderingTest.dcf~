@@ -1,0 +1,10 @@
+// Returns: 0
+int main() {
+  int x;
+  int y;
+  int a;
+  int b;
+  x = (b + a) * (x + y);
+  y = (x + y) * (a + b);
+  return x;
+}
