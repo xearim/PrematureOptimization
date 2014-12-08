@@ -1,8 +1,0 @@
-// Returns: 254
-int foo() {
-
-}
-
-void main() {
-    foo();
-}

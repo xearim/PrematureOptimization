@@ -1,8 +1,0 @@
-// Returns: 10
-int main() {
-  int i;
-  while (true) : 10 {
-      i += 1;
-    }
-  return i;
-}
