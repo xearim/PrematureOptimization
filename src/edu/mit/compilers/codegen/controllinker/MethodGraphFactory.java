@@ -8,6 +8,7 @@ import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.codegen.asm.instructions.Instructions;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.BcrFlowGraph;
@@ -58,7 +59,9 @@ public class MethodGraphFactory {
         builder.append(blockGraph);
 
         // Fall Through Checking.
-        if (!isVoid) {
+        if (isVoid) {
+            builder.append(Instructions.move(new Literal(0), Register.RAX));
+        } else {
             builder.append(new ErrorExitGraphFactory(Literal.CONTROL_DROP_OFF_EXIT).getGraph());
         }
 

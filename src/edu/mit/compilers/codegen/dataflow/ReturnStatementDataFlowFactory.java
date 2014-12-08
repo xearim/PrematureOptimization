@@ -25,7 +25,6 @@ public class ReturnStatementDataFlowFactory implements DataFlowFactory{
 		BranchSinkDataFlowNode breakNode = new BranchSinkDataFlowNode();
 		BranchSinkDataFlowNode returnNode = new BranchSinkDataFlowNode();
 		
-		if(rs.getValue().isPresent()){
 			// Generate our return statement
 			ReturnStatementDataFlowNode returnValue = new ReturnStatementDataFlowNode(rs, scope);
 			
@@ -34,11 +33,6 @@ public class ReturnStatementDataFlowFactory implements DataFlowFactory{
 			returnValue.setPrev(start);
 			returnValue.setNext(returnNode);
 			returnNode.setPrev(returnValue);
-		} else {
-			// We just hook ourselves forward
-			start.setNext(returnNode);
-			returnNode.setPrev(start);
-		}
 		
 		return new DataFlow(start, end,
 				new DataControlNodes(breakNode, continueNode, returnNode));
