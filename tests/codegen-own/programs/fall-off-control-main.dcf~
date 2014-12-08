@@ -1,6 +1,0 @@
-// Returns: 254
-
-int main() {
-  int a;
-  a = 4;
-}
