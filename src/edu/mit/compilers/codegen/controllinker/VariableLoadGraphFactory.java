@@ -22,6 +22,7 @@ import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.VariableReference;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.common.Variable;
 import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.optimization.ScopedVariable;
@@ -97,11 +98,21 @@ public class VariableLoadGraphFactory implements GraphFactory {
                 * -1;
     }
 
-    private static FlowGraph<Instruction> calculateLoadFromScalar(ScalarLocation location, Scope scope) {
-        return BasicFlowGraph.<Instruction>builder()
-                .append(move(new VariableReference(location.getVariable(), scope), R11))
-                .append(push(R11))
-                .build();
+    private static FlowGraph<Instruction> calculateLoadFromScalar(ScalarLocation location,
+            Scope scope, Map<ScopedVariable, Register> allocations) {
+        Variable variable = location.getVariable();
+        ScopedVariable scopedVariable = new ScopedVariable(variable, scope.getLocation(variable));
+        if (allocations.containsKey(scopedVariable)) {
+            // Use a register, rather than looking in memory.
+            return BasicFlowGraph.<Instruction>builder()
+                    .append(push(allocations.get(scopedVariable)))
+                    .build();
+        } else {
+            return BasicFlowGraph.<Instruction>builder()
+                    .append(move(new VariableReference(location.getVariable(), scope), R11))
+                    .append(push(R11))
+                    .build();
+        }
     }
 
     @Override
@@ -109,7 +120,7 @@ public class VariableLoadGraphFactory implements GraphFactory {
         if (location instanceof ArrayLocation) {
             return calculateLoadFromArray((ArrayLocation) location, scope, allocations, true);
         } else if (location instanceof ScalarLocation) {
-            return calculateLoadFromScalar((ScalarLocation) location, scope);
+            return calculateLoadFromScalar((ScalarLocation) location, scope, allocations);
         } else {
             throw new AssertionError("Unexpected location type for " + location);
         }
