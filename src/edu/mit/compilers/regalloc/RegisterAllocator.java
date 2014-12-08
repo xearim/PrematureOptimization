@@ -1,14 +1,10 @@
 package edu.mit.compilers.regalloc;
 
-import static edu.mit.compilers.codegen.asm.Register.R10;
-import static edu.mit.compilers.codegen.asm.Register.R11;
-import static edu.mit.compilers.codegen.asm.Register.R8;
-import static edu.mit.compilers.codegen.asm.Register.R9;
-import static edu.mit.compilers.codegen.asm.Register.RAX;
-import static edu.mit.compilers.codegen.asm.Register.RCX;
-import static edu.mit.compilers.codegen.asm.Register.RDI;
-import static edu.mit.compilers.codegen.asm.Register.RDX;
-import static edu.mit.compilers.codegen.asm.Register.RSI;
+import static edu.mit.compilers.codegen.asm.Register.R12;
+import static edu.mit.compilers.codegen.asm.Register.R13;
+import static edu.mit.compilers.codegen.asm.Register.R14;
+import static edu.mit.compilers.codegen.asm.Register.R15;
+import static edu.mit.compilers.codegen.asm.Register.RBX;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,7 +30,7 @@ public class RegisterAllocator {
 
     /** The registers we can allocate. */
     private static final Set<Register> REGISTERS =
-            ImmutableSet.of(RAX, RCX, RDX, RSI, RDI, R8, R9, R10, R11);
+            ImmutableSet.of(R12, R13, R14, R15, RBX);
 
     private RegisterAllocator() {}
 
