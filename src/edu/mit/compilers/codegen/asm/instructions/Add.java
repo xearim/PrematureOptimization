@@ -24,4 +24,12 @@ public class Add extends Instruction {
     	syntax += leftArgument.inAttSyntax() + ", " + rightArgument.inAttSyntax();
     	return syntax;
     }
+
+	public Value getLeftArgument() {
+		return leftArgument;
+	}
+
+	public Value getRightArgument() {
+		return rightArgument;
+	}
 }

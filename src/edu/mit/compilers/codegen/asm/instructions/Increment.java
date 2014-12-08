@@ -16,4 +16,8 @@ public class Increment extends Instruction {
     	// Inc is just a fancy wrapper for an addition of 1
     	return Instructions.add(new Literal(1), Argument).inAttSyntax();
     }
+
+	public Value getArgument() {
+		return Argument;
+	}
 }

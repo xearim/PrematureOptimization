@@ -25,4 +25,16 @@ public class MoveFromMemory extends Instruction {
                 offset, reference.inAttSyntax(),
                 index.inAttSyntax(), elementSize, destination.inAttSyntax());
     }
+
+	public Register getReference() {
+		return reference;
+	}
+
+	public Register getIndex() {
+		return index;
+	}
+
+	public Value getDestination() {
+		return destination;
+	}
 }

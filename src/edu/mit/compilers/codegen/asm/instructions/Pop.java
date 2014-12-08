@@ -4,10 +4,14 @@ import edu.mit.compilers.codegen.asm.Value;
 
 public class Pop extends Instruction {
     private InstructionType type = InstructionType.PUSH;
-    private final Value Argument;
+    public final Value Argument;
 
     public Pop(Value Argument) {
         this.Argument = Argument;
+    }
+    
+    public Value getArguement() {
+    	return this.Argument;
     }
 
     @Override

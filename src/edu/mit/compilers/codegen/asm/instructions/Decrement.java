@@ -16,4 +16,8 @@ public class Decrement extends Instruction {
     	// Inc is just a fancy wrapper for an addition of 1
     	return Instructions.subtract(new Literal(1), Argument).inAttSyntax();
     }
+
+	public Value getArgument() {
+		return Argument;
+	}
 }

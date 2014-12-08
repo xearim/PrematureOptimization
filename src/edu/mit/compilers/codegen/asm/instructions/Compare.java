@@ -54,4 +54,12 @@ public class Compare extends Instruction {
     	return syntax;
     }
 
+	public Register getLeftArgument() {
+		return leftArgument;
+	}
+
+	public Value getRightArgument() {
+		return rightArgument;
+	}
+
 }

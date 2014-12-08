@@ -9,6 +9,10 @@ public class Push extends Instruction {
     public Push(Value Argument) {
         this.Argument = Argument;
     }
+    
+    public Value getArguement() {
+    	return this.Argument;
+    }
 
     @Override
     public String inAttSyntax() {
