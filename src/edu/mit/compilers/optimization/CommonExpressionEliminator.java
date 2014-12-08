@@ -98,7 +98,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                 Set<NativeExpression> toUseTemp = new HashSet<NativeExpression>();
                 Set<NativeExpression> toFillAndUseTemp = new HashSet<NativeExpression>();
                 for (NativeExpression expr : Util.nodeExprs(node.value())) {
-                    if (!isComplexEnough(expr) || Util.containsMethodCall(expr)) {
+                    if (!isComplexEnough(expr)) {
                         continue;
                     }
                     if (isAvailable(expr, node)) {
