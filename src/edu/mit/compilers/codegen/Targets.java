@@ -94,7 +94,7 @@ public class Targets {
     	long size = 0;
     	for(Node<ScopedStatement> node : ir.getDataFlowGraph().getNodes()){
     		long nodeReq = 0;
-    		if(node.hasValue() && node.value().getScope() != null){
+    		if(node.hasValue()){
     			Scope current = node.value().getScope();
     			do{
     				nodeReq += current.getScopeType() == ScopeType.GLOBAL ? 0 : current.size();
