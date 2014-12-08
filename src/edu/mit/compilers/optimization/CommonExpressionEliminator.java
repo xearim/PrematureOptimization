@@ -101,7 +101,6 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             for (Node<ScopedStatement> node : replaceable) {
                 Set<NativeExpression> toUseTemp = new HashSet<NativeExpression>();
                 Set<NativeExpression> toFillAndUseTemp = new HashSet<NativeExpression>();
-                /*
                 for (NativeExpression expr : Util.nodeExprs(node.value())) {
                     if (!isComplexEnough(expr)) {
                         continue;
@@ -112,7 +111,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                         // For now, we always generate if it's not available.
                         toFillAndUseTemp.add(expr);
                     } 
-                }*/
+                }
                 statementBuilder.replace(node, doReplacements(node.value(), toUseTemp,
                         toFillAndUseTemp, augmentedScopes.get(node.value().getScope())));
             }
