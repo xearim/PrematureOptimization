@@ -22,7 +22,6 @@ import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.BcrFlowGraph;
 import edu.mit.compilers.graph.Graph;
 import edu.mit.compilers.graph.Graphs;
-import edu.mit.compilers.graph.Graphs.UncolorableGraphException;
 import edu.mit.compilers.graph.Node;
 import edu.mit.compilers.optimization.DataFlowAnalyzer;
 import edu.mit.compilers.optimization.ReachingDefinition;
@@ -88,12 +87,7 @@ public class RegisterAllocator {
             Graph<LiveRange> conflictGraph) {
 
         Map<Node<LiveRange>, Register> coloredGraph;
-        try {
-            coloredGraph = Graphs.colored(conflictGraph, ImmutableSet.copyOf(REGISTERS));
-        } catch (UncolorableGraphException e) {
-            // TODO(jasonpr): Handle uncolorable graphs.
-            throw new RuntimeException("Not yet implemented!");
-        }
+        coloredGraph = Graphs.colored(conflictGraph, ImmutableSet.copyOf(REGISTERS));
 
         ImmutableMap.Builder<LiveRange, Register> allocations = ImmutableMap.builder();
         for (Node<LiveRange> node : coloredGraph.keySet()) {
