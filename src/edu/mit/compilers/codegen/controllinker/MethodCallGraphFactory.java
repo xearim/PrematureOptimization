@@ -80,7 +80,7 @@ public class MethodCallGraphFactory implements GraphFactory {
                             new Location(RSP, argNumber * Architecture.BYTES_PER_ENTRY)));
         }
 
-        builder.append(RegisterSaver.pushAll());
+        builder.append(RegisterSaver.pushAllParameterRegisters());
         // Move stashed values to the spots specified by the x86 calling convention.
         int offset = 0;
         for (int argNumber = args.size() - 1; argNumber >= 0; argNumber--){
@@ -108,7 +108,7 @@ public class MethodCallGraphFactory implements GraphFactory {
         // Do post-call bookkeeping.
         // Remove the pushed arguments from the stack.
         builder.append(add(new Literal(numOverflowingArgs * Architecture.WORD_SIZE), RSP))
-                .append(RegisterSaver.popAll())
+                .append(RegisterSaver.popAllParemeterRegsiters())
                 // Remove scratch space.
                 .append(add(new Literal(args.size() * Architecture.WORD_SIZE), RSP))
                 // Push the return value to the stack.

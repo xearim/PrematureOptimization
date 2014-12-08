@@ -6,10 +6,12 @@ import static edu.mit.compilers.codegen.asm.Register.R14;
 import static edu.mit.compilers.codegen.asm.Register.R15;
 import static edu.mit.compilers.codegen.asm.Register.RBX;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -29,8 +31,8 @@ import edu.mit.compilers.optimization.ScopedVariable;
 public class RegisterAllocator {
 
     /** The registers we can allocate. */
-    private static final Set<Register> REGISTERS =
-            ImmutableSet.of(R12, R13, R14, R15, RBX);
+    public static final List<Register> REGISTERS =
+            ImmutableList.of(R12, R13, R14, R15, RBX);
 
     private RegisterAllocator() {}
 
@@ -87,7 +89,7 @@ public class RegisterAllocator {
 
         Map<Node<LiveRange>, Register> coloredGraph;
         try {
-            coloredGraph = Graphs.colored(conflictGraph, REGISTERS);
+            coloredGraph = Graphs.colored(conflictGraph, ImmutableSet.copyOf(REGISTERS));
         } catch (UncolorableGraphException e) {
             // TODO(jasonpr): Handle uncolorable graphs.
             throw new RuntimeException("Not yet implemented!");

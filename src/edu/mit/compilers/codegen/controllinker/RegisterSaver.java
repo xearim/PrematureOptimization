@@ -18,6 +18,7 @@ import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
+import edu.mit.compilers.regalloc.RegisterAllocator;
 
 public class RegisterSaver {
 
@@ -31,18 +32,38 @@ public class RegisterSaver {
     private RegisterSaver() {}
 
     /** Push all six registers that are used for method calls onto the stack. */
-    public static FlowGraph<Instruction> pushAll() {
+    public static FlowGraph<Instruction> pushAllParameterRegisters() {
+        return pushAll(PARAMETER_REGISTERS);
+    }
+
+    /** Pop the argument registers, in the reverse order of #pushAll. */
+    public static FlowGraph<Instruction> popAllParemeterRegsiters() {
+        return popAll(PARAMETER_REGISTERS);
+    }
+
+    /** Pop all the registers used in register allocation. */
+    public static FlowGraph<Instruction> pushAllVariableRegisters() {
+        return pushAll(RegisterAllocator.REGISTERS);
+    }
+
+    /** Push all the registers used in register allocation. */
+    public static FlowGraph<Instruction> popAllVariableRegisters() {
+        return pushAll(RegisterAllocator.REGISTERS);
+    }
+
+    /** Push the argument registers, in order. */
+    private static FlowGraph<Instruction> pushAll(List<Register> registers) {
         BasicFlowGraph.Builder<Instruction> pusher = BasicFlowGraph.builder();
-        for (Register register : PARAMETER_REGISTERS) {
+        for (Register register : registers) {
             pusher.append(push(register));
         }
         return pusher.build();
     }
 
-    /** Pop the argument registers, in the reverse order of #pushAll. */
-    public static FlowGraph<Instruction> popAll() {
+    /** Pop the argument registers, in reverse order! */
+    private static FlowGraph<Instruction> popAll(List<Register> registers) {
         BasicFlowGraph.Builder<Instruction> popper = BasicFlowGraph.builder();
-        for (Register register : Lists.reverse(PARAMETER_REGISTERS)) {
+        for (Register register : Lists.reverse(registers)) {
             popper.append(pop(register));
         }
         return popper.build();

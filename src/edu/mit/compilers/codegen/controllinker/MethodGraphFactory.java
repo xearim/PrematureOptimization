@@ -49,15 +49,17 @@ public class MethodGraphFactory {
             String name, boolean isVoid, long entriesToAllocate) {
         // If we are the main method, we need to write down the base pointer for error handling
         boolean isMain = name.equals(Architecture.MAIN_METHOD_NAME);
-        
+
         BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
-        
+
         // Entry code.
         builder.append(enter(entriesToAllocate));
         if (isMain){
             builder.append(move(Register.RBP, Architecture.MAIN_BASE_POINTER_ERROR_VARIABLE));
         }
-        
+
+        builder.append(RegisterSaver.pushAllVariableRegisters());
+
         // Block graph.
         Map<LiveRange, Register> allocations = RegisterAllocator.allocations(methodDataFlowGraph);
         BcrFlowGraph<Instruction> blockGraph =
@@ -72,6 +74,7 @@ public class MethodGraphFactory {
         }
 
         builder.setEndToSinkFor(builder.getEnd(), blockGraph.getReturnTerminal())
+                .append(RegisterSaver.popAllVariableRegisters())
                 .append(leave())
                 .append(ret());
 
