@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -17,16 +16,12 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 import edu.mit.compilers.ast.Assignment;
-import edu.mit.compilers.ast.BaseType;
 import edu.mit.compilers.ast.BinaryOperation;
-import edu.mit.compilers.ast.Condition;
-import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.LocationDescriptor;
 import edu.mit.compilers.ast.MethodCall;
 import edu.mit.compilers.ast.NativeExpression;
-import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.ScalarLocation;
 import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.ScopeType;

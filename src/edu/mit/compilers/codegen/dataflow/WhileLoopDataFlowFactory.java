@@ -71,9 +71,10 @@ public class WhileLoopDataFlowFactory implements DataFlowFactory{
 		CompareDataFlowNode loopComparator = new CompareDataFlowNode(whileLoop.getCondition(), scope);
 		
 		// And Max Reps comparisons too
+		// Look here if whiles gain another off by one error again, this is a quick fix
 		CompareDataFlowNode maxRepComparator = new CompareDataFlowNode(
 		        new BinaryOperation(
-		                BinaryOperator.LESS_THAN,
+		                BinaryOperator.LESS_THAN_OR_EQUAL,
 		                maxRepsVar,
 		                whileLoop.getMaxRepetitions().isPresent()
 		                        ? whileLoop.getMaxRepetitions().get()

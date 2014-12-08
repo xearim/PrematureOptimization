@@ -123,4 +123,29 @@ public class TernaryOperation implements NativeExpression {
                 falseResult.withReplacements(toReplace, replacement),
                 locationDescriptor);
     }
+    
+    public TernaryOperation replaceFirst(NativeExpression toReplace,
+            NativeExpression replacement) {
+        if (condition.equals(toReplace)) {
+        	return new TernaryOperation(
+                    replacement,
+                    trueResult,
+                    falseResult,
+                    locationDescriptor);
+        } else if (trueResult.equals(toReplace)){
+        	return new TernaryOperation(
+                    condition,
+                    replacement,
+                    falseResult,
+                    locationDescriptor);
+        } else if (falseResult.equals(toReplace)){
+        	return new TernaryOperation(
+                    condition,
+                    trueResult,
+                    replacement,
+                    locationDescriptor);
+        } else {
+        	return this;
+        }
+    }
 }

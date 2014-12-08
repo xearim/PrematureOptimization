@@ -106,13 +106,13 @@ public class Util {
            NativeExpression statement, NativeExpression replace, Location replacement) {
 	   Preconditions.checkState(!isBaseExpression(statement));
        if(statement instanceof BinaryOperation){
-           return ((BinaryOperation) statement).withReplacements(replace, replacement);
+           return ((BinaryOperation) statement).replaceFirst(replace, replacement);
        } else if(statement instanceof MethodCall){
-    	   return ((MethodCall) statement).withReplacements(replace, replacement) ;
+    	   return ((MethodCall) statement).replaceFirst(replace, replacement) ;
        } else if(statement instanceof TernaryOperation){
-    	   return ((TernaryOperation) statement).withReplacements(replace, replacement);
+    	   return ((TernaryOperation) statement).replaceFirst(replace, replacement);
        } else if(statement instanceof UnaryOperation){
-    	   return ((UnaryOperation) statement).withReplacements(replace, replacement);
+    	   return ((UnaryOperation) statement).replaceFirst(replace, replacement);
        } else {
            throw new AssertionError("Unexpected NativeExpression type for " + statement);
        }

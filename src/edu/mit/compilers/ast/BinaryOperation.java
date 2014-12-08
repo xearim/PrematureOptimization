@@ -126,4 +126,20 @@ public class BinaryOperation implements NativeExpression {
                 rightArgument.withReplacements(toReplace, replacement),
                 locationDescriptor);
     }
+    
+    public BinaryOperation replaceFirst(NativeExpression toReplace, NativeExpression replacement) {
+    	if(leftArgument.equals(toReplace)){
+    		return new BinaryOperation(operator,
+                    replacement,
+                    rightArgument,
+                    locationDescriptor);
+    	} else if (rightArgument.equals(toReplace)){
+    		return new BinaryOperation(operator,
+                    leftArgument,
+                    replacement,
+                    locationDescriptor);
+    	} else {
+    		return this;
+    	}
+    }
 }
