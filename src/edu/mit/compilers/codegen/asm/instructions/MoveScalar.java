@@ -19,4 +19,12 @@ public class MoveScalar extends Instruction {
     	return Instructions.move(reference, target).inAttSyntax();
     }
 
+	public VariableReference getReference() {
+		return reference;
+	}
+
+	public Value getTarget() {
+		return target;
+	}
+
 }

@@ -24,6 +24,7 @@ import edu.mit.compilers.optimization.ConstantPropagator;
 import edu.mit.compilers.optimization.DataFlowOptimizer;
 import edu.mit.compilers.optimization.DeadCodeEliminator;
 import edu.mit.compilers.optimization.DominatorTreeGenerator;
+import edu.mit.compilers.optimization.PeepholeOptimizer;
 import edu.mit.compilers.optimization.SubexpressionExpander;
 
 /** Executes major, high-level compilation steps. */
@@ -80,6 +81,7 @@ public class Targets {
                 ir = OPTIMIZERS.get(optName).optimized(ir);
             }
         }
+        
         return ir;
 
     }
@@ -88,7 +90,9 @@ public class Targets {
             DataFlowIntRep ir, String name, boolean isVoid, long memorySize, boolean doRegAlloc) {
         FlowGraph<Instruction> cfg = new MethodGraphFactory(
                 ir.getDataFlowGraph(),name, isVoid, getMemorySize(ir, memorySize), doRegAlloc).getGraph();
-        return BasicFlowGraph.builderOf(cfg).removeNops().build();
+        PeepholeOptimizer finalOpt = new PeepholeOptimizer(cfg);
+        // Inject Peephole optimizations
+        return BasicFlowGraph.builderOf(finalOpt.optimize()).removeNops().build();
     }
     
     private static long getMemorySize(DataFlowIntRep ir, long original){

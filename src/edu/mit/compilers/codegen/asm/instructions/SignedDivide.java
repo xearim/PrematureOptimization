@@ -33,4 +33,12 @@ public class SignedDivide extends Instruction {
     	syntax += Instructions.pop(Register.RDX).inAttSyntax();
     	return syntax;
     }
+
+	public Value getLeftArgument() {
+		return leftArgument;
+	}
+
+	public Value getRightArgument() {
+		return rightArgument;
+	}
 }

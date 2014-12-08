@@ -23,4 +23,8 @@ public class Not extends Instruction {
     	return syntax;
     }
 
+	public Value getArgument() {
+		return Argument;
+	}
+
 }

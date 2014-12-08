@@ -25,4 +25,16 @@ public class MoveToMemory extends Instruction {
                 source.inAttSyntax(), offset, reference.inAttSyntax(),
                 index.inAttSyntax(), elementSize);
     }
+
+	public Register getReference() {
+		return reference;
+	}
+
+	public Register getIndex() {
+		return index;
+	}
+
+	public Value getSource() {
+		return source;
+	}
 }

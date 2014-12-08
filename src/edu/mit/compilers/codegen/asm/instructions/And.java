@@ -20,4 +20,12 @@ public class And extends Instruction {
     	return syntax;
     }
 
+	public Value getLeftArgument() {
+		return leftArgument;
+	}
+
+	public Value getRightArgument() {
+		return rightArgument;
+	}
+
 }

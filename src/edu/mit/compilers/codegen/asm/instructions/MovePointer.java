@@ -21,4 +21,12 @@ public class MovePointer extends Instruction {
     	return syntax;
     }
 
+	public Label getSource() {
+		return source;
+	}
+
+	public Value getDest() {
+		return dest;
+	}
+
 }

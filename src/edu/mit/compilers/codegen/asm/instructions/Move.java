@@ -11,6 +11,14 @@ public class Move extends Instruction {
         this.source = source;
         this.dest = dest;
     }
+    
+    public Value getSource() {
+    	return source;
+    }
+    
+    public Value getDest() {
+    	return dest;
+    }
 
     @Override
     public String inAttSyntax() {

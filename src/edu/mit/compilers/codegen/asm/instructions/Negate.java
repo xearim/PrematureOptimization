@@ -16,4 +16,8 @@ public class Negate extends Instruction {
     	// Negate is just a fancy wrapper for a multiplication by -1
     	return Instructions.multiply(new Literal(-1), Argument).inAttSyntax();
     }
+
+	public Value getArgument() {
+		return Argument;
+	}
 }
