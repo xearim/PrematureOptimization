@@ -8,14 +8,13 @@ import static org.junit.Assert.assertThat;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import edu.mit.compilers.graph.Graphs.UncolorableGraphException;
 
 @RunWith(JUnit4.class)
 public class GraphsTest {
@@ -40,23 +39,54 @@ public class GraphsTest {
                 .build();
         Set<Integer> colors = ImmutableSet.of(1, 2, 3);
 
-        assertGoodColoring(Graphs.colored(graph, colors), graph, colors);
+        assertGoodTotalColoring(Graphs.colored(graph, colors), graph, colors);
     }
 
-    @Test(expected=UncolorableGraphException.class)
-    public void testColoringFails() throws Exception {
+    @Test
+    public void testPartialColoring() throws Exception {
         // It's impossible to color a total graph with fewer colors than there are nodes.
-        Graphs.colored(
-                Graphs.totalGraph(ImmutableList.of(N0, N1, N2, N3, N4)),
-                ImmutableSet.of(0, 1, 2, 3));
+        Graph<String> graph = Graphs.totalGraph(ImmutableList.of(N0, N1, N2, N3, N4));
+        Set<Integer> colors = ImmutableSet.of(0, 1, 2, 3);
+        assertGoodPartialColoring(Graphs.colored(graph, colors), graph, colors);
     }
 
     private static <T, C> void
-            assertGoodColoring(Map<Node<T>, C> coloring, Graph<T> graph, Set<C> colors) {
+            assertGoodTotalColoring(Map<Node<T>, C> coloring, Graph<T> graph, Set<C> colors) {
+        assertGoodColoring(coloring, graph, colors, true);
+    }
+
+    private static <T, C> void
+            assertGoodPartialColoring(Map<Node<T>, C> coloring, Graph<T> graph, Set<C> colors) {
+        assertGoodColoring(coloring, graph, colors, false);
+    }
+
+    /**
+     * Assert that the coloring is valid.
+     * @param coloring The coloring to verify.
+     * @param graph The graph that was colored.
+     * @param colors The available colors.
+     * @param total Whether every node must be colored.  (If false, then uncolored nodes are
+     *     considered to be compatible with all colors.  If true, then uncolored nodes cause
+     *     a failed assertion.)
+     */
+    private static <T, C> void
+            assertGoodColoring(Map<Node<T>, C> coloring, Graph<T> graph, Set<C> colors, boolean total) {
         for (Node<T> node : graph.getNodes()) {
+            if (!coloring.containsKey(node)) {
+                if (total) {
+                    Assert.fail();
+                } else {
+                    continue;
+                }
+            }
             C color = coloring.get(node);
             assertThat("Color is one of the provided choices.", colors, hasItem(color));
             for (Node<T> neighbor : graph.getSuccessors(node)) {
+                if (!coloring.containsKey(neighbor)) {
+                    // Don't do the comparison at all.  We'll detect the missing color
+                    // in the outer loop.
+                    continue;
+                }
                 C neighborColor = coloring.get(neighbor);
                 assertThat("Neighbors cannot have same color.",
                         neighborColor, not(equalTo(color)));

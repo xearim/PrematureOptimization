@@ -108,39 +108,30 @@ public class Graphs {
         return Sets.intersection(reachable(graph, start), reachable(inverse(graph), end));
     }
 
-    public static class UncolorableGraphException extends Exception {
-        private static final long serialVersionUID = 1L;
-        public UncolorableGraphException(String message) {
-            super(message);
-        }
-    }
-
     /** Return a coloring of 'graph', using the specified colors. */
-    public static <T, C> Map<Node<T>, C> colored(Graph<T> graph, Set<C> colors)
-            throws UncolorableGraphException {
+    public static <T, C> Map<Node<T>, C> colored(Graph<T> graph, Set<C> colors) {
         int numColors = colors.size();
 
         MutableGraph<T> workingGraph = new MutableGraph<T>(graph);
         Deque<Node<T>> removedNodes = new ArrayDeque<Node<T>>();
 
         // Remove all the nodes.
-        boolean stillRemoving = true;
-        while (stillRemoving) {
-            // If we don't remove anything by the end of the iteration, then either we've
-            // removed everything, or we cannot remove any more.
-            stillRemoving = false;
+        while (!workingGraph.getNodes().isEmpty()) {
+            boolean removedAny = false;
             // Copy the nodes of the current working graph's state
             // to avoid concurrent modifications.
             for (Node<T> candidate : ImmutableSet.copyOf(workingGraph.getNodes())) {
                 if (workingGraph.degree(candidate) < numColors) {
                     workingGraph.remove(candidate);
                     removedNodes.push(candidate);
-                    stillRemoving = true;
+                    removedAny = true;
                 }
             }
-        }
-        if (workingGraph.getNodes().size() > 0) {
-            throw new UncolorableGraphException("Could not color graph with " + numColors + " colors.");
+            if (!removedAny) {
+                // The graph is uncolorable.  Throw out a node and keep trying!
+                // There is a node in the working graph, so we never get 'null' here.
+                workingGraph.remove(Iterables.getFirst(workingGraph.getNodes(), null));
+            }
         }
 
         // Color them all!
