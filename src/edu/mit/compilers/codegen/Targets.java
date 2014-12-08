@@ -65,11 +65,7 @@ public class Targets {
         for (String optName : enabledOptimizations) {
             ir = OPTIMIZERS.get(optName).optimized(ir);
         }
-        // Remove NOPs, for easy printing.
-        BcrFlowGraph<ScopedStatement> dfg = BcrFlowGraph.builderOf(ir.getDataFlowGraph())
-                .removeNops()
-                .build();
-        return new DataFlowIntRep(dfg, ir.getScope());
+        return ir;
 
     }
 
@@ -77,7 +73,7 @@ public class Targets {
             DataFlowIntRep ir, String name, boolean isVoid,  long memorySize) {
         FlowGraph<Instruction> cfg = new MethodGraphFactory(
                 ir.getDataFlowGraph(),name, isVoid, memorySize).getGraph();
-        return BasicFlowGraph.builderOf(cfg).removeNops().build();
+        return cfg;
     }
 
     /** Returns a dominator tree for the data flow graph of a method */
