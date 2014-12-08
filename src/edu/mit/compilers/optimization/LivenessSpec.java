@@ -37,10 +37,14 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
             Assignment assignment = (Assignment) statement;
             ScopedVariable assignedVariable =
                     ScopedVariable.getAssigned(assignment, scopedStatement.getScope());
-            if (!inputs.contains(assignedVariable)) {
+            if (!inputs.contains(assignedVariable) && 
+            		!Util.getGlobalVariables(scopedStatement.getScope()).contains(assignedVariable)) {
                 return ImmutableSet.of();
             }
         }
+        
+        //System.out.println(node.contentString());
+        //System.out.println(Util.dependencies(node.value()));
 
         return Util.dependencies(node.value());
     }

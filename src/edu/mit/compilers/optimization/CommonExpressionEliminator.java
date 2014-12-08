@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -16,7 +17,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 import edu.mit.compilers.ast.Assignment;
+import edu.mit.compilers.ast.BaseType;
 import edu.mit.compilers.ast.BinaryOperation;
+import edu.mit.compilers.ast.FieldDescriptor;
 import edu.mit.compilers.ast.GeneralExpression;
 import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.LocationDescriptor;
@@ -94,6 +97,7 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
 
             BcrFlowGraph.Builder<ScopedStatement> statementBuilder =
                     BcrFlowGraph.builderOf(dataFlowGraph);
+            
             for (Node<ScopedStatement> node : replaceable) {
                 Set<NativeExpression> toUseTemp = new HashSet<NativeExpression>();
                 Set<NativeExpression> toFillAndUseTemp = new HashSet<NativeExpression>();
@@ -104,16 +108,16 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
                     if (isAvailable(expr, node)) {
                         toUseTemp.add(expr);
                     } else {
-                        // For now, we alway generate if it's not available.
+                        // For now, we always generate if it's not available.
                         toFillAndUseTemp.add(expr);
-                    }
+                    } 
                 }
                 statementBuilder.replace(node, doReplacements(node.value(), toUseTemp,
                         toFillAndUseTemp, augmentedScopes.get(node.value().getScope())));
             }
 
             return new DataFlowIntRep(
-                    statementBuilder.build(), augmentedScopes.get(ir.getScope()));
+                    statementBuilder.build(), ir.getScope());
         }
 
         /** Return whether an expression is available at a DataFlowNode. */
@@ -130,7 +134,6 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
             ScopedExpression scopedExpr = new ScopedExpression(
                     (NativeExpression) expr, node.value().getScope());
 
-            // TODO(xearim): Figure out why a direct contains() call doesn't work.
             for(ScopedExpression ex : inSets.get(node)){
                 if(ex.equals(scopedExpr)){
                     return true;
@@ -261,8 +264,20 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
         // We don't duplicate these higher-than-method scopes.  Map them to themselves.
         newScopes.put(parameterScope, parameterScope);
         newScopes.put(globalScope, globalScope);
+        
+        // We are going to put our variables in a scope between the method and the body
+        ImmutableList.Builder<FieldDescriptor> fieldDescs =
+                ImmutableList.<FieldDescriptor>builder();
+        for (Variable newVar : scopeAugmentations.get(methodScope)) {
+            fieldDescs.add(new FieldDescriptor(newVar, BaseType.WILDCARD));
+        }
+        newScopes.put(methodScope, new Scope(
+                fieldDescs.build(),
+                methodScope));
 
-        addScopeTree(oldScopeTree, newScopes, scopeAugmentations, methodScope);
+        for (Scope methodChild : oldScopeTree.get(methodScope)) {
+            addScopeTree(oldScopeTree, newScopes, scopeAugmentations, methodChild);
+        }
         return ImmutableMap.copyOf(newScopes);
     }
 
@@ -274,10 +289,8 @@ public class CommonExpressionEliminator implements DataFlowOptimizer {
     private static void addScopeTree(Multimap<Scope, Scope> oldScopeTree,
             Map<Scope, Scope> newScopes, Multimap<Scope, Variable> scopeAugmentations,
             Scope current) {
-        newScopes.put(current, Util.augmented(
-                current,
-                scopeAugmentations.get(current),
-                newScopes.get(current.getParent().get())));
+    	newScopes.put(current, 
+    			new Scope(current.getVariables(), newScopes.get(current.getParent().get()), current.isLoop()));
         for (Scope methodChild : oldScopeTree.get(current)) {
             addScopeTree(oldScopeTree, newScopes, scopeAugmentations, methodChild);
         }

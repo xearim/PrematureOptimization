@@ -54,7 +54,7 @@ public class Targets {
         // are dataflow optimizations!
         boolean doRegAlloc = dataflowOptimizations.contains("regalloc");
         return asControlFlowGraph(optimizedDataFlowIntRep(method, dataflowOptimizations),
-                method.getName(), method.isVoid(), doRegAlloc);
+                method.getName(), method.isVoid(), method.getBlock().getMemorySize(), doRegAlloc);
     }
 
     private static DataFlowIntRep asDataFlowIntRep(Method method) {
@@ -85,14 +85,14 @@ public class Targets {
     }
 
     private static FlowGraph<Instruction> asControlFlowGraph(
-            DataFlowIntRep ir, String name, boolean isVoid, boolean doRegAlloc) {
+            DataFlowIntRep ir, String name, boolean isVoid, long memorySize, boolean doRegAlloc) {
         FlowGraph<Instruction> cfg = new MethodGraphFactory(
-                ir.getDataFlowGraph(),name, isVoid, getMemorySize(ir), doRegAlloc).getGraph();
+                ir.getDataFlowGraph(),name, isVoid, getMemorySize(ir, memorySize), doRegAlloc).getGraph();
         return BasicFlowGraph.builderOf(cfg).removeNops().build();
     }
     
-    private static long getMemorySize(DataFlowIntRep ir){
-    	long size = 0;
+    private static long getMemorySize(DataFlowIntRep ir, long original){
+    	long size = original;
     	for(Node<ScopedStatement> node : ir.getDataFlowGraph().getNodes()){
     		long nodeReq = 0;
     		if(node.hasValue()){

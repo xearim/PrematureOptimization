@@ -105,7 +105,6 @@ public class Util {
    
    public static NativeExpression getReplacement(
            NativeExpression statement, NativeExpression replace, Location replacement) {
-	   Preconditions.checkState(!isBaseExpression(statement));
        if(statement instanceof BinaryOperation){
            return ((BinaryOperation) statement).replaceFirst(replace, replacement);
        } else if(statement instanceof MethodCall){
@@ -114,6 +113,9 @@ public class Util {
     	   return ((TernaryOperation) statement).replaceFirst(replace, replacement);
        } else if(statement instanceof UnaryOperation){
     	   return ((UnaryOperation) statement).replaceFirst(replace, replacement);
+       } else if(statement instanceof ArrayLocation){
+    	   ArrayLocation loc = (ArrayLocation) statement;
+    	   return new ArrayLocation(loc.getVariable(), replacement, loc.getLocationDescriptor());
        } else {
            throw new AssertionError("Unexpected NativeExpression type for " + statement);
        }
@@ -203,9 +205,9 @@ public class Util {
     */
    public static Collection<NativeExpression> nodeExprs(ScopedStatement scopedStatement) {
        StaticStatement statement = scopedStatement.getStatement();
-       return statement.hasExpression()
-               ? ImmutableList.of(statement.getExpression())
-               : ImmutableList.<NativeExpression>of();
+	   return statement.hasExpression()
+           ? ImmutableList.of(statement.getExpression())
+           : ImmutableList.<NativeExpression>of();
    }
 
    /** Gets all the variables that this statement can read. */
