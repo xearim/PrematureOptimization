@@ -58,6 +58,9 @@ public class LiveRange {
 
     /** Returns whether two LiveRanges overlap. */
     private static boolean conflict(LiveRange first, LiveRange second) {
+        if (first.equals(second)) {
+            return false;
+        }
         return !Sets.intersection(first.getLiveNodes(), second.getLiveNodes()).isEmpty();
     }
 }

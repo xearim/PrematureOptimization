@@ -1,0 +1,14 @@
+int use_vars(int a, int b, int c, int d, int e, int f) {
+  return a + b + c + d + e + f;
+}
+
+int main() {
+  int u, v, w, x, y, z;
+  u = 1;
+  v = u;
+  w = v;
+  x = w;
+  y = x;
+  z = y;
+  return z;
+}

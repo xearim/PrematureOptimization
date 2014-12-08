@@ -50,8 +50,11 @@ public class Targets {
 
     public static FlowGraph<Instruction>
     controlFlowGraph(Method method, Set<String> dataflowOptimizations) {
+        // TODO(jasonpr): Rename dataflowOptimizations.  Not all optimizations
+        // are dataflow optimizations!
+        boolean doRegAlloc = dataflowOptimizations.contains("regalloc");
         return asControlFlowGraph(optimizedDataFlowIntRep(method, dataflowOptimizations),
-                method.getName(), method.isVoid(), method.getBlock().getMemorySize());
+                method.getName(), method.isVoid(), method.getBlock().getMemorySize(), doRegAlloc);
     }
 
     private static DataFlowIntRep asDataFlowIntRep(Method method) {
@@ -64,10 +67,6 @@ public class Targets {
     // (It's an artifact of the strange interface that tools.CLI provides...
     // but we could easily do a better job of isolating that strangeness.
     private static DataFlowIntRep optimized(DataFlowIntRep unoptimized, Set<String> enabledOptimizations) {
-        for (String optimization : enabledOptimizations) {
-            checkArgument(OPTIMIZERS.containsKey(optimization));
-        }
-
         DataFlowIntRep ir = unoptimized;
         
         // Do dataflow preprocessing
@@ -76,19 +75,19 @@ public class Targets {
         }
         
         // Do dataflow optimizations.
-        for (String optName : enabledOptimizations) {
-        	if(true){
-        		ir = OPTIMIZERS.get(optName).optimized(ir);
-        	}
+        for (String optName : OPTIMIZERS.keySet()) {
+            if (enabledOptimizations.contains(optName)) {
+                ir = OPTIMIZERS.get(optName).optimized(ir);
+            }
         }
         return ir;
 
     }
 
     private static FlowGraph<Instruction> asControlFlowGraph(
-            DataFlowIntRep ir, String name, boolean isVoid, long memorySize) {
+            DataFlowIntRep ir, String name, boolean isVoid, long memorySize, boolean doRegAlloc) {
         FlowGraph<Instruction> cfg = new MethodGraphFactory(
-                ir.getDataFlowGraph(),name, isVoid, getMemorySize(ir, memorySize)).getGraph();
+                ir.getDataFlowGraph(),name, isVoid, getMemorySize(ir, memorySize), doRegAlloc).getGraph();
         return BasicFlowGraph.builderOf(cfg).removeNops().build();
     }
     

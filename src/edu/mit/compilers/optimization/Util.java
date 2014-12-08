@@ -217,11 +217,18 @@ public class Util {
 
        ImmutableSet.Builder<ScopedVariable> dependencies = ImmutableSet.builder();
 
-       // The LHS is a dependency for statements like x += 1.
+
        if (statement instanceof Assignment) {
+           // The LHS is a dependency for statements like x += 1.
            Assignment assignment = (Assignment) statement;
            if (!assignment.getOperation().isAbsolute()) {
                dependencies.add(ScopedVariable.getAssigned(assignment, scope));
+           }
+           // If the LHS has an array location, add the dependencies of the index.
+           Location loc = assignment.getLocation();
+           if (assignment.getLocation() instanceof ArrayLocation) {
+               ArrayLocation arrayLoc = (ArrayLocation) loc;
+               dependencies.addAll(ScopedVariable.getVariablesOf(arrayLoc.getIndex(), scope));
            }
        }
 

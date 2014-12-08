@@ -7,6 +7,8 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.ret;
 
 import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
+
 import edu.mit.compilers.codegen.asm.Architecture;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
@@ -41,12 +43,12 @@ public class MethodGraphFactory {
      *      hold the variables at and below the method's scope.
      */
     public MethodGraphFactory(BcrFlowGraph<ScopedStatement> methodDataFlowGraph,
-            String name, boolean isVoid, long entriesToAllocate) {
-        this.graph = calculateGraph(methodDataFlowGraph, name, isVoid, entriesToAllocate);
+            String name, boolean isVoid, long entriesToAllocate, boolean doRegAlloc) {
+        this.graph = calculateGraph(methodDataFlowGraph, name, isVoid, entriesToAllocate, doRegAlloc);
     }
 
     private FlowGraph<Instruction> calculateGraph(BcrFlowGraph<ScopedStatement> methodDataFlowGraph,
-            String name, boolean isVoid, long entriesToAllocate) {
+            String name, boolean isVoid, long entriesToAllocate, boolean doRegAlloc) {
         // If we are the main method, we need to write down the base pointer for error handling
         boolean isMain = name.equals(Architecture.MAIN_METHOD_NAME);
 
@@ -61,7 +63,9 @@ public class MethodGraphFactory {
         builder.append(RegisterSaver.pushAllVariableRegisters());
 
         // Block graph.
-        Map<LiveRange, Register> allocations = RegisterAllocator.allocations(methodDataFlowGraph);
+        Map<LiveRange, Register> allocations = doRegAlloc
+                ? RegisterAllocator.allocations(methodDataFlowGraph)
+                : ImmutableMap.<LiveRange, Register>of();
         BcrFlowGraph<Instruction> blockGraph =
                 DataFlowToControlFlowConverter.convert(methodDataFlowGraph, allocations);
         builder.append(blockGraph);
