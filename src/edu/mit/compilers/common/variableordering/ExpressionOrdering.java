@@ -24,7 +24,7 @@ public abstract class ExpressionOrdering {
 	protected ExpressionOrdering(){};
 	
 	private static Set<BinaryOperator> COMMUNICATIVE_OPS =
-			ImmutableSet.of(PLUS, MINUS, TIMES);
+			ImmutableSet.of(PLUS, TIMES);
 	
 	public NativeExpression order(NativeExpression expr){
 		return buildOrderedExpression(expr);
@@ -81,6 +81,7 @@ public abstract class ExpressionOrdering {
 					);
 		case DIVIDED_BY: // Non-communicative math operators
 		case MODULO: // Fall-through
+		case MINUS:
 			return new BinaryOperation(
 					expr.getOperator(),
 					buildOrderedExpression(leftArg),
@@ -101,8 +102,6 @@ public abstract class ExpressionOrdering {
 		case PLUS: // Normal Communicative operators, therefore reorderable with themselves
 		case TIMES:
 			return (BinaryOperation) orderExpressions(getMoveableExpressions(expr, expr.getOperator()), expr.getOperator()); 
-		case MINUS: // Minus is special, we are going to turn every A - B into A + (-B)
-			return (BinaryOperation) orderExpressions(getMoveableExpressions(expr, expr.getOperator()), BinaryOperator.PLUS);
 		default:
 			throw new AssertionError("Somehow got invalid binary expression with operator " + expr.getOperator().getSymbol());
 		}
@@ -113,15 +112,8 @@ public abstract class ExpressionOrdering {
 		if((expr instanceof BinaryOperation) &&
 		   communicativeOperators(((BinaryOperation) expr).getOperator(), op)){
 			BinaryOperation binOp = (BinaryOperation) expr;
-			if(binOp.getOperator() == MINUS){
-				// For Minus, we instead make an A + (-B) expression
-				moveableExpressions.addAll(getMoveableExpressions(binOp.getLeftArgument(), BinaryOperator.PLUS));
-				moveableExpressions.addAll(getMoveableExpressions(
-						new UnaryOperation(UnaryOperator.NEGATIVE, binOp.getRightArgument()), BinaryOperator.PLUS));
-			} else {
-				moveableExpressions.addAll(getMoveableExpressions(binOp.getLeftArgument(), binOp.getOperator()));
-				moveableExpressions.addAll(getMoveableExpressions(binOp.getRightArgument(), binOp.getOperator()));
-			}
+			moveableExpressions.addAll(getMoveableExpressions(binOp.getLeftArgument(), binOp.getOperator()));
+			moveableExpressions.addAll(getMoveableExpressions(binOp.getRightArgument(), binOp.getOperator()));
 		} else {
 			moveableExpressions.add(buildOrderedExpression(expr));
 		}
@@ -129,9 +121,7 @@ public abstract class ExpressionOrdering {
 	}
 	
 	private boolean communicativeOperators(BinaryOperator x, BinaryOperator y){
-		return (x == y && COMMUNICATIVE_OPS.contains(x)) 
-			|| (x == BinaryOperator.MINUS && y == BinaryOperator.PLUS) 
-			|| (x == BinaryOperator.PLUS && y == BinaryOperator.MINUS);
+		return (x == y && COMMUNICATIVE_OPS.contains(x));
 	}
 	
 	// Dangerous, but all expression orderings are going to have to implement this or they will break

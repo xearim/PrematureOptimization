@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.ast.ScopeType;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 import edu.mit.compilers.codegen.dataflow.BlockDataFlowFactory;
@@ -96,7 +97,7 @@ public class Targets {
     		if(node.hasValue() && node.value().getScope() != null){
     			Scope current = node.value().getScope();
     			do{
-    				nodeReq += current.size();
+    				nodeReq += current.getScopeType() == ScopeType.GLOBAL ? 0 : current.size();
     				current = current.getParent().isPresent() ? current.getParent().get() : null;
     			}while(current != null && !current.equals(ir.getScope()));
     		}
