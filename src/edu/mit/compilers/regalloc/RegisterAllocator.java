@@ -1,19 +1,17 @@
 package edu.mit.compilers.regalloc;
 
-import static edu.mit.compilers.codegen.asm.Register.R10;
-import static edu.mit.compilers.codegen.asm.Register.R11;
-import static edu.mit.compilers.codegen.asm.Register.R8;
-import static edu.mit.compilers.codegen.asm.Register.R9;
-import static edu.mit.compilers.codegen.asm.Register.RAX;
-import static edu.mit.compilers.codegen.asm.Register.RCX;
-import static edu.mit.compilers.codegen.asm.Register.RDI;
-import static edu.mit.compilers.codegen.asm.Register.RDX;
-import static edu.mit.compilers.codegen.asm.Register.RSI;
+import static edu.mit.compilers.codegen.asm.Register.R12;
+import static edu.mit.compilers.codegen.asm.Register.R13;
+import static edu.mit.compilers.codegen.asm.Register.R14;
+import static edu.mit.compilers.codegen.asm.Register.R15;
+import static edu.mit.compilers.codegen.asm.Register.RBX;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -33,8 +31,8 @@ import edu.mit.compilers.optimization.ScopedVariable;
 public class RegisterAllocator {
 
     /** The registers we can allocate. */
-    private static final Set<Register> REGISTERS =
-            ImmutableSet.of(RAX, RCX, RDX, RSI, RDI, R8, R9, R10, R11);
+    public static final List<Register> REGISTERS =
+            ImmutableList.of(R12, R13, R14, R15, RBX);
 
     private RegisterAllocator() {}
 
@@ -80,7 +78,7 @@ public class RegisterAllocator {
             getLiveRange(ScopedVariable variable, Web web, BcrFlowGraph<ScopedStatement> dfg) {
         ImmutableSet.Builder<Node<ScopedStatement>> nodes = ImmutableSet.builder();
         for (DefUseChain duChain : web) {
-            nodes.addAll(Graphs.semiOpenRange(dfg, duChain.getDef(), duChain.getUse()));
+            nodes.addAll(Graphs.closedRange(dfg, duChain.getDef(), duChain.getUse()));
         }
         return new LiveRange(variable, nodes.build());
     }
@@ -91,7 +89,7 @@ public class RegisterAllocator {
 
         Map<Node<LiveRange>, Register> coloredGraph;
         try {
-            coloredGraph = Graphs.colored(conflictGraph, REGISTERS);
+            coloredGraph = Graphs.colored(conflictGraph, ImmutableSet.copyOf(REGISTERS));
         } catch (UncolorableGraphException e) {
             // TODO(jasonpr): Handle uncolorable graphs.
             throw new RuntimeException("Not yet implemented!");

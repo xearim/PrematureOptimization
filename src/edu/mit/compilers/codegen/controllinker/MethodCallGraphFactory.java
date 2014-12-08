@@ -17,6 +17,7 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.subtract;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.ImmutableList;
 
@@ -30,6 +31,7 @@ import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
+import edu.mit.compilers.optimization.ScopedVariable;
 
 /**
  * A GraphFactory that calls a method or callout using the GCC calling convention.
@@ -50,10 +52,12 @@ public class MethodCallGraphFactory implements GraphFactory {
 
     private final MethodCall methodCall;
     private final Scope scope;
+    private final Map<ScopedVariable, Register> allocations;
 
-    public MethodCallGraphFactory(MethodCall methodCall, Scope scope) {
+    public MethodCallGraphFactory(MethodCall methodCall, Scope scope, Map<ScopedVariable, Register> allocations) {
         this.methodCall = methodCall;
         this.scope = scope;
+        this.allocations = allocations;
     }
 
     private FlowGraph<Instruction> calculateGraph(MethodCall methodCall, Scope scope) {
@@ -68,7 +72,7 @@ public class MethodCallGraphFactory implements GraphFactory {
         for (int argNumber = 0; argNumber < args.size(); argNumber++) {
             builder.append(
                     // Put the arg on the stack.
-                    new GeneralExprGraphFactory(args.get(argNumber), scope).getGraph())
+                    new GeneralExprGraphFactory(args.get(argNumber), scope, allocations).getGraph())
                     // Stash the arg in a temp location.  We'll later move it into place
                     // as specified by the calling convention.
                     .append(pop(R10))
@@ -76,7 +80,7 @@ public class MethodCallGraphFactory implements GraphFactory {
                             new Location(RSP, argNumber * Architecture.BYTES_PER_ENTRY)));
         }
 
-        builder.append(RegisterSaver.pushAll());
+        builder.append(RegisterSaver.pushAllParameterRegisters());
         // Move stashed values to the spots specified by the x86 calling convention.
         int offset = 0;
         for (int argNumber = args.size() - 1; argNumber >= 0; argNumber--){
@@ -104,7 +108,7 @@ public class MethodCallGraphFactory implements GraphFactory {
         // Do post-call bookkeeping.
         // Remove the pushed arguments from the stack.
         builder.append(add(new Literal(numOverflowingArgs * Architecture.WORD_SIZE), RSP))
-                .append(RegisterSaver.popAll())
+                .append(RegisterSaver.popAllParemeterRegsiters())
                 // Remove scratch space.
                 .append(add(new Literal(args.size() * Architecture.WORD_SIZE), RSP))
                 // Push the return value to the stack.

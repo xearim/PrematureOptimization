@@ -21,6 +21,7 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.compareFla
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
 
+import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
@@ -36,6 +37,7 @@ import edu.mit.compilers.codegen.asm.instructions.JumpType;
 import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.graph.Node;
+import edu.mit.compilers.optimization.ScopedVariable;
 
 public class BinOpGraphFactory implements GraphFactory {
 
@@ -48,10 +50,12 @@ public class BinOpGraphFactory implements GraphFactory {
 
     private final BinaryOperation binOp;
     private final Scope scope;
+    private final Map<ScopedVariable, Register> allocations;
 
-    public BinOpGraphFactory(BinaryOperation binOp, Scope scope) {
+    public BinOpGraphFactory(BinaryOperation binOp, Scope scope, Map<ScopedVariable, Register> allocations) {
         this.binOp = binOp;
         this.scope = scope;
+        this.allocations = allocations;
     }
 
     private FlowGraph<Instruction> calculateOperation() {
@@ -83,8 +87,8 @@ public class BinOpGraphFactory implements GraphFactory {
         checkState(ARITHMETIC_OPS.contains(operator));
 
         return BasicFlowGraph.<Instruction>builder()
-                .append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph())
-                .append(new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph())
+                .append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope, allocations).getGraph())
+                .append(new NativeExprGraphFactory(binOp.getRightArgument(), scope, allocations).getGraph())
                 .append(pop(R10))
                 .append(pop(R11))
                 .append(arithmeticOperator(binOp.getOperator(), R10, R11))
@@ -126,13 +130,13 @@ public class BinOpGraphFactory implements GraphFactory {
     private FlowGraph<Instruction> calculateShortCircutAnd() {
         BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
 
-        builder.append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph())
+        builder.append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope, allocations).getGraph())
                 .append(pop(R10))
                 .append(compareFlagged(R10, Literal.TRUE));
 
         Node<Instruction> shortCircuitBranch = Node.nop();
         FlowGraph<Instruction> rightHandExpression =
-                new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph();
+                new NativeExprGraphFactory(binOp.getRightArgument(), scope, allocations).getGraph();
 
         Node<Instruction> shortCircuitPushFalse = Node.of(push(Literal.FALSE));
         builder.append(shortCircuitBranch)
@@ -146,13 +150,13 @@ public class BinOpGraphFactory implements GraphFactory {
     private FlowGraph<Instruction> calculateShortCircutOr() {
         BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
 
-        builder.append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph())
+        builder.append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope, allocations).getGraph())
                 .append(pop(R10))
                 .append(compareFlagged(R10, Literal.FALSE));
 
         Node<Instruction> shortCircuitBranch = Node.nop();
         FlowGraph<Instruction> rightHandExpression =
-                new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph();
+                new NativeExprGraphFactory(binOp.getRightArgument(), scope, allocations).getGraph();
 
         Node<Instruction> shortCircuitPushTrue = Node.of(push(Literal.TRUE));
         builder.append(shortCircuitBranch)
@@ -168,8 +172,8 @@ public class BinOpGraphFactory implements GraphFactory {
         checkState(COMPARISON_OPS.contains(operator));
 
         return BasicFlowGraph.<Instruction>builder()
-                .append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope).getGraph())
-                .append(new NativeExprGraphFactory(binOp.getRightArgument(), scope).getGraph())
+                .append(new NativeExprGraphFactory(binOp.getLeftArgument(), scope, allocations).getGraph())
+                .append(new NativeExprGraphFactory(binOp.getRightArgument(), scope, allocations).getGraph())
                 .append(pop(R11)) // Right argument.
                 .append(pop(R10)) // Left argument.
 	            .append(compare(binOp.getOperator(), R10, R11))

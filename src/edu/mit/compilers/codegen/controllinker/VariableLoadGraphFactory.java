@@ -8,6 +8,9 @@ import static edu.mit.compilers.codegen.asm.instructions.Instructions.movePointe
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.moveToMemory;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.pop;
 import static edu.mit.compilers.codegen.asm.instructions.Instructions.push;
+
+import java.util.Map;
+
 import edu.mit.compilers.ast.ArrayLocation;
 import edu.mit.compilers.ast.Location;
 import edu.mit.compilers.ast.ScalarLocation;
@@ -19,32 +22,38 @@ import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.VariableReference;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.common.Variable;
 import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.FlowGraph;
+import edu.mit.compilers.optimization.ScopedVariable;
 
 
 public class VariableLoadGraphFactory implements GraphFactory {
 
     private final Location location;
     private final Scope scope;
+    private final Map<ScopedVariable, Register> allocations;
 
-    public VariableLoadGraphFactory(Location location, Scope scope) {
+    public VariableLoadGraphFactory(Location location, Scope scope, Map<ScopedVariable, Register> allocations) {
         this.location = location;
         this.scope = scope;
+        this.allocations = allocations;
     }
 
-    private static FlowGraph<Instruction> calculateLoadFromArray(ArrayLocation location, Scope scope, boolean check) {
+    private static FlowGraph<Instruction> calculateLoadFromArray(ArrayLocation location, Scope scope,
+            Map<ScopedVariable, Register> allocations, boolean check) {
         return BasicFlowGraph.<Instruction>builder()
-                .append(setupArrayRegisters(location, scope, check))
+                .append(setupArrayRegisters(location, scope, allocations, check))
                 .append(moveFromMemory(offset(location, scope), R10, R11,
                         Architecture.WORD_SIZE, R10))
                 .append(push(R10)).build();
     }
 
     // TODO(jasonpr): Have this code live somewhere sensible.
-    public static FlowGraph<Instruction> calculateStoreToArray(ArrayLocation location, Scope scope, boolean check) {
+    public static FlowGraph<Instruction> calculateStoreToArray(ArrayLocation location, Scope scope,
+            Map<ScopedVariable, Register> allocations, boolean check) {
         return BasicFlowGraph.<Instruction>builder()
-                .append(setupArrayRegisters(location, scope, check))
+                .append(setupArrayRegisters(location, scope, allocations, check))
                 // Pop value to store after, so we can't corrupt it.
                 .append(pop(Register.RAX))
                 .append(moveToMemory(Register.RAX, offset(location, scope), Register.R10,
@@ -56,7 +65,8 @@ public class VariableLoadGraphFactory implements GraphFactory {
      * Load values into R10, and R11 so that 'X(%r10, %r11, 8)' refers to the array
      * location.
      */
-    public static FlowGraph<Instruction> setupArrayRegisters(ArrayLocation location, Scope scope, boolean check) {
+    public static FlowGraph<Instruction> setupArrayRegisters(ArrayLocation location, Scope scope,
+            Map<ScopedVariable, Register> allocations, boolean check) {
         Scope immediateScope = scope.getLocation(location.getVariable());
         ScopeType scopeType = immediateScope.getScopeType();
         // Loads the "base" of the array into R10.  For a global, that's the actual location of the
@@ -73,7 +83,7 @@ public class VariableLoadGraphFactory implements GraphFactory {
         }
 
         BasicFlowGraph.Builder<Instruction> builder = BasicFlowGraph.builder();
-        builder.append(new NativeExprGraphFactory(location.getIndex(), scope).getGraph());
+        builder.append(new NativeExprGraphFactory(location.getIndex(), scope, allocations).getGraph());
         if (check) {
             builder.append(new ArrayBoundsCheckGraphFactory(
                     scope.getFromScope(location.getVariable()).get().getLength().get()).getGraph());
@@ -88,19 +98,29 @@ public class VariableLoadGraphFactory implements GraphFactory {
                 * -1;
     }
 
-    private static FlowGraph<Instruction> calculateLoadFromScalar(ScalarLocation location, Scope scope) {
-        return BasicFlowGraph.<Instruction>builder()
-                .append(move(new VariableReference(location.getVariable(), scope), R11))
-                .append(push(R11))
-                .build();
+    private static FlowGraph<Instruction> calculateLoadFromScalar(ScalarLocation location,
+            Scope scope, Map<ScopedVariable, Register> allocations) {
+        Variable variable = location.getVariable();
+        ScopedVariable scopedVariable = new ScopedVariable(variable, scope.getLocation(variable));
+        if (allocations.containsKey(scopedVariable)) {
+            // Use a register, rather than looking in memory.
+            return BasicFlowGraph.<Instruction>builder()
+                    .append(push(allocations.get(scopedVariable)))
+                    .build();
+        } else {
+            return BasicFlowGraph.<Instruction>builder()
+                    .append(move(new VariableReference(location.getVariable(), scope), R11))
+                    .append(push(R11))
+                    .build();
+        }
     }
 
     @Override
     public FlowGraph<Instruction> getGraph() {
         if (location instanceof ArrayLocation) {
-            return calculateLoadFromArray((ArrayLocation) location, scope, true);
+            return calculateLoadFromArray((ArrayLocation) location, scope, allocations, true);
         } else if (location instanceof ScalarLocation) {
-            return calculateLoadFromScalar((ScalarLocation) location, scope);
+            return calculateLoadFromScalar((ScalarLocation) location, scope, allocations);
         } else {
             throw new AssertionError("Unexpected location type for " + location);
         }
