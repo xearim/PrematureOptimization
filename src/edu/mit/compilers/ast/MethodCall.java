@@ -139,4 +139,18 @@ public class MethodCall extends StaticStatement implements NativeExpression {
         }
         return new MethodCall(methodName, paramsWithReplacements, locationDescriptor);
     }
+    
+    public MethodCall replaceFirst(NativeExpression toReplace, NativeExpression replacement) {
+        List<GeneralExpression> paramsWithReplacements = Lists.newArrayList();
+        boolean flagged = false;
+        for (GeneralExpression param : parameterValues) {
+        	if(toReplace.equals(param) && !flagged){
+	            paramsWithReplacements.add(replacement);
+	            flagged = true;
+        	} else {
+        		paramsWithReplacements.add(param);
+        	}
+        }
+        return new MethodCall(methodName, paramsWithReplacements, locationDescriptor);
+    }
 }

@@ -111,4 +111,15 @@ public class UnaryOperation implements NativeExpression {
                 argument.withReplacements(toReplace, replacement),
                 locationDescriptor);
     }
+    
+    public NativeExpression replaceFirst(NativeExpression toReplace,
+            NativeExpression replacement) {
+        if (argument.equals(toReplace)){
+	        return new UnaryOperation(operator,
+	                replacement,
+	                locationDescriptor);
+        } else {
+        	return this;
+        }
+    }
 }
