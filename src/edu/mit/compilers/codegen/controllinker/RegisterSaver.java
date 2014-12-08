@@ -48,7 +48,7 @@ public class RegisterSaver {
 
     /** Push all the registers used in register allocation. */
     public static FlowGraph<Instruction> popAllVariableRegisters() {
-        return pushAll(RegisterAllocator.REGISTERS);
+        return popAll(RegisterAllocator.REGISTERS);
     }
 
     /** Push the argument registers, in order. */

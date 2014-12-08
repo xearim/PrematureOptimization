@@ -51,7 +51,7 @@ public class Targets {
     public static FlowGraph<Instruction>
     controlFlowGraph(Method method, Set<String> dataflowOptimizations) {
         return asControlFlowGraph(optimizedDataFlowIntRep(method, dataflowOptimizations),
-                method.getName(), method.isVoid());
+                method.getName(), method.isVoid(), method.getBlock().getMemorySize());
     }
 
     private static DataFlowIntRep asDataFlowIntRep(Method method) {
@@ -77,21 +77,23 @@ public class Targets {
         
         // Do dataflow optimizations.
         for (String optName : enabledOptimizations) {
-            ir = OPTIMIZERS.get(optName).optimized(ir);
+        	if(true){
+        		ir = OPTIMIZERS.get(optName).optimized(ir);
+        	}
         }
         return ir;
 
     }
 
     private static FlowGraph<Instruction> asControlFlowGraph(
-            DataFlowIntRep ir, String name, boolean isVoid) {
+            DataFlowIntRep ir, String name, boolean isVoid, long memorySize) {
         FlowGraph<Instruction> cfg = new MethodGraphFactory(
-                ir.getDataFlowGraph(),name, isVoid, getMemorySize(ir)).getGraph();
+                ir.getDataFlowGraph(),name, isVoid, getMemorySize(ir, memorySize)).getGraph();
         return BasicFlowGraph.builderOf(cfg).removeNops().build();
     }
     
-    private static long getMemorySize(DataFlowIntRep ir){
-    	long size = 0;
+    private static long getMemorySize(DataFlowIntRep ir, long original){
+    	long size = original;
     	for(Node<ScopedStatement> node : ir.getDataFlowGraph().getNodes()){
     		long nodeReq = 0;
     		if(node.hasValue()){

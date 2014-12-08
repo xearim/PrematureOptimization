@@ -44,6 +44,7 @@ public class DeadCodeEliminator implements DataFlowOptimizer {
      *  * it is not an assignment, or
      *  * it's an assignment whose assigned variable is live, or
      *  * it contains a (potentially side-effect-ful) method call.
+     *  * it belongs to a global variable
      */
     private boolean isLive(ScopedStatement scopedStatement, Collection<ScopedVariable> liveVars) {
         StaticStatement statement = scopedStatement.getStatement();
@@ -59,6 +60,9 @@ public class DeadCodeEliminator implements DataFlowOptimizer {
         }
         if (Util.containsMethodCall(scopedStatement.getStatement().getExpression())) {
             return true;
+        }
+        if (assignedVar.isGlobal()) {
+        	return true;
         }
         return false;
     }
