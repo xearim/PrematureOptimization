@@ -9,19 +9,20 @@ import com.google.common.collect.ImmutableMap;
 
 import edu.mit.compilers.ast.Method;
 import edu.mit.compilers.ast.Scope;
-import edu.mit.compilers.ast.Statement;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
 import edu.mit.compilers.codegen.controllinker.MethodGraphFactory;
 import edu.mit.compilers.codegen.dataflow.BlockDataFlowFactory;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.BasicFlowGraph;
 import edu.mit.compilers.graph.BcrFlowGraph;
+import edu.mit.compilers.graph.DiGraph;
 import edu.mit.compilers.graph.FlowGraph;
 import edu.mit.compilers.graph.Node;
 import edu.mit.compilers.optimization.CommonExpressionEliminator;
 import edu.mit.compilers.optimization.ConstantPropagator;
 import edu.mit.compilers.optimization.DataFlowOptimizer;
 import edu.mit.compilers.optimization.DeadCodeEliminator;
+import edu.mit.compilers.optimization.DominatorTreeGenerator;
 import edu.mit.compilers.optimization.SubexpressionExpander;
 
 /** Executes major, high-level compilation steps. */
@@ -42,12 +43,12 @@ public class Targets {
     }
 
     public static DataFlowIntRep
-            optimizedDataFlowIntRep(Method method, Set<String> dataflowOptimizations) {
+    optimizedDataFlowIntRep(Method method, Set<String> dataflowOptimizations) {
         return optimized(unoptimizedDataFlowIntRep(method), dataflowOptimizations);
     }
 
     public static FlowGraph<Instruction>
-            controlFlowGraph(Method method, Set<String> dataflowOptimizations) {
+    controlFlowGraph(Method method, Set<String> dataflowOptimizations) {
         return asControlFlowGraph(optimizedDataFlowIntRep(method, dataflowOptimizations),
                 method.getName(), method.isVoid());
     }
@@ -77,11 +78,7 @@ public class Targets {
         for (String optName : enabledOptimizations) {
             ir = OPTIMIZERS.get(optName).optimized(ir);
         }
-        // Remove NOPs, for easy printing.
-        BcrFlowGraph<ScopedStatement> dfg = BcrFlowGraph.builderOf(ir.getDataFlowGraph())
-                .removeNops()
-                .build();
-        return new DataFlowIntRep(dfg, ir.getScope());
+        return ir;
 
     }
 
@@ -107,5 +104,11 @@ public class Targets {
     	}
     	return size;
     }
-    
+
+    /** Returns a dominator tree for the data flow graph of a method */
+    public static DiGraph<ScopedStatement> dominatorTree(Method method,
+            Set<String> optimizationNames) {
+        BcrFlowGraph<ScopedStatement> graph = optimizedDataFlowIntRep(method, optimizationNames).getDataFlowGraph();
+        return DominatorTreeGenerator.<ScopedStatement>getDominatorTree(graph);
+    }
 }

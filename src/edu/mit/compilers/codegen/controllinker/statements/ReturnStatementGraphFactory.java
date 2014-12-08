@@ -8,7 +8,9 @@ import com.google.common.base.Optional;
 import edu.mit.compilers.ast.NativeExpression;
 import edu.mit.compilers.ast.ReturnStatement;
 import edu.mit.compilers.ast.Scope;
+import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.instructions.Instruction;
+import edu.mit.compilers.codegen.asm.instructions.Instructions;
 import edu.mit.compilers.codegen.controllinker.GraphFactory;
 import edu.mit.compilers.codegen.controllinker.NativeExprGraphFactory;
 import edu.mit.compilers.graph.BasicFlowGraph;
@@ -37,7 +39,9 @@ public class ReturnStatementGraphFactory implements GraphFactory {
         // If there is a return expression, evaluate it and move it into RAX.
         if (returnValue.isPresent()) {
             builder.append(new NativeExprGraphFactory(returnValue.get(), scope).getGraph())
-                    .append(pop(RAX));
+                .append(pop(RAX));
+        } else {
+            builder.append(Instructions.move(new Literal(0), RAX));
         }
         return builder.build();
     }

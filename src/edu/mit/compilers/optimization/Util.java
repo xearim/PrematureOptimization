@@ -97,7 +97,7 @@ public class Util {
        ImmutableMultimap.Builder<ScopedVariable, Node<ScopedStatement>> builder =
                ImmutableMultimap.builder();
        for (ReachingDefinition def : reachingDefs) {
-           builder.put(def.getScopedLocation(), def.getNode());
+           builder.put(def.getScopedVariable(), def.getNode());
        }
        return builder.build();
    }
@@ -205,5 +205,33 @@ public class Util {
        return statement.hasExpression()
                ? ImmutableList.of(statement.getExpression())
                : ImmutableList.<NativeExpression>of();
+   }
+
+   /** Gets all the variables that this statement can read. */
+   public static Set<ScopedVariable> dependencies(ScopedStatement scopedStatement) {
+       StaticStatement statement = scopedStatement.getStatement();
+       Scope scope = scopedStatement.getScope();
+
+       ImmutableSet.Builder<ScopedVariable> dependencies = ImmutableSet.builder();
+
+       // The LHS is a dependency for statements like x += 1.
+       if (statement instanceof Assignment) {
+           Assignment assignment = (Assignment) statement;
+           if (!assignment.getOperation().isAbsolute()) {
+               dependencies.add(ScopedVariable.getAssigned(assignment, scope));
+           }
+       }
+
+       // All the variables that are a part of the expression are dependencies.
+       dependencies.addAll(ScopedVariable.getVariablesOf(scopedStatement));
+
+       // A global method call depends on all the globals that that function reads.
+       if (Util.containsMethodCall(statement.getExpression())) {
+           // For now, just assume that functions can read every global!
+           // TODO(jasonpr): Only add each function's global read set.
+           dependencies.addAll(Util.getGlobalVariables(scope));
+       }
+
+       return dependencies.build();
    }
 }

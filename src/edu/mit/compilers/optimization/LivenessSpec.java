@@ -9,7 +9,6 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 
 import edu.mit.compilers.ast.Assignment;
-import edu.mit.compilers.ast.Scope;
 import edu.mit.compilers.ast.StaticStatement;
 import edu.mit.compilers.codegen.dataflow.ScopedStatement;
 import edu.mit.compilers.graph.Node;
@@ -43,7 +42,7 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
             }
         }
 
-        return dependencies(node.value());
+        return Util.dependencies(node.value());
     }
 
     /** Kills a ScopedVariable if it was defined. */
@@ -63,33 +62,5 @@ public class LivenessSpec implements AnalysisSpec<ScopedStatement, ScopedVariabl
     @Override
     public boolean gensImmuneToKills() {
         return true;
-    }
-
-    /** Gets all the variables that this statement can read. */
-    private Set<ScopedVariable> dependencies(ScopedStatement scopedStatement) {
-        StaticStatement statement = scopedStatement.getStatement();
-        Scope scope = scopedStatement.getScope();
-
-        ImmutableSet.Builder<ScopedVariable> dependencies = ImmutableSet.builder();
-
-        // The LHS is a dependency for statements like x += 1.
-        if (statement instanceof Assignment) {
-            Assignment assignment = (Assignment) statement;
-            if (!assignment.getOperation().isAbsolute()) {
-                dependencies.add(ScopedVariable.getAssigned(assignment, scope));
-            }
-        }
-
-        // All the variables that are a part of the expression are dependencies.
-        dependencies.addAll(ScopedVariable.getVariablesOf(scopedStatement));
-
-        // A global method call depends on all the globals that that function reads.
-        if (Util.containsMethodCall(statement.getExpression())) {
-            // For now, just assume that functions can read every global!
-            // TODO(jasonpr): Only add each function's global read set.
-            dependencies.addAll(Util.getGlobalVariables(scope));
-        }
-
-        return dependencies.build();
     }
 }

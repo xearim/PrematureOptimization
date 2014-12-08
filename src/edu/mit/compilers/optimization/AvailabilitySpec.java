@@ -49,9 +49,6 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExp
         return false;
     }
 
-    /**
-     * Returns the union of all the sets.
-     */
     @Override
     public Set<ScopedExpression> applyConfluenceOperator(Iterable<Collection<ScopedExpression>> outSets) {
         return intersection(outSets);
@@ -62,7 +59,6 @@ public class AvailabilitySpec implements AnalysisSpec<ScopedStatement, ScopedExp
         return false;
     }
 
-    /** Available Subexpressions Algorithm propagates forward. */
     public boolean isForward() {
         return true;
     }

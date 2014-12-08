@@ -1,6 +1,7 @@
 package edu.mit.compilers.graph;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 /**
  * A node in a graph.
@@ -45,5 +46,18 @@ public class Node<T> {
         return hasValue()
                 ? value().toString()
                 : "NOP";
+    }
+
+    /**
+     * Strips the Node wrapper off a sequence of nodes.
+     *
+     * <p>Requires that each node has a value.
+     */
+    public static <T> Iterable<T> values(Iterable<Node<T>> nodes) {
+        ImmutableList.Builder<T> stripped = ImmutableList.builder();
+        for (Node<T> node : nodes) {
+            stripped.add(node.value());
+        }
+        return stripped.build();
     }
 }

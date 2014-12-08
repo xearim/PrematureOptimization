@@ -1,22 +1,24 @@
 package edu.mit.compilers.graph;
 
+import java.util.Set;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
-public class BasicGraph<T> implements Graph<T> {
+public class BasicDiGraph<T> implements DiGraph<T> {
 
     private final Multimap<Node<T>, Node<T>> forwardEdges;
     private final Multimap<Node<T>, Node<T>> backwardEdges;
 
-    private BasicGraph(ImmutableMultimap<Node<T>, Node<T>> edges) {
+    private BasicDiGraph(ImmutableMultimap<Node<T>, Node<T>> edges) {
         this.forwardEdges = edges;
         this.backwardEdges = edges.inverse();
     }
 
     @Override
-    public Iterable<Node<T>> getNodes() {
+    public Set<Node<T>> getNodes() {
         return Sets.union(
                 forwardEdges.keySet(),
                 backwardEdges.keySet());
@@ -48,8 +50,8 @@ public class BasicGraph<T> implements Graph<T> {
             return this;
         }
 
-        public BasicGraph<T> build() {
-            return new BasicGraph<T>(ImmutableMultimap.copyOf(forwardEdges));
+        public BasicDiGraph<T> build() {
+            return new BasicDiGraph<T>(ImmutableMultimap.copyOf(forwardEdges));
         }
     }
 }
