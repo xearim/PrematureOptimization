@@ -55,7 +55,7 @@ public class Targets {
         // are dataflow optimizations!
         boolean doRegAlloc = dataflowOptimizations.contains("regalloc");
         return asControlFlowGraph(optimizedDataFlowIntRep(method, dataflowOptimizations),
-                method.getName(), method.isVoid(), method.getBlock().getMemorySize(), doRegAlloc);
+                method.getName(), method.isVoid(), method.getBlock().getMemorySize(), false);
     }
 
     private static DataFlowIntRep asDataFlowIntRep(Method method) {
@@ -70,17 +70,21 @@ public class Targets {
     private static DataFlowIntRep optimized(DataFlowIntRep unoptimized, Set<String> enabledOptimizations) {
         DataFlowIntRep ir = unoptimized;
         
+        /*
         // Do dataflow preprocessing
         for (String optName : PREPROCESSING.keySet()) {
-            ir = PREPROCESSING.get(optName).optimized(ir);
+        	if (enabledOptimizations.contains(optName)) {
+        		ir = PREPROCESSING.get(optName).optimized(ir);
+        	}
         }
+        
         
         // Do dataflow optimizations.
         for (String optName : OPTIMIZERS.keySet()) {
             if (enabledOptimizations.contains(optName)) {
                 ir = OPTIMIZERS.get(optName).optimized(ir);
             }
-        }
+        }*/
         
         return ir;
 
