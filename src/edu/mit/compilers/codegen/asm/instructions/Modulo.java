@@ -14,6 +14,7 @@ public class Modulo extends Instruction {
         this.rightArgument = rightArgument;
     }
 
+    // TODO(jasonpr): Do not let one Instruction contain multiple x86 instructions!
     @Override
     public String inAttSyntax() {
     	// A modulo is a special type of signed divide in that you need to use %rax and %rdx as intermediates
@@ -22,8 +23,12 @@ public class Modulo extends Instruction {
     	syntax += Instructions.push(Register.RDX).inAttSyntax() + "\n";
     	// Put the division target in %rax
     	syntax += Instructions.move(rightArgument, Register.RAX).inAttSyntax() + "\n";
-    	// Zero out %rdx just in case (it shouldn't hold any values)
-    	syntax += Instructions.move(Literal.FALSE, Register.RDX).inAttSyntax() + "\n";
+    	// TODO(jasonpr): Factor out common code from here and SignedDivide.
+    	// Make %rdx:%rax be a 128-bit representation of %rax.
+        // %rdx is either 0b00...0 or 0b11...1, in order to sign-extend properly.
+    	syntax += Instructions.move(Register.RAX, Register.RDX).inAttSyntax() + "\n";
+        syntax += Instructions.shiftRightSignExtended(Register.RDX, new Literal(63)).inAttSyntax() + "\n";
+
     	// Divide
     	syntax += "idiv " + leftArgument.inAttSyntax() + "\n";
     	// Return the resultant remainder into the rightArgument as we expect

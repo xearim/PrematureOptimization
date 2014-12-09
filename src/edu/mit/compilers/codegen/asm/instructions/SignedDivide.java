@@ -3,7 +3,6 @@ package edu.mit.compilers.codegen.asm.instructions;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
-import edu.mit.compilers.codegen.asm.VariableReference;
 
 public class SignedDivide extends Instruction {
     private InstructionType type = InstructionType.IDIV;
@@ -23,8 +22,10 @@ public class SignedDivide extends Instruction {
     	syntax += Instructions.push(Register.RDX).inAttSyntax()  + "\n";
     	// Put the division target in %rax
     	syntax += Instructions.move(rightArgument, Register.RAX).inAttSyntax() + "\n";
-    	// Zero out %rdx just in case (it shouldn't hold any values)
-    	syntax += Instructions.move(Literal.FALSE, Register.RDX).inAttSyntax() + "\n";
+    	// Make %rdx:%rax be a 128-bit representation of %rax.
+    	// %rdx is either 0b00...0 or 0b11...1, in order to sign-extend properly.
+        syntax += Instructions.move(Register.RAX, Register.RDX).inAttSyntax() + "\n";
+        syntax += Instructions.shiftRightSignExtended(Register.RDX, new Literal(63)).inAttSyntax() + "\n";
     	// Divide
     	syntax += "idiv " + leftArgument.inAttSyntax() + "\n";
     	// Return the result into the rightArgument as we expect

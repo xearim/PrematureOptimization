@@ -1,13 +1,11 @@
 package edu.mit.compilers.codegen.asm.instructions;
 
 import edu.mit.compilers.ast.BinaryOperator;
-import edu.mit.compilers.ast.Block;
 import edu.mit.compilers.codegen.asm.Label;
 import edu.mit.compilers.codegen.asm.Label.LabelType;
 import edu.mit.compilers.codegen.asm.Literal;
 import edu.mit.compilers.codegen.asm.Register;
 import edu.mit.compilers.codegen.asm.Value;
-import edu.mit.compilers.codegen.asm.VariableReference;
 
 /**
  * A million static factory methods for creating assembly instructions.
@@ -128,7 +126,11 @@ public final class Instructions {
     public static Instruction jumpTyped(JumpType type, Label target) {
         return new JumpTyped(type, target);
     }
-    
+
+    public static Instruction shiftRightSignExtended(Register register, Literal distance) {
+        return new ShiftRightSignExtended(register, distance);
+    }
+
     /**
      * Does `enter $x, $0`. Calculated appropriately for a method with the specified number of
      * entries.
