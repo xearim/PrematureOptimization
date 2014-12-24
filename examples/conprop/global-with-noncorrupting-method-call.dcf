@@ -3,9 +3,6 @@ int y;
 void def_y() {
   y = 2;
 }
-// Happy Holidays!
-// I really enjoyed working with you two!
-// Good luck with everything from here on out.
 int main() {
   x = 5;
   def_y();
